@@ -1,0 +1,46 @@
+name: Weekly Hotspot Analysis
+
+on:
+  schedule:
+    - cron: '37 0 * * 1'  # Every Monday 08:37 Beijing time
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r weekly-cli/requirements.txt
+
+      - name: Checkout myBlog
+        uses: actions/checkout@v4
+        with:
+          repository: sixtdreanight/myBlog
+          path: myblog
+          token: ${{ secrets.BLOG_PAT }}
+
+      - name: Run weekly analysis
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          BLOG_CONTENT_DIR: ${{ github.workspace }}/myblog/src/content/weekly
+        run: python weekly-cli/main.py
+
+      - name: Push to myBlog
+        working-directory: myblog
+        run: |
+          git config user.name "weekly-bot"
+          git config user.email "bot@dreamnight.net.cn"
+          git add src/content/weekly/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            WEEK=$(date +%Y-W%V)
+            git commit -m "chore: update weekly hotspot $WEEK"
+            git push
+          fi
