@@ -5,6 +5,7 @@ from client import DeepSeekClient
 from censor import censor_events
 from scorer import score_and_select
 from analyzer import analyze_event
+from scraper import scrape_all
 from schema import WeeklyIssue
 
 
@@ -21,30 +22,36 @@ def get_week_range() -> tuple[str, str]:
     return monday.strftime("%Y-%m-%d"), sunday.strftime("%Y-%m-%d")
 
 
-def fetch_weekly_hotspots(client: DeepSeekClient) -> list[dict]:
-    result = client.chat_json([
-        {"role": "system", "content": "你是一个新闻聚合助手。请搜索并列出本周（过去7天内）的热点新闻事件。对每个事件提供标题和一句话摘要。重点关注科技、社会、经济、国际领域。返回至少20个事件。返回格式：{\"events\": [{\"title\": \"...\", \"summary\": \"...\"}]}"},
-        {"role": "user", "content": "请列出本周的热点事件，至少20个。重点关注有实际影响的事件，排除纯娱乐八卦。"},
-    ])
-    return result.get("events", [])
-
-
 def main():
     client = DeepSeekClient(DEEPSEEK_API_KEY)
 
-    print("[Phase 0] 获取本周热点候选...")
-    raw_events = fetch_weekly_hotspots(client)
-    print(f"  获取到 {len(raw_events)} 个候选事件")
+    # Phase 0: Scrape REAL hot topics from actual platforms
+    print("[Phase 0] 抓取真实热点数据...")
+    raw_topics = scrape_all()
+    print(f"  抓取到 {len(raw_topics)} 个话题（微博+知乎）")
 
-    print("[Phase 0] 政审过滤...")
+    if not raw_topics:
+        print("  抓取失败，退出。请检查网络或 API 可用性。")
+        sys.exit(1)
+
+    # Convert to event format for pipeline
+    raw_events = [
+        {"title": t["title"], "summary": f"{t['summary']}\n来源: {t['url']}"}
+        for t in raw_topics
+    ]
+
+    # Phase 1: Political review
+    print("[Phase 1] 政审过滤...")
     passed = censor_events(client, raw_events)
     print(f"  通过审查: {len(passed)} 个")
 
-    print("[Phase 1] AI 评分筛选...")
+    # Phase 2: AI scoring and selection
+    print("[Phase 2] AI 评分筛选...")
     selected = score_and_select(client, passed, top_n=8)
     print(f"  入选: {len(selected)} 个")
 
-    print("[Phase 2] 逐事件深度梳理...")
+    # Phase 3: Per-event deep analysis
+    print("[Phase 3] 逐事件深度梳理...")
     analyzed_events = []
     for i, event in enumerate(selected):
         print(f"  分析 ({i+1}/{len(selected)}): {event['title']}")
@@ -59,6 +66,10 @@ def main():
             except Exception as e2:
                 print(f"    重试仍失败: {e2}，跳过此事件")
 
+    if not analyzed_events:
+        print("  没有事件通过分析，退出。")
+        sys.exit(1)
+
     week_id = get_week_id()
     week_start, week_end = get_week_range()
 
@@ -71,7 +82,10 @@ def main():
 
     BLOG_CONTENT_DIR.mkdir(parents=True, exist_ok=True)
     output_path = BLOG_CONTENT_DIR / f"{week_id}.json"
-    output_path.write_text(issue.model_dump_json(indent=2, ensure_ascii=False, by_alias=True), encoding="utf-8")
+    output_path.write_text(
+        issue.model_dump_json(indent=2, ensure_ascii=False, by_alias=True),
+        encoding="utf-8",
+    )
 
     print(f"\n输出: {output_path}")
     print(f"共 {len(analyzed_events)} 个事件")
