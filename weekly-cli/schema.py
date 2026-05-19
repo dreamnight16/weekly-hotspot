@@ -2,6 +2,12 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 
+class ClassAnalysis(BaseModel):
+    classNature: str = ""
+    contradiction: str = ""
+    historicalContext: str = ""
+
+
 class TimelineNode(BaseModel):
     id: str
     time: str
@@ -18,12 +24,13 @@ class EvidenceNode(BaseModel):
     content: str
     authenticity: Literal["真实", "存疑", "不实", "待验证"]
     aiReason: str
+    classBias: Literal["无产阶级立场", "资产阶级立场", "小资产阶级立场", "帝国主义话语", "待判断"] = "待判断"
 
 
 class Edge(BaseModel):
     from_: str = Field(alias="from")
     to: str
-    type: Literal["因果", "关联", "反驳"]
+    type: Literal["因果", "关联", "矛盾"]
     description: str
 
     model_config = {"populate_by_name": True}
@@ -35,6 +42,8 @@ class Event(BaseModel):
     impactScore: int = Field(ge=1, le=5)
     infoGainScore: int = Field(ge=1, le=5)
     summary: str
+    classAnalysis: ClassAnalysis = Field(default_factory=ClassAnalysis)
+    dialecticalSummary: str = ""
     timeline: list[TimelineNode] = Field(default_factory=list)
     evidence: list[EvidenceNode] = Field(default_factory=list)
     edges: list[Edge] = Field(default_factory=list)
