@@ -6,6 +6,7 @@ from censor import censor_events
 from scorer import score_and_select
 from analyzer import analyze_event
 from scraper import scrape_all
+from searcher import search_event
 from schema import WeeklyIssue
 
 
@@ -55,13 +56,18 @@ def main():
     analyzed_events = []
     for i, event in enumerate(selected):
         print(f"  分析 ({i+1}/{len(selected)}): {event['title']}")
+        # Search web for real info on this event
+        print(f"    搜索中...")
+        search_results = search_event(event["title"])
+        print(f"    找到 {len(search_results)} 条结果")
+
         try:
-            result = analyze_event(client, event, idx=i + 1)
+            result = analyze_event(client, event, search_results, idx=i + 1)
             analyzed_events.append(result)
         except Exception as e:
             print(f"    分析失败: {e}，重试一次...")
             try:
-                result = analyze_event(client, event, idx=i + 1)
+                result = analyze_event(client, event, search_results, idx=i + 1)
                 analyzed_events.append(result)
             except Exception as e2:
                 print(f"    重试仍失败: {e2}，跳过此事件")

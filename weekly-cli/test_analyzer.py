@@ -22,7 +22,7 @@ def client():
 
 
 def test_analyze_event_returns_valid_structure(client):
-    result = analyze_event(client, EVENT_INPUT)
+    result = analyze_event(client, EVENT_INPUT, [])
     event = Event(**result)
     assert len(event.timeline) >= 3
     assert len(event.evidence) >= 2
@@ -33,7 +33,7 @@ def test_analyze_event_returns_valid_structure(client):
 
 
 def test_analyze_event_timeline_has_dates(client):
-    result = analyze_event(client, EVENT_INPUT)
+    result = analyze_event(client, EVENT_INPUT, [])
     for node in result["timeline"]:
         assert "T" in node["time"]
         assert len(node["title"]) > 0
