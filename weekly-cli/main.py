@@ -71,7 +71,7 @@ def main():
 
     BLOG_CONTENT_DIR.mkdir(parents=True, exist_ok=True)
     output_path = BLOG_CONTENT_DIR / f"{week_id}.json"
-    output_path.write_text(issue.model_dump_json(indent=2, ensure_ascii=False), encoding="utf-8")
+    output_path.write_text(issue.model_dump_json(indent=2, ensure_ascii=False, by_alias=True), encoding="utf-8")
 
     print(f"\n输出: {output_path}")
     print(f"共 {len(analyzed_events)} 个事件")
