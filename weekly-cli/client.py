@@ -10,9 +10,13 @@ class DeepSeekClient:
         self.client = OpenAI(api_key=api_key, base_url=base_url)
 
     def chat_json(self, messages: list[dict], temperature: float = 0.3, max_tokens: int = 8192) -> dict:
+        # DeepSeek requires "json" in the prompt for json_object response_format
+        msgs = [dict(m) for m in messages]
+        if msgs and msgs[0]["role"] == "system":
+            msgs[0] = {**msgs[0], "content": msgs[0]["content"] + "\n请以JSON格式输出。"}
         response = self.client.chat.completions.create(
             model=self.model,
-            messages=messages,
+            messages=msgs,
             temperature=temperature,
             max_tokens=max_tokens,
             response_format={"type": "json_object"},
