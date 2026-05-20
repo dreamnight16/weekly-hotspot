@@ -76,6 +76,34 @@ def main():
         print("  没有事件通过分析，退出。")
         sys.exit(1)
 
+    # Quality gate: events must have real substance
+    def is_quality(event):
+        timeline = event.get("timeline", [])
+        evidence = event.get("evidence", [])
+        # Need enough timeline nodes and evidence
+        if len(timeline) < 3:
+            return False
+        if len(evidence) < 2:
+            return False
+        # At least some evidence must be verifiable (not all 待验证/不实)
+        verified = [e for e in evidence if e.get("authenticity") in ("真实", "存疑")]
+        if len(verified) == 0:
+            return False
+        # Summary must have substance
+        if len(event.get("dialecticalSummary", "")) < 30:
+            return False
+        return True
+
+    quality_events = [e for e in analyzed_events if is_quality(e)]
+    dropped = len(analyzed_events) - len(quality_events)
+    if dropped > 0:
+        print(f"  质量筛选: 剔除了 {dropped} 个证据不足或内容空洞的事件")
+    print(f"  最终入选: {len(quality_events)} 个")
+
+    if not quality_events:
+        print("  质量筛选后没有事件留存，退出。")
+        sys.exit(1)
+
     week_id = get_week_id()
     week_start, week_end = get_week_range()
 
@@ -83,7 +111,7 @@ def main():
         id=week_id,
         weekStart=week_start,
         weekEnd=week_end,
-        events=analyzed_events,
+        events=quality_events,
     )
 
     BLOG_CONTENT_DIR.mkdir(parents=True, exist_ok=True)
@@ -94,7 +122,7 @@ def main():
     )
 
     print(f"\n输出: {output_path}")
-    print(f"共 {len(analyzed_events)} 个事件")
+    print(f"共 {len(quality_events)} 个事件")
 
 
 if __name__ == "__main__":
