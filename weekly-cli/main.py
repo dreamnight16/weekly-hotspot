@@ -29,7 +29,7 @@ def main():
     # Phase 0: Scrape REAL hot topics from actual platforms
     print("[Phase 0] 抓取真实热点数据...")
     raw_topics = scrape_all()
-    print(f"  抓取到 {len(raw_topics)} 个话题（微博+知乎）")
+    print(f"  抓取到 {len(raw_topics)} 个话题（微博+知乎+HN）")
 
     if not raw_topics:
         print("  抓取失败，退出。请检查网络或 API 可用性。")

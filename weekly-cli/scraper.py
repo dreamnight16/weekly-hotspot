@@ -107,12 +107,53 @@ def scrape_zhihu(client: httpx.Client) -> list[dict]:
         return []
 
 
+def scrape_hackernews(client: httpx.Client) -> list[dict]:
+    """Scrape Hacker News top stories for international tech/society topics."""
+    try:
+        resp = client.get(
+            "https://hacker-news.firebaseio.com/v0/topstories.json",
+            timeout=15,
+        )
+        if resp.status_code != 200:
+            print(f"  [hn] HTTP {resp.status_code}")
+            return []
+        ids = resp.json()[:30]
+
+        results = []
+        for hid in ids:
+            try:
+                item = client.get(
+                    f"https://hacker-news.firebaseio.com/v0/item/{hid}.json",
+                    timeout=10,
+                ).json()
+                title = (item.get("title") or "").strip()
+                if not title:
+                    continue
+                url = item.get("url") or f"https://news.ycombinator.com/item?id={hid}"
+                score = item.get("score", 0)
+                results.append({
+                    "title": title,
+                    "summary": f"HN热度 {score} · {item.get('descendants', 0)} 条评论",
+                    "url": url,
+                    "source": "Hacker News",
+                    "raw_score": score,
+                })
+            except Exception:
+                continue
+        print(f"  [hn] scraped {len(results)} topics")
+        return results
+    except Exception as e:
+        print(f"  [hn] error: {e}")
+        return []
+
+
 def scrape_all() -> list[dict]:
     with httpx.Client(follow_redirects=True) as client:
         weibo = scrape_weibo(client)
         zhihu = scrape_zhihu(client)
+        hn = scrape_hackernews(client)
 
-    all_topics = weibo + zhihu
+    all_topics = weibo + zhihu + hn
 
     seen_titles = set()
     deduped = []
