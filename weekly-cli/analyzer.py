@@ -33,6 +33,8 @@ ANALYZER_PROMPT = """你是一个马列毛主义者。基于以下真实搜索�
 
 ## 输出 JSON 格式
 
+**以下字段只能填指定枚举值，一个字都不能多：sourceType、authenticity、classBias、type。所有解释性文字放到 aiReason 和 description 字段。**
+
 {{
   "id": "evt-{idx}",
   "title": "{title}",
@@ -56,20 +58,20 @@ ANALYZER_PROMPT = """你是一个马列毛主义者。基于以下真实搜索�
   "evidence": [
     {{
       "id": "ev-{idx}-序号",
-      "sourceType": "官媒 | 社交平台 | 一手材料 | 其他",
+      "sourceType": "【只填枚举值】官媒 / 社交平台 / 一手材料 / 其他",
       "sourceName": "来源名称",
       "sourceUrl": "真实 URL",
       "content": "证据摘要",
-      "authenticity": "真实 | 存疑 | 不实 | 待验证",
+      "authenticity": "【只填枚举值】真实 / 存疑 / 不实 / 待验证",
       "aiReason": "判断真伪的具体理由，要涉及信息来源和内容逻辑",
-      "classBias": "无产阶级立场 | 资产阶级立场 | 小资产阶级立场 | 帝国主义话语 | 待判断"
+      "classBias": "【只填枚举值，不加任何解释】无产阶级立场 / 资产阶级立场 / 小资产阶级立场 / 帝国主义话语 / 待判断"
     }}
   ],
   "edges": [
     {{
       "from": "tl-{idx}-序号",
       "to": "tl-{idx}-序号",
-      "type": "因果 | 关联 | 矛盾",
+      "type": "【只填枚举值】因果 / 关联 / 矛盾",
       "description": "两个节点之间的辩证关系——不是简单说'A导致B'，而是说明A与B之间的对立统一关系"
     }}
   ],
