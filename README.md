@@ -1,4 +1,9 @@
-# 每周热点深度梳理
+# 每周热点深度梳理 / Weekly Hotspot Analysis
+
+[![Tests](https://img.shields.io/badge/tests-14%20passed-green)](https://github.com/sixtdreanight/weekly-hotspot/actions)
+[![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
+
+AI-powered weekly hot news analysis. Automatically fetches trending news, filters through compliance, scores by impact & information gain, then produces structured timelines, evidence chains, and relationship graphs — rendered as investigative reports on the blog.
 
 AI 驱动的热点事件分析工具。每周自动抓取热点新闻，通过 DeepSeek 进行政审过滤、价值评分、深度梳理（时间线 + 证据链 + 关系网），输出结构化 JSON 到博客渲染。
 
