@@ -1,6 +1,6 @@
 # 每周热点深度梳理 / Weekly Hotspot Analysis
 
-[![Tests](https://img.shields.io/badge/tests-14%20passed-green)](https://github.com/sixtdreanight/weekly-hotspot/actions)
+[![Tests](https://img.shields.io/badge/tests-7%20passed%20%2B%207%20integration-green)](https://github.com/sixtdreanight/weekly-hotspot/actions)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 
 AI-powered weekly hot news analysis. Automatically fetches trending news, filters through compliance, scores by impact & information gain, then produces structured timelines, evidence chains, and relationship graphs — rendered as investigative reports on the blog.
