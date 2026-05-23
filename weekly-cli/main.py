@@ -1,3 +1,4 @@
+import random
 import sys
 import time
 from datetime import datetime, timedelta
@@ -82,17 +83,20 @@ def main():
         ]
         print(f"    找到 {len(search_results)} 条结果")
 
-        try:
-            result = analyze_event(client, event, search_results, idx=i + 1)
-            analyzed_events.append(result)
-        except Exception as e:
-            print(f"    分析失败: {e}，等待3秒后重试...")
-            time.sleep(3)
+        success = False
+        for attempt in range(2):
             try:
                 result = analyze_event(client, event, search_results, idx=i + 1)
                 analyzed_events.append(result)
-            except Exception as e2:
-                print(f"    重试仍失败: {e2}，跳过此事件")
+                success = True
+                break
+            except Exception as e:
+                if attempt < 1:
+                    wait = min(2 ** (attempt + 1), 30) + random.uniform(0, 2)
+                    print(f"    分析失败: {e}，等待{wait:.0f}秒后重试...")
+                    time.sleep(wait)
+                else:
+                    print(f"    重试仍失败: {e}，跳过此事件")
 
     if not analyzed_events:
         print("  没有事件通过分析，退出。")

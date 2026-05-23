@@ -37,16 +37,16 @@ class Edge(BaseModel):
 
 
 class Event(BaseModel):
-    id: str
-    title: str
+    id: str = Field(max_length=100)
+    title: str = Field(max_length=500)
     impactScore: int = Field(ge=1, le=5)
     infoGainScore: int = Field(ge=1, le=5)
-    summary: str
+    summary: str = Field(max_length=5000)
     classAnalysis: ClassAnalysis = Field(default_factory=ClassAnalysis)
-    dialecticalSummary: str = ""
-    timeline: list[TimelineNode] = Field(default_factory=list)
-    evidence: list[EvidenceNode] = Field(default_factory=list)
-    edges: list[Edge] = Field(default_factory=list)
+    dialecticalSummary: str = Field(default="", max_length=200)
+    timeline: list[TimelineNode] = Field(default_factory=list, max_length=50)
+    evidence: list[EvidenceNode] = Field(default_factory=list, max_length=100)
+    edges: list[Edge] = Field(default_factory=list, max_length=200)
 
 
 class WeeklyIssue(BaseModel):
