@@ -1,1 +1,1 @@
-from cn_scraper_utils import DeepSeekClient
+from chinese_scraper_utils import DeepSeekClient

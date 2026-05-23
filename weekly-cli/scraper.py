@@ -3,7 +3,7 @@ Scrape real hot topics from public APIs.
 No AI — just HTTP with proper headers.
 """
 import httpx
-from cn_scraper_utils import random_ua
+from chinese_scraper_utils import random_ua
 
 # Weibo needs a cookie set to pass the API gate. Getting it from the homepage first.
 WEIBO_HEADERS = {
