@@ -3,17 +3,18 @@ Scrape real hot topics from public APIs.
 No AI — just HTTP with proper headers.
 """
 import httpx
+from cn_scraper_utils import random_ua
 
 # Weibo needs a cookie set to pass the API gate. Getting it from the homepage first.
 WEIBO_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "User-Agent": random_ua(),
     "Accept": "application/json, text/plain, */*",
     "Referer": "https://weibo.com/",
     "X-Requested-With": "XMLHttpRequest",
 }
 
 ZHIHU_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "User-Agent": random_ua(),
     "Accept": "application/json, text/plain, */*",
     "Referer": "https://www.zhihu.com/hot",
     "Origin": "https://www.zhihu.com",
