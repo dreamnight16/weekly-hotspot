@@ -119,8 +119,9 @@ def scrape_hackernews(client: httpx.Client) -> list[dict]:
             return []
         ids = resp.json()[:30]
 
-        results = []
-        for hid in ids:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        def fetch_one(hid: int) -> dict | None:
             try:
                 item = client.get(
                     f"https://hacker-news.firebaseio.com/v0/item/{hid}.json",
@@ -128,18 +129,27 @@ def scrape_hackernews(client: httpx.Client) -> list[dict]:
                 ).json()
                 title = (item.get("title") or "").strip()
                 if not title:
-                    continue
+                    return None
                 url = item.get("url") or f"https://news.ycombinator.com/item?id={hid}"
                 score = item.get("score", 0)
-                results.append({
+                return {
                     "title": title,
                     "summary": f"HN热度 {score} · {item.get('descendants', 0)} 条评论",
                     "url": url,
                     "source": "Hacker News",
                     "raw_score": score,
-                })
+                }
             except Exception:
-                continue
+                return None
+
+        results = []
+        with ThreadPoolExecutor(max_workers=5) as pool:
+            futures = {pool.submit(fetch_one, hid): hid for hid in ids}
+            for future in as_completed(futures):
+                item = future.result()
+                if item:
+                    results.append(item)
+
         print(f"  [hn] scraped {len(results)} topics")
         return results
     except Exception as e:

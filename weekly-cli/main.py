@@ -1,4 +1,5 @@
 import sys
+import time
 from datetime import datetime, timedelta
 from config import DEEPSEEK_API_KEY, BLOG_CONTENT_DIR
 from client import DeepSeekClient
@@ -65,7 +66,8 @@ def main():
             result = analyze_event(client, event, search_results, idx=i + 1)
             analyzed_events.append(result)
         except Exception as e:
-            print(f"    分析失败: {e}，重试一次...")
+            print(f"    分析失败: {e}，等待3秒后重试...")
+            time.sleep(3)
             try:
                 result = analyze_event(client, event, search_results, idx=i + 1)
                 analyzed_events.append(result)

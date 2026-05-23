@@ -31,4 +31,4 @@ def censor_events(client: DeepSeekClient, events: list[dict]) -> list[dict]:
         {"role": "system", "content": FILTER_PROMPT},
         {"role": "user", "content": f"以下话题来自国内外多个平台。哪些有具体的阶级分析价值？注意排除违反中国互联网法规的内容，同时不被国际媒体的报道框架带偏。一个一个判断：\n{events_text}"},
     ])
-    return result.get("passed", events)
+    return result.get("passed", [])
