@@ -1,13 +1,19 @@
 import sys
 import time
 from datetime import datetime, timedelta
+
+from chinese_scraper_utils import (
+    DeepSeekClient,
+    scrape_weibo_hot,
+    scrape_zhihu_hot,
+    scrape_hackernews_top,
+    search_web,
+)
+
 from config import DEEPSEEK_API_KEY, BLOG_CONTENT_DIR
-from client import DeepSeekClient
 from censor import censor_events
 from scorer import score_and_select
 from analyzer import analyze_event
-from scraper import scrape_all
-from searcher import search_event
 from schema import WeeklyIssue
 
 
@@ -29,16 +35,27 @@ def main():
 
     # Phase 0: Scrape REAL hot topics from actual platforms
     print("[Phase 0] 抓取真实热点数据...")
-    raw_topics = scrape_all()
+    raw_topics = scrape_weibo_hot() + scrape_zhihu_hot() + scrape_hackernews_top()
     print(f"  抓取到 {len(raw_topics)} 个话题（微博+知乎+HN）")
 
     if not raw_topics:
         print("  抓取失败，退出。请检查网络或 API 可用性。")
         sys.exit(1)
 
+    # Deduplicate topics by title
+    seen = set()
+    deduped = []
+    for t in raw_topics:
+        key = t.title.lower().replace(" ", "")
+        if key not in seen:
+            seen.add(key)
+            deduped.append(t)
+    raw_topics = deduped
+    print(f"  去重后: {len(raw_topics)} 个话题")
+
     # Convert to event format for pipeline
     raw_events = [
-        {"title": t["title"], "summary": f"{t['summary']}\n来源: {t['url']}"}
+        {"title": t.title, "summary": f"{t.summary}\n来源: {t.url}"}
         for t in raw_topics
     ]
 
@@ -59,7 +76,10 @@ def main():
         print(f"  分析 ({i+1}/{len(selected)}): {event['title']}")
         # Search web for real info on this event
         print(f"    搜索中...")
-        search_results = search_event(event["title"])
+        search_results = [
+            {"title": r.title, "url": r.url, "snippet": r.snippet}
+            for r in search_web(event["title"], max_results=10)
+        ]
         print(f"    找到 {len(search_results)} 条结果")
 
         try:
@@ -82,16 +102,13 @@ def main():
     def is_quality(event):
         timeline = event.get("timeline", [])
         evidence = event.get("evidence", [])
-        # Need enough timeline nodes and evidence
         if len(timeline) < 3:
             return False
         if len(evidence) < 2:
             return False
-        # At least some evidence must be verifiable (not all 待验证/不实)
         verified = [e for e in evidence if e.get("authenticity") in ("真实", "存疑")]
         if len(verified) == 0:
             return False
-        # Summary must have substance
         if len(event.get("dialecticalSummary", "")) < 30:
             return False
         return True

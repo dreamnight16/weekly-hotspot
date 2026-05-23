@@ -1,7 +1,7 @@
 """
 MLM Relevance Filter — 基于阶级相关性筛选，不套标签。
 """
-from client import DeepSeekClient
+from chinese_scraper_utils import DeepSeekClient
 
 
 FILTER_PROMPT = """你是一个马列毛主义者。审查以下热点话题是否有分析价值。

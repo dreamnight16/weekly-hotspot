@@ -1,4 +1,4 @@
-from client import DeepSeekClient
+from chinese_scraper_utils import DeepSeekClient
 
 
 SCORER_PROMPT = """你是一个马列毛主义者。评估以下事件的分析价值，选出最值得深入分析的事件。

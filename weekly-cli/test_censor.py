@@ -1,6 +1,6 @@
 import os
 import pytest
-from client import DeepSeekClient
+from chinese_scraper_utils import DeepSeekClient
 from censor import censor_events
 
 

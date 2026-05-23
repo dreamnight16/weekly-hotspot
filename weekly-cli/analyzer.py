@@ -1,4 +1,4 @@
-from client import DeepSeekClient
+from chinese_scraper_utils import DeepSeekClient
 
 
 ANALYZER_PROMPT = """你是一个马列毛主义者。基于以下真实搜索结果，对一个具体社会事件进行阶级分析。

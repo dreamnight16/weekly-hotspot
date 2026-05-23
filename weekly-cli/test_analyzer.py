@@ -1,6 +1,6 @@
 import os
 import pytest
-from client import DeepSeekClient
+from chinese_scraper_utils import DeepSeekClient
 from analyzer import analyze_event
 from schema import Event
 
