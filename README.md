@@ -62,3 +62,8 @@ cd weekly-cli && pip install -r requirements.txt && python main.py
 - **后端**: Python 3 + openai SDK + Pydantic
 - **前端**: Astro 4 + React 18 + TypeScript + Tailwind CSS
 - **可视化**: react-force-graph-2d (D3-force)
+
+## Related / 相关项目
+
+- [chinese-scraper-utils](https://github.com/sixtdreanight/chinese-scraper-utils) — Shared utilities used by this project
+- [myBlog](https://github.com/sixtdreanight/myBlog) — Weekly reports published at dreamnight.net.cn
