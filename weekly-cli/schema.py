@@ -2,6 +2,31 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 
+# ---- Pipeline intermediate models ----
+
+class RawEvent(BaseModel):
+    """Phase 0 输出：原始抓取事件"""
+    title: str
+    summary: str
+
+
+class CensoredEvent(BaseModel):
+    """Phase 1 输出：通过政审的事件"""
+    title: str
+    summary: str
+
+
+class ScoredEvent(BaseModel):
+    """Phase 2 输出：评分后入选的事件"""
+    title: str
+    summary: str
+    impactScore: int = Field(ge=1, le=5)
+    infoGainScore: int = Field(ge=1, le=5)
+
+
+# ---- Output models ----
+
+
 class ClassAnalysis(BaseModel):
     classNature: str = ""
     contradiction: str = ""
