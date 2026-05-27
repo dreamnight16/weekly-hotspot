@@ -1,0 +1,41 @@
+[project]
+name = "weekly-hotspot"
+version = "0.1.0"
+description = "AI-driven weekly hotspot deep analysis — censorship filter, scoring, evidence chain extraction"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "DreamNight", email = "support@dreamnight.net.cn" }
+]
+keywords = ["hotspot", "news", "analysis", "deepseek", "llm", "weekly"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "chinese-scraper-utils>=0.2.1",
+    "openai>=1.0.0",
+    "pydantic>=2.0.0",
+    "httpx>=0.28",
+    "ddgs>=7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/sixtdreanight/weekly-hotspot"
+Repository = "https://github.com/sixtdreanight/weekly-hotspot.git"
+Issues = "https://github.com/sixtdreanight/weekly-hotspot/issues"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
