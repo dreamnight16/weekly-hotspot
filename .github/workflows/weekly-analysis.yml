@@ -20,21 +20,21 @@ jobs:
       - name: Install dependencies
         run: pip install -r weekly-cli/requirements.txt
 
-      - name: Checkout myBlog
+      - name: Checkout Blog-mizuki
         uses: actions/checkout@v4
         with:
-          repository: sixtdreanight/myBlog
-          path: myblog
+          repository: sixtdreanight/Blog-mizuki
+          path: blog
           token: ${{ secrets.BLOG_PAT }}
 
       - name: Run weekly analysis
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          BLOG_CONTENT_DIR: ${{ github.workspace }}/myblog/src/content/weekly
+          BLOG_CONTENT_DIR: ${{ github.workspace }}/blog/src/content/weekly
         run: python weekly-cli/main.py
 
-      - name: Push to myBlog
-        working-directory: myblog
+      - name: Push to Blog-mizuki
+        working-directory: blog
         run: |
           git config user.name "weekly-bot"
           git config user.email "bot@dreamnight.net.cn"
