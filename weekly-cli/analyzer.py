@@ -1,4 +1,13 @@
 from chinese_scraper_utils import DeepSeekClient
+import re
+
+
+def _sanitize_for_prompt(text: str) -> str:
+    """Strip control characters and limit length for LLM prompt safety."""
+    if not text:
+        return ""
+    text = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "", text)
+    return text[:500]
 
 
 ANALYZER_PROMPT = """你是一个马列毛主义者。基于以下真实搜索结果，对一个具体社会事件进行阶级分析。
@@ -88,9 +97,9 @@ def build_search_results_text(results: list[dict]) -> str:
     for i, r in enumerate(results):
         # XML 边界标记防 LLM 提示注入
         lines.append(f"<result_{i+1}>")
-        lines.append(f"  <title>{r.get('title', '')}</title>")
-        lines.append(f"  <url>{r.get('url', '')}</url>")
-        lines.append(f"  <snippet>{r.get('snippet', '')}</snippet>")
+        lines.append(f"  <title>{_sanitize_for_prompt(r.get('title', ''))}</title>")
+        lines.append(f"  <url>{_sanitize_for_prompt(r.get('url', ''))}</url>")
+        lines.append(f"  <snippet>{_sanitize_for_prompt(r.get('snippet', ''))}</snippet>")
         lines.append(f"</result_{i+1}>")
     return "\n".join(lines)
 

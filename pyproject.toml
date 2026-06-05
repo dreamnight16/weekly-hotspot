@@ -1,3 +1,5 @@
+# NOTE: Pin critical deps to exact versions with hashes for production.
+#   pip hash chinese_scraper_utils-0.2.6-py3-none-any.whl
 [project]
 name = "weekly-hotspot"
 version = "0.1.0"
@@ -18,7 +20,7 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "chinese-scraper-utils>=0.2.1",
+    "chinese-scraper-utils==0.2.6",
     "openai>=1.0.0",
     "pydantic>=2.0.0",
     "httpx>=0.28",

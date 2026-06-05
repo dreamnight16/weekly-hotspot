@@ -23,5 +23,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r weekly-cli/requirements.txt
           pip install pytest
+      - name: Security scan
+        run: |
+          pip install bandit
+          bandit -r weekly-cli/ -ll
       - name: Run tests
         run: python -m pytest weekly-cli/ -v

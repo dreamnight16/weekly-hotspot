@@ -5,7 +5,9 @@ from chinese_scraper_utils import DeepSeekClient
 
 @pytest.fixture
 def client():
-    api_key = os.environ.get("DEEPSEEK_API_KEY", "test-key")
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    if not api_key:
+        pytest.skip("DEEPSEEK_API_KEY not set")
     return DeepSeekClient(api_key)
 
 
