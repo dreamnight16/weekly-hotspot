@@ -38,12 +38,11 @@ jobs:
         run: |
           git config user.name "weekly-bot"
           git config user.email "bot@dreamnight.net.cn"
-          git remote set-url origin https://x-access-token:${{ secrets.BLOG_PAT }}@github.com/sixtdreanight/Blog-mizuki.git
           git add src/content/weekly/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
             WEEK=$(date +%Y-W%V)
             git commit -m "chore: update weekly hotspot $WEEK"
-            git push
+            git -c http.extraheader= push https://x-access-token:${{ secrets.BLOG_PAT }}@github.com/sixtdreanight/Blog-mizuki.git
           fi
