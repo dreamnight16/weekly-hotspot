@@ -7,7 +7,8 @@ if not DEEPSEEK_API_KEY:
     print("错误: 未设置 DEEPSEEK_API_KEY 环境变量", file=sys.stderr)
     sys.exit(1)
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
-DEEPSEEK_MODEL = "deepseek-chat"
+DEEPSEEK_MODEL = "deepseek-v4-flash"
+DEEPSEEK_MODEL_PRO = "deepseek-v4-pro"
 
 _default_blog_dir = Path.home() / "Documents" / "myBlog" / "src" / "content" / "weekly"
 BLOG_CONTENT_DIR = Path(os.environ.get("BLOG_CONTENT_DIR", str(_default_blog_dir)))

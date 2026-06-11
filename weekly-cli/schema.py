@@ -61,6 +61,40 @@ class Edge(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+# ---- Phase 4: Synthesis models ----
+
+
+class CrossCuttingTheme(BaseModel):
+    name: str = Field(max_length=80)
+    description: str = Field(max_length=500)
+    relatedEventIds: list[str] = Field(default_factory=list)
+    significance: str = Field(max_length=500)
+
+
+class IdentifiedTrend(BaseModel):
+    name: str = Field(max_length=80)
+    description: str = Field(max_length=500)
+    direction: Literal["上升", "下降", "转型", "激化", "缓和"]
+    evidenceEventIds: list[str] = Field(default_factory=list)
+
+
+class ContradictionInMotion(BaseModel):
+    contradiction: str = Field(max_length=300)
+    opposingForces: str = Field(max_length=500)
+    eventsInvolved: list[str] = Field(default_factory=list)
+    currentState: Literal["对抗激化", "暂时缓和", "向新形态转化", "隐性积累"]
+    outlook: str = Field(max_length=500)
+
+
+class WeeklySynthesis(BaseModel):
+    weeklyNarrative: str = Field(max_length=2000)
+    crossCuttingThemes: list[CrossCuttingTheme] = Field(default_factory=list, max_length=5)
+    trends: list[IdentifiedTrend] = Field(default_factory=list, max_length=5)
+    contradictionsInMotion: list[ContradictionInMotion] = Field(default_factory=list, max_length=5)
+    globalAssessment: str = Field(default="", max_length=1000)
+    dataGaps: list[str] = Field(default_factory=list, max_length=5)
+
+
 class Event(BaseModel):
     id: str = Field(max_length=100)
     title: str = Field(max_length=500)
@@ -79,3 +113,4 @@ class WeeklyIssue(BaseModel):
     weekStart: str
     weekEnd: str
     events: list[Event] = Field(default_factory=list)
+    synthesis: WeeklySynthesis | None = Field(default=None)

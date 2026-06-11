@@ -38,7 +38,7 @@ jobs:
         run: |
           git config user.name "weekly-bot"
           git config user.email "bot@dreamnight.net.cn"
-          git add src/content/weekly/
+          git add src/content/weekly/ src/content/posts/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

@@ -1,5 +1,5 @@
 import json
-from schema import WeeklyIssue, Event, ClassAnalysis
+from schema import WeeklyIssue, WeeklySynthesis, Event, ClassAnalysis
 
 SAMPLE_EVENT: dict = {
     "id": "evt-1",
@@ -102,3 +102,32 @@ def test_class_analysis_default():
     ca = ClassAnalysis()
     assert ca.classNature == ""
     assert ca.contradiction == ""
+
+
+def test_weekly_issue_with_synthesis():
+    syn = WeeklySynthesis(
+        weeklyNarrative="本周多个事件反映了科技资本集中化趋势。",
+        crossCuttingThemes=[],
+        trends=[],
+        contradictionsInMotion=[],
+        globalAssessment="本周核心矛盾处于积累阶段。",
+        dataGaps=["缺乏内部决策信息"],
+    )
+    issue = WeeklyIssue(
+        id="2026-W24",
+        weekStart="2026-06-08",
+        weekEnd="2026-06-14",
+        events=[Event(**SAMPLE_EVENT)],
+        synthesis=syn,
+    )
+    json_str = issue.model_dump_json(indent=2, ensure_ascii=False, by_alias=True)
+    parsed = WeeklyIssue(**json.loads(json_str))
+    assert parsed.synthesis is not None
+    assert len(parsed.synthesis.weeklyNarrative) > 10
+    assert parsed.synthesis.globalAssessment == "本周核心矛盾处于积累阶段。"
+
+
+def test_weekly_issue_without_synthesis():
+    """旧 JSON 不含 synthesis 字段也能解析。"""
+    issue = WeeklyIssue(**SAMPLE_ISSUE)
+    assert issue.synthesis is None

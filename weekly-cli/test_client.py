@@ -12,7 +12,7 @@ def client():
 
 
 def test_client_initialization(client):
-    assert client.model == "deepseek-chat"
+    assert client.model == "deepseek-v4-flash"
     assert client.base_url == "https://api.deepseek.com"
 
 
