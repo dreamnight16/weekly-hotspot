@@ -49,17 +49,17 @@ prompts/              # Externalized LLM prompt templates
 
 ```bash
 export DEEPSEEK_API_KEY=sk-your-key
-export BLOG_CONTENT_DIR=/path/to/myBlog/src/content/weekly
+export BLOG_CONTENT_DIR=/path/to/Blog-mizuki/src/content/weekly
 cd weekly-cli && pip install -r requirements.txt && python main.py
 ```
 
 ### Automated (GitHub Actions)
 
-Runs every Monday 00:00 UTC. Results pushed to myBlog repo.
+Runs every Monday 00:00 UTC. Results pushed to Blog-mizuki repo.
 
 Required GitHub Secrets:
 - `DEEPSEEK_API_KEY` — DeepSeek API key
-- `BLOG_PAT` — Personal Access Token with write access to myBlog repo
+- `BLOG_PAT` — Personal Access Token with write access to Blog-mizuki repo
 
 ## Tech Stack
 
@@ -71,7 +71,7 @@ Required GitHub Secrets:
 ## Related
 
 - [chinese-scraper-utils](https://github.com/sixtdreanight/chinese-scraper-utils) — Shared utilities used by this project
-- [myBlog](https://github.com/sixtdreanight/myBlog) — Weekly reports published at dreamnight.net.cn
+- [Blog-mizuki](https://github.com/sixtdreanight/Blog-mizuki) — Weekly reports published at dreamnight.net.cn
 
 ---
 

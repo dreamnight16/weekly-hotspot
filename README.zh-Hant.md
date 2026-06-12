@@ -49,17 +49,17 @@ prompts/              # 外部化 LLM 提示詞模板
 
 ```bash
 export DEEPSEEK_API_KEY=sk-your-key
-export BLOG_CONTENT_DIR=/path/to/myBlog/src/content/weekly
+export BLOG_CONTENT_DIR=/path/to/Blog-mizuki/src/content/weekly
 cd weekly-cli && pip install -r requirements.txt && python main.py
 ```
 
 ### 自動執行（GitHub Actions）
 
-每週一 00:00 UTC 自動執行，結果推送到 myBlog repo。
+每週一 00:00 UTC 自動執行，結果推送到 Blog-mizuki repo。
 
 需要設定 GitHub Secrets：
 - `DEEPSEEK_API_KEY` — DeepSeek API 金鑰
-- `BLOG_PAT` — 對 myBlog repo 有寫入權限的 Personal Access Token
+- `BLOG_PAT` — 對 Blog-mizuki repo 有寫入權限的 Personal Access Token
 
 ## 技術棧
 
@@ -71,7 +71,7 @@ cd weekly-cli && pip install -r requirements.txt && python main.py
 ## 相關專案
 
 - [chinese-scraper-utils](https://github.com/sixtdreanight/chinese-scraper-utils) — 本專案使用的通用工具庫
-- [myBlog](https://github.com/sixtdreanight/myBlog) — 每週報告發佈在 dreamnight.net.cn
+- [Blog-mizuki](https://github.com/sixtdreanight/Blog-mizuki) — 每週報告發佈在 dreamnight.net.cn
 
 ---
 
