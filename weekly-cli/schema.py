@@ -1,5 +1,5 @@
-from typing import Literal, Optional
-from pydantic import BaseModel, Field
+from typing import Literal, Optional, Self
+from pydantic import BaseModel, Field, model_validator
 
 
 # ---- Pipeline intermediate models ----
@@ -94,6 +94,22 @@ class WeeklySynthesis(BaseModel):
     globalAssessment: str = Field(default="", max_length=1000)
     dataGaps: list[str] = Field(default_factory=list, max_length=5)
 
+    @model_validator(mode="after")
+    def _validate_synthesis_refs(self) -> Self:
+        for i, theme in enumerate(self.crossCuttingThemes):
+            if not theme.relatedEventIds:
+                raise ValueError(f"crossCuttingThemes[{i}].relatedEventIds must not be empty")
+
+        for i, trend in enumerate(self.trends):
+            if not trend.evidenceEventIds:
+                raise ValueError(f"trends[{i}].evidenceEventIds must not be empty")
+
+        for i, c in enumerate(self.contradictionsInMotion):
+            if not c.eventsInvolved:
+                raise ValueError(f"contradictionsInMotion[{i}].eventsInvolved must not be empty")
+
+        return self
+
 
 class Event(BaseModel):
     id: str = Field(max_length=100)
@@ -107,6 +123,25 @@ class Event(BaseModel):
     evidence: list[EvidenceNode] = Field(default_factory=list, max_length=100)
     edges: list[Edge] = Field(default_factory=list, max_length=200)
 
+    @model_validator(mode="after")
+    def _validate_cross_ids(self) -> Self:
+        timeline_ids = {t.id for t in self.timeline}
+        evidence_ids = {e.id for e in self.evidence}
+        valid_refs = timeline_ids | evidence_ids
+
+        for i, edge in enumerate(self.edges):
+            if edge.from_ not in valid_refs:
+                raise ValueError(f"Edge[{i}].from='{edge.from_}' does not reference any timeline/evidence id")
+            if edge.to not in valid_refs:
+                raise ValueError(f"Edge[{i}].to='{edge.to}' does not reference any timeline/evidence id")
+
+        for i, node in enumerate(self.timeline):
+            for j, ref in enumerate(node.evidenceRefs):
+                if ref not in evidence_ids:
+                    raise ValueError(f"Timeline[{i}].evidenceRefs[{j}]='{ref}' does not reference any evidence id")
+
+        return self
+
 
 class WeeklyIssue(BaseModel):
     id: str
@@ -114,3 +149,27 @@ class WeeklyIssue(BaseModel):
     weekEnd: str
     events: list[Event] = Field(default_factory=list)
     synthesis: WeeklySynthesis | None = Field(default=None)
+
+    @model_validator(mode="after")
+    def _validate_synthesis_event_ids(self) -> Self:
+        if self.synthesis is None:
+            return self
+
+        event_ids = {e.id for e in self.events}
+
+        for i, theme in enumerate(self.synthesis.crossCuttingThemes):
+            for j, eid in enumerate(theme.relatedEventIds):
+                if eid not in event_ids:
+                    raise ValueError(f"synthesis.crossCuttingThemes[{i}].relatedEventIds[{j}]='{eid}' does not match any event id")
+
+        for i, trend in enumerate(self.synthesis.trends):
+            for j, eid in enumerate(trend.evidenceEventIds):
+                if eid not in event_ids:
+                    raise ValueError(f"synthesis.trends[{i}].evidenceEventIds[{j}]='{eid}' does not match any event id")
+
+        for i, c in enumerate(self.synthesis.contradictionsInMotion):
+            for j, eid in enumerate(c.eventsInvolved):
+                if eid not in event_ids:
+                    raise ValueError(f"synthesis.contradictionsInMotion[{i}].eventsInvolved[{j}]='{eid}' does not match any event id")
+
+        return self

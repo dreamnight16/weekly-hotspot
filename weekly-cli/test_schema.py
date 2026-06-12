@@ -1,4 +1,5 @@
 import json
+import pytest
 from schema import WeeklyIssue, WeeklySynthesis, Event, ClassAnalysis
 
 SAMPLE_EVENT: dict = {
@@ -52,6 +53,7 @@ SAMPLE_ISSUE = {
 }
 
 
+@pytest.mark.unit
 def test_event_validation():
     event = Event(**SAMPLE_EVENT)
     assert event.impactScore == 4
@@ -61,12 +63,14 @@ def test_event_validation():
     assert len(event.dialecticalSummary) > 0
 
 
+@pytest.mark.unit
 def test_weekly_issue_validation():
     issue = WeeklyIssue(**SAMPLE_ISSUE)
     assert issue.id == "2026-W21"
     assert len(issue.events) == 1
 
 
+@pytest.mark.unit
 def test_invalid_score_rejected():
     try:
         Event(**{**SAMPLE_EVENT, "impactScore": 6})
@@ -75,6 +79,7 @@ def test_invalid_score_rejected():
         pass
 
 
+@pytest.mark.unit
 def test_invalid_authenticity_rejected():
     try:
         bad_evidence = {
@@ -88,6 +93,7 @@ def test_invalid_authenticity_rejected():
         pass
 
 
+@pytest.mark.unit
 def test_json_roundtrip():
     issue = WeeklyIssue(**SAMPLE_ISSUE)
     json_str = issue.model_dump_json(indent=2, ensure_ascii=False, by_alias=True)
@@ -98,12 +104,14 @@ def test_json_roundtrip():
     assert parsed.events[0].edges[0].from_ == "tl-1"
 
 
+@pytest.mark.unit
 def test_class_analysis_default():
     ca = ClassAnalysis()
     assert ca.classNature == ""
     assert ca.contradiction == ""
 
 
+@pytest.mark.unit
 def test_weekly_issue_with_synthesis():
     syn = WeeklySynthesis(
         weeklyNarrative="本周多个事件反映了科技资本集中化趋势。",
@@ -127,7 +135,140 @@ def test_weekly_issue_with_synthesis():
     assert parsed.synthesis.globalAssessment == "本周核心矛盾处于积累阶段。"
 
 
+@pytest.mark.unit
 def test_weekly_issue_without_synthesis():
     """旧 JSON 不含 synthesis 字段也能解析。"""
     issue = WeeklyIssue(**SAMPLE_ISSUE)
     assert issue.synthesis is None
+
+
+# ---- Cross-ID validation tests ----
+
+@pytest.mark.unit
+def test_cross_id_valid_event():
+    """Valid event with consistent cross-references passes."""
+    event = Event(**SAMPLE_EVENT)
+    assert event.edges[0].from_ == "tl-1"
+
+
+@pytest.mark.unit
+def test_cross_id_invalid_edge_from():
+    """Edge.from referencing nonexistent id raises ValueError."""
+    bad = {**SAMPLE_EVENT, "edges": [{"from": "tl-nonexistent", "to": "ev-1", "type": "关联", "description": "bad"}]}
+    with pytest.raises(ValueError, match="does not reference"):
+        Event(**bad)
+
+
+@pytest.mark.unit
+def test_cross_id_invalid_edge_to():
+    """Edge.to referencing nonexistent id raises ValueError."""
+    bad = {**SAMPLE_EVENT, "edges": [{"from": "tl-1", "to": "ev-nonexistent", "type": "关联", "description": "bad"}]}
+    with pytest.raises(ValueError, match="does not reference"):
+        Event(**bad)
+
+
+@pytest.mark.unit
+def test_cross_id_invalid_evidence_ref():
+    """Timeline evidenceRefs referencing nonexistent evidence raises ValueError."""
+    bad_timeline = {
+        **SAMPLE_EVENT["timeline"][0],
+        "evidenceRefs": ["ev-nonexistent"],
+    }
+    bad = {**SAMPLE_EVENT, "timeline": [bad_timeline]}
+    with pytest.raises(ValueError, match="does not reference"):
+        Event(**bad)
+
+
+@pytest.mark.unit
+def test_cross_id_invalid_synthesis_event_id():
+    """WeeklyIssue with synthesis referencing nonexistent event id raises."""
+    event = Event(**SAMPLE_EVENT)
+    syn = WeeklySynthesis(
+        weeklyNarrative="测试",
+        crossCuttingThemes=[{
+            "name": "主题", "description": "描述",
+            "relatedEventIds": ["evt-nonexistent"],
+            "significance": "意义",
+        }],
+        trends=[],
+        contradictionsInMotion=[],
+        globalAssessment="评估",
+        dataGaps=[],
+    )
+    with pytest.raises(ValueError, match="does not match any event id"):
+        WeeklyIssue(
+            id="2026-W99",
+            weekStart="2026-01-01",
+            weekEnd="2026-01-07",
+            events=[event],
+            synthesis=syn,
+        )
+
+
+@pytest.mark.unit
+def test_cross_id_invalid_trend_event_id():
+    """Trend evidenceEventIds with bad ref raises."""
+    event = Event(**SAMPLE_EVENT)
+    syn = WeeklySynthesis(
+        weeklyNarrative="测试",
+        crossCuttingThemes=[],
+        trends=[{
+            "name": "趋势", "description": "描述",
+            "direction": "上升",
+            "evidenceEventIds": ["evt-nonexistent"],
+        }],
+        contradictionsInMotion=[],
+        globalAssessment="评估",
+        dataGaps=[],
+    )
+    with pytest.raises(ValueError, match="does not match any event id"):
+        WeeklyIssue(
+            id="2026-W99",
+            weekStart="2026-01-01",
+            weekEnd="2026-01-07",
+            events=[event],
+            synthesis=syn,
+        )
+
+
+@pytest.mark.unit
+def test_cross_id_invalid_contradiction_ids():
+    """Contradiction eventsInvolved with bad ref raises."""
+    event = Event(**SAMPLE_EVENT)
+    syn = WeeklySynthesis(
+        weeklyNarrative="测试",
+        crossCuttingThemes=[],
+        trends=[],
+        contradictionsInMotion=[{
+            "contradiction": "矛盾", "opposingForces": "双方",
+            "eventsInvolved": ["evt-nonexistent"],
+            "currentState": "对抗激化", "outlook": "走向",
+        }],
+        globalAssessment="评估",
+        dataGaps=[],
+    )
+    with pytest.raises(ValueError, match="does not match any event id"):
+        WeeklyIssue(
+            id="2026-W99",
+            weekStart="2026-01-01",
+            weekEnd="2026-01-07",
+            events=[event],
+            synthesis=syn,
+        )
+
+
+@pytest.mark.unit
+def test_synthesis_empty_refs_rejected():
+    """Synthesis with empty relatedEventIds raises."""
+    with pytest.raises(ValueError, match="relatedEventIds must not be empty"):
+        WeeklySynthesis(
+            weeklyNarrative="测试",
+            crossCuttingThemes=[{
+                "name": "主题", "description": "描述",
+                "relatedEventIds": [],
+                "significance": "意义",
+            }],
+            trends=[],
+            contradictionsInMotion=[],
+            globalAssessment="评估",
+        )

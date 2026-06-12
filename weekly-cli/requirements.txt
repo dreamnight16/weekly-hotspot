@@ -1,4 +1,4 @@
-chinese-scraper-utils>=0.2.1
+chinese-scraper-utils==0.2.6
 openai>=1.0.0
 pydantic>=2.0.0
 httpx>=0.28

@@ -11,11 +11,13 @@ def client():
     return DeepSeekClient(api_key)
 
 
+@pytest.mark.integration
 def test_client_initialization(client):
     assert client.model == "deepseek-v4-flash"
     assert client.base_url == "https://api.deepseek.com"
 
 
+@pytest.mark.integration
 def test_chat_returns_valid_json():
     api_key = os.environ.get("DEEPSEEK_API_KEY")
     if not api_key:

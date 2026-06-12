@@ -22,10 +22,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r weekly-cli/requirements.txt
-          pip install pytest
+          pip install pytest pytest-cov
       - name: Security scan
         run: |
           pip install bandit
           bandit -r weekly-cli/ -ll
       - name: Run tests
-        run: python -m pytest weekly-cli/ -v
+        run: python -m pytest weekly-cli/ -v --cov=weekly-cli --cov-report=term-missing --cov-fail-under=80 -m "not integration"

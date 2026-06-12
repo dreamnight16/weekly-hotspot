@@ -1,5 +1,7 @@
+import logging
 import os
 import sys
+import uuid
 from pathlib import Path
 
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
@@ -20,3 +22,23 @@ if "BLOG_CONTENT_DIR" in os.environ:
     if not str(resolved).startswith(str(home)):
         print(f"错误: BLOG_CONTENT_DIR 必须在用户目录下: {resolved}", file=sys.stderr)
         sys.exit(1)
+
+RUN_ID = uuid.uuid4().hex[:12]
+
+
+def setup_logging(verbose: bool = False) -> None:
+    """Configure structured logging to stdout."""
+    level = logging.DEBUG if verbose else logging.INFO
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter(
+        "[%(levelname)s] %(asctime)s [%(name)s] %(message)s",
+        datefmt="%H:%M:%S",
+    ))
+    root = logging.getLogger("weekly")
+    root.setLevel(level)
+    root.handlers = [handler]
+
+
+def get_logger(name: str) -> logging.Logger:
+    """Get a child logger under the 'weekly' namespace."""
+    return logging.getLogger(f"weekly.{name}")

@@ -13,58 +13,56 @@ from chinese_scraper_utils import (
 from search import search_event
 
 from cache import save_cache, load_cache
-from config import DEEPSEEK_API_KEY, DEEPSEEK_MODEL, DEEPSEEK_MODEL_PRO, BLOG_CONTENT_DIR
+from config import (
+    DEEPSEEK_API_KEY, DEEPSEEK_MODEL, DEEPSEEK_MODEL_PRO, BLOG_CONTENT_DIR,
+    setup_logging, get_logger, RUN_ID,
+)
 from censor import censor_events
 from scorer import score_and_select
 from analyzer import analyze_event
 from article import generate_article
 from schema import WeeklyIssue, WeeklySynthesis
 from synthesizer import synthesize_events
+from utils import get_week_id, get_week_range, retry_call, is_quality
+
+logger = get_logger("pipeline")
 
 
-def get_week_id() -> str:
-    today = datetime.now()
-    iso = today.isocalendar()
-    return f"{today.year}-W{iso.week:02d}"
+def main(argv: list[str] | None = None):
+    args = parse_args(argv)
+    setup_logging(verbose=args.verbose)
+    logger.info("Run %s started", RUN_ID)
 
+    phase_start: dict[str, float] = {}
 
-def get_week_range() -> tuple[str, str]:
-    today = datetime.now()
-    monday = today - timedelta(days=today.weekday())
-    sunday = monday + timedelta(days=6)
-    return monday.strftime("%Y-%m-%d"), sunday.strftime("%Y-%m-%d")
+    def _phase_begin(name: str):
+        phase_start[name] = time.time()
 
+    def _phase_done(name: str):
+        elapsed = time.time() - phase_start.get(name, time.time())
+        logger.info("[%s] 耗时 %.1fs", name, elapsed)
 
-def _retry_call(fn, *args, phase: str = "", max_retries: int = 2, **kwargs):
-    """带退避重试的调用封装。"""
-    for attempt in range(max_retries):
-        try:
-            return fn(*args, **kwargs)
-        except Exception as e:
-            if attempt < max_retries - 1:
-                wait = 2 ** attempt + random.uniform(0, 1)
-                print(f"  [{phase}] 失败: {e}，{wait:.0f}s 后重试...")
-                time.sleep(wait)
-            else:
-                raise
-
-
-def main():
     flash_client = DeepSeekClient(DEEPSEEK_API_KEY, model=DEEPSEEK_MODEL)
     pro_client = DeepSeekClient(DEEPSEEK_API_KEY, model=DEEPSEEK_MODEL_PRO, thinking=True)
 
     # Phase 0: Scrape REAL hot topics from actual platforms
-    print("[Phase 0] 抓取真实热点数据...")
-    raw_topics = scrape_weibo_hot() + scrape_zhihu_hot() + scrape_hackernews_top()
-    print(f"  抓取到 {len(raw_topics)} 个话题（微博+知乎+HN）")
+    _phase_begin("Phase 0")
+    logger.info("[Phase 0] 抓取真实热点数据...")
+
+    if args.skip_scrape:
+        raw_topics = []
+        logger.info("  --skip-scrape: 跳过抓取")
+    else:
+        raw_topics = scrape_weibo_hot() + scrape_zhihu_hot() + scrape_hackernews_top()
+    logger.info("  抓取到 %d 个话题（微博+知乎+HN）", len(raw_topics))
 
     if not raw_topics:
         cached = load_cache()
         if cached:
-            print(f"  抓取全失败，使用缓存数据（{len(cached)} 个话题）")
+            logger.info("  抓取全失败，使用缓存数据（%d 个话题）", len(cached))
             raw_events = cached
         else:
-            print("  抓取失败且无缓存，退出。请检查网络。")
+            logger.critical("  抓取失败且无缓存，退出。请检查网络。")
             sys.exit(1)
     else:
         raw_events = None  # will be set below after dedup
@@ -79,7 +77,7 @@ def main():
                 seen.add(key)
                 deduped.append(t)
         raw_topics = deduped
-        print(f"  去重后: {len(raw_topics)} 个话题")
+        logger.info("  去重后: %d 个话题", len(raw_topics))
 
         # Convert to event format for pipeline
         raw_events = [
@@ -87,38 +85,44 @@ def main():
             for t in raw_topics
         ]
         save_cache(raw_events)
+    _phase_done("Phase 0")
 
     # Phase 1: Political review
-    print("[Phase 1] 政审过滤...")
-    passed = _retry_call(censor_events, flash_client, raw_events, phase="Phase 1")
-    print(f"  通过审查: {len(passed)} 个")
+    _phase_begin("Phase 1")
+    logger.info("[Phase 1] 政审过滤...")
+    passed = retry_call(censor_events, flash_client, raw_events, phase="Phase 1")
+    logger.info("  通过审查: %d 个", len(passed))
+    _phase_done("Phase 1")
 
     # Phase 2: AI scoring and selection
-    print("[Phase 2] AI 评分筛选...")
-    selected = _retry_call(score_and_select, flash_client, passed, top_n=8, phase="Phase 2")
-    print(f"  入选: {len(selected)} 个")
+    _phase_begin("Phase 2")
+    logger.info("[Phase 2] AI 评分筛选...")
+    selected = retry_call(score_and_select, flash_client, passed, top_n=args.max_events, phase="Phase 2")
+    logger.info("  入选: %d 个", len(selected))
+    _phase_done("Phase 2")
 
     # Phase 3: Per-event deep analysis (parallel, max 3 workers)
-    print("[Phase 3] 逐事件深度梳理...")
+    _phase_begin("Phase 3")
+    logger.info("[Phase 3] 逐事件深度梳理...")
 
     def _analyze_one(idx: int, event: dict) -> tuple[int, dict | None]:
         """搜索 + 分析单个事件，返回 (idx, result_or_None)。"""
-        print(f"  搜索 ({idx}): {event['title']}")
+        logger.info("  搜索 (%d): %s", idx, event['title'])
         search_results = search_event(event["title"], max_results=10)
-        print(f"    ({idx}) 找到 {len(search_results)} 条结果")
+        logger.info("    (%d) 找到 %d 条结果", idx, len(search_results))
 
         for attempt in range(2):
             try:
                 result = analyze_event(pro_client, event, search_results, idx=idx)
-                print(f"    ({idx}) 分析完成")
+                logger.info("    (%d) 分析完成", idx)
                 return (idx, result)
             except Exception as e:
                 if attempt < 1:
                     wait = min(2 ** (attempt + 1), 30) + random.uniform(0, 2)
-                    print(f"    ({idx}) 分析失败: {e}，等待{wait:.0f}s后重试...")
+                    logger.warning("    (%d) 分析失败: %s，等待%.0fs后重试...", idx, e, wait)
                     time.sleep(wait)
                 else:
-                    print(f"    ({idx}) 重试仍失败: {e}，跳过此事件")
+                    logger.warning("    (%d) 重试仍失败: %s，跳过此事件", idx, e)
                     return (idx, None)
 
     results_map: dict[int, dict] = {}
@@ -135,46 +139,42 @@ def main():
     analyzed_events = [results_map[i] for i in sorted(results_map)]
 
     if not analyzed_events:
-        print("  没有事件通过分析，退出。")
+        logger.critical("  没有事件通过分析，退出。")
         sys.exit(1)
-
-    # Quality gate: events must have real substance
-    def is_quality(event):
-        timeline = event.get("timeline", [])
-        evidence = event.get("evidence", [])
-        if len(timeline) < 3:
-            return False
-        if len(evidence) < 2:
-            return False
-        verified = [e for e in evidence if e.get("authenticity") in ("真实", "存疑")]
-        if len(verified) == 0:
-            return False
-        if len(event.get("dialecticalSummary", "")) < 30:
-            return False
-        return True
 
     quality_events = [e for e in analyzed_events if is_quality(e)]
     dropped = len(analyzed_events) - len(quality_events)
     if dropped > 0:
-        print(f"  质量筛选: 剔除了 {dropped} 个证据不足或内容空洞的事件")
-    print(f"  最终入选: {len(quality_events)} 个")
+        logger.info("  质量筛选: 剔除了 %d 个证据不足或内容空洞的事件", dropped)
+    logger.info("  最终入选: %d 个", len(quality_events))
+    _phase_done("Phase 3")
 
     if not quality_events:
-        print("  质量筛选后没有事件留存，退出。")
+        logger.critical("  质量筛选后没有事件留存，退出。")
         sys.exit(1)
 
     # Phase 4: Cross-event synthesis
-    print("[Phase 4] 跨事件综合梳理...")
+    _phase_begin("Phase 4")
+    logger.info("[Phase 4] 跨事件综合梳理...")
     synthesis = None
     if len(quality_events) >= 2:
         try:
             synthesis_result = synthesize_events(pro_client, quality_events)
             synthesis = WeeklySynthesis(**synthesis_result)
-            print(f"  完成：{len(synthesis.crossCuttingThemes)} 主题, {len(synthesis.trends)} 趋势, {len(synthesis.contradictionsInMotion)} 矛盾")
+            logger.info("  完成：%d 主题, %d 趋势, %d 矛盾",
+                len(synthesis.crossCuttingThemes),
+                len(synthesis.trends),
+                len(synthesis.contradictionsInMotion))
         except Exception as e:
-            print(f"  [Phase 4] 失败: {e}，跳过综合梳理")
+            logger.warning("  [Phase 4] 失败: %s，跳过综合梳理", e)
     else:
-        print("  [Phase 4] 事件不足 2 个，跳过综合梳理")
+        logger.info("  [Phase 4] 事件不足 2 个，跳过综合梳理")
+    _phase_done("Phase 4")
+
+    if args.dry_run:
+        total_cost = flash_client.total_cost + pro_client.total_cost
+        logger.info("Dry run complete. 共 %d 个事件，预估费用 $%.4f", len(quality_events), total_cost)
+        return
 
     week_id = get_week_id()
     week_start, week_end = get_week_range()
@@ -205,10 +205,26 @@ def main():
     article_path.write_text(md, encoding="utf-8")
 
     total_cost = flash_client.total_cost + pro_client.total_cost
-    print(f"\n输出: {json_path}")
-    print(f"文章: {article_path}")
-    print(f"共 {len(quality_events)} 个事件")
-    print(f"API 费用: ${total_cost:.4f}")
+    logger.info("输出: %s", json_path)
+    logger.info("文章: %s", article_path)
+    logger.info("共 %d 个事件", len(quality_events))
+    logger.info("API 费用: $%.4f", total_cost)
+
+
+def parse_args(argv: list[str] | None = None) -> "argparse.Namespace":
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="每周热点深度分析 — AI 驱动的热点事件分析工具",
+    )
+    parser.add_argument("--dry-run", action="store_true",
+        help="运行流水线但不写入输出文件")
+    parser.add_argument("--verbose", "-v", action="store_true",
+        help="启用 DEBUG 级别日志")
+    parser.add_argument("--skip-scrape", action="store_true",
+        help="跳过 Phase 0 抓取，仅用缓存（用于重复测试）")
+    parser.add_argument("--max-events", type=int, default=8,
+        help="最大入选事件数（默认 8）")
+    return parser.parse_args(argv)
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ import json
 import pytest
 from unittest.mock import MagicMock, patch
 from chinese_scraper_utils import DeepSeekClient
-from analyzer import analyze_event
+from analyzer import analyze_event, _sanitize_for_prompt, build_search_results_text
 from schema import Event
 
 
@@ -51,6 +51,7 @@ def client():
     return DeepSeekClient(api_key)
 
 
+@pytest.mark.integration
 def test_analyze_event_returns_valid_structure(client):
     result = analyze_event(client, EVENT_INPUT, [])
     event = Event(**result)
@@ -62,6 +63,7 @@ def test_analyze_event_returns_valid_structure(client):
         assert edge.type in ("因果", "关联", "矛盾")
 
 
+@pytest.mark.integration
 def test_analyze_event_timeline_has_dates(client):
     result = analyze_event(client, EVENT_INPUT, [])
     for node in result["timeline"]:
@@ -71,6 +73,7 @@ def test_analyze_event_timeline_has_dates(client):
 
 # ---- Offline tests with mocked DeepSeekClient ----
 
+@pytest.mark.unit
 def test_analyze_event_offline_validates_schema():
     """Test that sample output passes Pydantic validation."""
     event = Event(**SAMPLE_ANALYZER_OUTPUT)
@@ -80,6 +83,7 @@ def test_analyze_event_offline_validates_schema():
     assert event.edges[1].type == "关联"
 
 
+@pytest.mark.unit
 def test_analyze_event_offline_with_mock_client():
     """Test analyze_event with mocked client returns valid structure."""
     mock_client = MagicMock()
@@ -92,3 +96,43 @@ def test_analyze_event_offline_with_mock_client():
     assert len(event.evidence) >= 2
     for edge in event.edges:
         assert edge.type in ("因果", "关联", "矛盾")
+
+
+# ---- Input sanitization tests ----
+
+@pytest.mark.unit
+def test_sanitize_removes_control_chars():
+    assert _sanitize_for_prompt("hello\x00world") == "helloworld"
+    assert _sanitize_for_prompt("text\x1Fhere") == "texthere"
+    assert _sanitize_for_prompt("normal text") == "normal text"
+
+
+@pytest.mark.unit
+def test_sanitize_empty():
+    assert _sanitize_for_prompt("") == ""
+    assert _sanitize_for_prompt(None) == ""
+
+
+@pytest.mark.unit
+def test_sanitize_truncates_long_text():
+    long_text = "x" * 600
+    result = _sanitize_for_prompt(long_text)
+    assert len(result) == 500
+
+
+@pytest.mark.unit
+def test_build_search_results_empty():
+    result = build_search_results_text([])
+    assert "无搜索结果" in result
+
+
+@pytest.mark.unit
+def test_build_search_results_with_data():
+    results = [
+        {"title": "结果1", "url": "https://example.com/1", "snippet": "摘要1"},
+        {"title": "结果2", "url": "https://example.com/2", "snippet": "摘要2"},
+    ]
+    result = build_search_results_text(results)
+    assert "<result_1>" in result
+    assert "<result_2>" in result
+    assert "<title>结果1</title>" in result

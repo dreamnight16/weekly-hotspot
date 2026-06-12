@@ -81,6 +81,7 @@ def events():
     ]
 
 
+@pytest.mark.unit
 def test_synthesis_schema_valid():
     syn = WeeklySynthesis(**SAMPLE_SYNTHESIS)
     assert len(syn.weeklyNarrative) > 20
@@ -89,6 +90,7 @@ def test_synthesis_schema_valid():
     assert syn.contradictionsInMotion[0].currentState == "对抗激化"
 
 
+@pytest.mark.unit
 def test_synthesize_events_with_mock(events):
     mock_client = MagicMock()
     mock_client.chat_json.return_value = SAMPLE_SYNTHESIS
@@ -99,6 +101,7 @@ def test_synthesize_events_with_mock(events):
     assert len(syn.contradictionsInMotion) == 1
 
 
+@pytest.mark.integration
 def test_synthesize_events_real(events):
     api_key = os.environ.get("DEEPSEEK_API_KEY")
     if not api_key:

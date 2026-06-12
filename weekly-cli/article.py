@@ -13,6 +13,8 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+from utils import section_label
+
 
 WEEKDAY_ZH = ["一", "二", "三", "四", "五", "六", "日"]
 
@@ -360,7 +362,7 @@ def generate_article(
         if last_week and last_week.get("synthesis"):
             syn_sections += 1  # N、跟上周比
     section_num = syn_sections + 1
-    lines.append(f"## {_section_label(section_num)}、逐件看")
+    lines.append(f"## {section_label(section_num)}、逐件看")
     lines.append("")
     for i, event in enumerate(events):
         lines.append(_event_block(event, i + 1))
@@ -376,11 +378,3 @@ def generate_article(
     )
 
     return "\n".join(lines)
-
-
-def _section_label(n: int) -> str:
-    """数字转中文序号。"""
-    labels = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
-    if n < len(labels):
-        return labels[n]
-    return str(n)

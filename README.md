@@ -2,7 +2,8 @@
 
 # Weekly Hotspot Analysis
 
-[![Tests](https://img.shields.io/badge/tests-7%20passed%20%2B%207%20integration-green)](https://github.com/sixtdreanight/weekly-hotspot/actions)
+[![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/sixtdreanight/weekly-hotspot/actions)
+[![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/sixtdreanight/weekly-hotspot/actions)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 
 Grabs trending news every Monday, runs each story through DeepSeek for filtering, scoring, and deep analysis. Output: timelines, evidence chains, and relationship graphs as structured JSON. Rendered on the blog.
@@ -10,33 +11,37 @@ Grabs trending news every Monday, runs each story through DeepSeek for filtering
 ## Architecture
 
 ```
-DeepSeek API (web search)
-  ↓ Fetch weekly hot topic candidates
-[Phase 0] Censorship filter
-  ↓ Exclude sensitive content
-[Phase 1] AI scoring & selection
+Weibo / Zhihu / Hacker News (real-time scrape)
+  ↓ Fetch trending topics + deduplication
+[Phase 0] Scrape & Cache
+  ↓ Fall back to cache if all sources fail
+[Phase 1] Censorship Filter (MLM relevance)
+  ↓ Exclude entertainment / politically sensitive content
+[Phase 2] AI Scoring & Selection
   ↓ Event impact × Information novelty → top 5-8
-[Phase 2] Per-event deep analysis
-  ↓ Timeline + Evidence + Cause/Correlation/Contradiction
-Output JSON → myBlog content collection
-  ↓ Astro static build
-Investigative report style pages
+[Phase 3] Per-event Deep Analysis (parallel, 3 workers)
+  ↓ DuckDuckGo + Bing search → Timeline + Evidence + Edges
+[Phase 4] Cross-event Synthesis
+  ↓ Themes + Trends + Contradictions in motion
+Output → JSON + Markdown article → Blog-mizuki repo
 ```
 
 ## Project Structure
 
 ```
-weekly-cli/         # Python CLI
-  main.py           # Orchestrator: fetch → censor → score → analyze → output
-  config.py         # Environment variable config
-  schema.py         # Pydantic data models
-  client.py         # DeepSeek API wrapper
-  censor.py         # Phase 0: Censorship filter
-  scorer.py         # Phase 1: Scoring & selection
-  analyzer.py       # Phase 2: Per-event deep analysis
-  test_*.py         # Tests
-docs/               # Design docs & implementation plans
-```
+weekly-cli/          # Python CLI pipeline
+  main.py            # Orchestrator: 5-phase pipeline driver
+  config.py           # Environment variable config + path safety
+  schema.py           # Pydantic v2 data models (14 models)
+  censor.py           # Phase 1: Censorship filter
+  scorer.py           # Phase 2: Scoring & selection
+  analyzer.py         # Phase 3: Per-event deep analysis
+  search.py           # Parallel DuckDuckGo + Bing search with dedup
+  synthesizer.py      # Phase 4: Cross-event synthesis
+  article.py          # Markdown article generator
+  cache.py            # Scrape cache fallback
+  test_*.py           # Unit & integration tests (80%+ coverage)
+prompts/              # Externalized LLM prompt templates
 
 ## Usage
 
