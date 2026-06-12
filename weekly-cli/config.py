@@ -12,7 +12,7 @@ DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 DEEPSEEK_MODEL = "deepseek-v4-flash"
 DEEPSEEK_MODEL_PRO = "deepseek-v4-pro"
 
-_default_blog_dir = Path.home() / "Documents" / "myBlog" / "src" / "content" / "weekly"
+_default_blog_dir = Path.home() / "Documents" / "Blog-mizuki" / "src" / "content" / "weekly"
 BLOG_CONTENT_DIR = Path(os.environ.get("BLOG_CONTENT_DIR", str(_default_blog_dir)))
 
 # 验证路径不超出预期范围（防环境变量投毒）
