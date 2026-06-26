@@ -20,7 +20,7 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "chinese-scraper-utils==0.2.6",
+    "chinese-scraper-utils @ git+https://github.com/sixtdreanight/chinese-scraper-utils.git@master",
     "openai>=1.0.0",
     "pydantic>=2.0.0",
     "httpx>=0.28",
