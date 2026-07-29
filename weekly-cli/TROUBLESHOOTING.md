@@ -68,16 +68,26 @@ python -c "from config import BLOG_CONTENT_DIR; print(BLOG_CONTENT_DIR)"
 
 ---
 
-## 跨 ID 校验失败
+## LLM 输出校验（已自动化处理）
 
-**现象：** `ValueError: Edge[0].from='tl-X' does not reference any timeline/evidence id`
+以下问题 **v0.3+ 已由 sanitization 层自动处理**，不再导致流水线崩溃。日志中会出现 `[sanitize]` 前缀的 WARNING 提示清洗动作：
 
-**原因：** LLM 生成的输出引用了不存在的时间线/证据节点 ID。这是 LLM 幻觉的一种形式。
+| 问题 | 自动处理方式 |
+|------|-------------|
+| Edge 引用不存在的 timeline/evidence ID | 丢弃无效 edge，保留有效 edge |
+| Timeline evidenceRefs 引用不存在的证据 | 从 evidenceRefs 中移除无效引用 |
+| Synthesis 引用不存在的事件 ID | 从引用列表中移除无效 ID |
+| 枚举值填错（如 direction 填了 currentState 的值） | 模糊匹配修正，匹配不到则用默认值 |
+| 枚举值拼接（如 "对抗激化，隐性积累"） | 子串匹配第一个有效枚举值 |
+| 评分超出 1-5 范围 | 自动 clamp 到合法范围 |
+| Timeline 节点缺少 time 字段 | 自动填充 "未知" |
+| classAnalysis 子字段缺失 | 自动填充空字符串 |
+| dialecticalSummary 非字符串 | 自动转换为字符串 |
 
-**解决：**
-1. 检查对应事件的 JSON 输出，确认 `timeline`、`evidence`、`edges` 中的 ID 一致
-2. 如果频繁出现，可能需要在 prompt 中加强对 ID 一致性的强调
-3. 考虑降低 `top_n` 或调整 `max_events` 以减少 LLM 的复杂度负担
+**如果 sanitization 后仍有问题：**
+1. 查看 GitHub Actions 日志中 `[sanitize]` 或 `[schema]` 前缀的 WARNING/ERROR
+2. 检查对应事件的 JSON 输出，确认 `timeline`、`evidence`、`edges` 中的 ID 完全一致
+3. 如果大量事件被 sanitize，考虑检查 DeepSeek 模型是否降级
 
 ---
 

@@ -153,35 +153,37 @@ def test_cross_id_valid_event():
 
 @pytest.mark.unit
 def test_cross_id_invalid_edge_from():
-    """Edge.from referencing nonexistent id raises ValueError."""
+    """Edge.from referencing nonexistent id is sanitized (dropped)."""
     bad = {**SAMPLE_EVENT, "edges": [{"from": "tl-nonexistent", "to": "ev-1", "type": "关联", "description": "bad"}]}
-    with pytest.raises(ValueError, match="does not reference"):
-        Event(**bad)
+    event = Event(**bad)
+    # Edge with invalid from should be dropped, only valid edges remain
+    assert len(event.edges) == 0, f"Expected 0 edges after sanitization, got {len(event.edges)}"
 
 
 @pytest.mark.unit
 def test_cross_id_invalid_edge_to():
-    """Edge.to referencing nonexistent id raises ValueError."""
+    """Edge.to referencing nonexistent id is sanitized (dropped)."""
     bad = {**SAMPLE_EVENT, "edges": [{"from": "tl-1", "to": "ev-nonexistent", "type": "关联", "description": "bad"}]}
-    with pytest.raises(ValueError, match="does not reference"):
-        Event(**bad)
+    event = Event(**bad)
+    assert len(event.edges) == 0
 
 
 @pytest.mark.unit
 def test_cross_id_invalid_evidence_ref():
-    """Timeline evidenceRefs referencing nonexistent evidence raises ValueError."""
+    """Timeline evidenceRefs to nonexistent evidence are cleaned."""
     bad_timeline = {
         **SAMPLE_EVENT["timeline"][0],
         "evidenceRefs": ["ev-nonexistent"],
     }
     bad = {**SAMPLE_EVENT, "timeline": [bad_timeline]}
-    with pytest.raises(ValueError, match="does not reference"):
-        Event(**bad)
+    event = Event(**bad)
+    # Invalid evidence ref should be removed
+    assert event.timeline[0].evidenceRefs == []
 
 
 @pytest.mark.unit
 def test_cross_id_invalid_synthesis_event_id():
-    """WeeklyIssue with synthesis referencing nonexistent event id raises."""
+    """WeeklyIssue with synthesis referencing nonexistent event id is sanitized."""
     event = Event(**SAMPLE_EVENT)
     syn = WeeklySynthesis(
         weeklyNarrative="测试",
@@ -195,19 +197,21 @@ def test_cross_id_invalid_synthesis_event_id():
         globalAssessment="评估",
         dataGaps=[],
     )
-    with pytest.raises(ValueError, match="does not match any event id"):
-        WeeklyIssue(
-            id="2026-W99",
-            weekStart="2026-01-01",
-            weekEnd="2026-01-07",
-            events=[event],
-            synthesis=syn,
-        )
+    issue = WeeklyIssue(
+        id="2026-W99",
+        weekStart="2026-01-01",
+        weekEnd="2026-01-07",
+        events=[event],
+        synthesis=syn,
+    )
+    # Invalid event ref should be dropped from the theme
+    assert issue.synthesis is not None
+    assert issue.synthesis.crossCuttingThemes[0].relatedEventIds == []
 
 
 @pytest.mark.unit
 def test_cross_id_invalid_trend_event_id():
-    """Trend evidenceEventIds with bad ref raises."""
+    """Trend evidenceEventIds with bad ref is sanitized."""
     event = Event(**SAMPLE_EVENT)
     syn = WeeklySynthesis(
         weeklyNarrative="测试",
@@ -221,19 +225,20 @@ def test_cross_id_invalid_trend_event_id():
         globalAssessment="评估",
         dataGaps=[],
     )
-    with pytest.raises(ValueError, match="does not match any event id"):
-        WeeklyIssue(
-            id="2026-W99",
-            weekStart="2026-01-01",
-            weekEnd="2026-01-07",
-            events=[event],
-            synthesis=syn,
-        )
+    issue = WeeklyIssue(
+        id="2026-W99",
+        weekStart="2026-01-01",
+        weekEnd="2026-01-07",
+        events=[event],
+        synthesis=syn,
+    )
+    assert issue.synthesis is not None
+    assert issue.synthesis.trends[0].evidenceEventIds == []
 
 
 @pytest.mark.unit
 def test_cross_id_invalid_contradiction_ids():
-    """Contradiction eventsInvolved with bad ref raises."""
+    """Contradiction eventsInvolved with bad ref is sanitized."""
     event = Event(**SAMPLE_EVENT)
     syn = WeeklySynthesis(
         weeklyNarrative="测试",
@@ -247,28 +252,158 @@ def test_cross_id_invalid_contradiction_ids():
         globalAssessment="评估",
         dataGaps=[],
     )
-    with pytest.raises(ValueError, match="does not match any event id"):
-        WeeklyIssue(
-            id="2026-W99",
-            weekStart="2026-01-01",
-            weekEnd="2026-01-07",
-            events=[event],
-            synthesis=syn,
-        )
+    issue = WeeklyIssue(
+        id="2026-W99",
+        weekStart="2026-01-01",
+        weekEnd="2026-01-07",
+        events=[event],
+        synthesis=syn,
+    )
+    assert issue.synthesis is not None
+    assert issue.synthesis.contradictionsInMotion[0].eventsInvolved == []
 
 
 @pytest.mark.unit
-def test_synthesis_empty_refs_rejected():
-    """Synthesis with empty relatedEventIds raises."""
-    with pytest.raises(ValueError, match="relatedEventIds must not be empty"):
-        WeeklySynthesis(
-            weeklyNarrative="测试",
-            crossCuttingThemes=[{
-                "name": "主题", "description": "描述",
-                "relatedEventIds": [],
-                "significance": "意义",
-            }],
-            trends=[],
-            contradictionsInMotion=[],
-            globalAssessment="评估",
-        )
+def test_synthesis_empty_refs_dropped():
+    """Synthesis items with empty relatedEventIds are silently dropped."""
+    syn = WeeklySynthesis(
+        weeklyNarrative="测试",
+        crossCuttingThemes=[{
+            "name": "主题", "description": "描述",
+            "relatedEventIds": [],
+            "significance": "意义",
+        }],
+        trends=[],
+        contradictionsInMotion=[],
+        globalAssessment="评估",
+    )
+    assert len(syn.crossCuttingThemes) == 0
+
+
+# ---- Sanitization tests (mode='before' validators) ----
+
+@pytest.mark.unit
+def test_sanitize_score_clamped():
+    """Scores > 5 are clamped to 5."""
+    event = Event(**{**SAMPLE_EVENT, "impactScore": 6, "infoGainScore": 0})
+    assert event.impactScore == 5
+    assert event.infoGainScore == 1  # clamped up
+
+
+@pytest.mark.unit
+def test_sanitize_missing_timeline_time():
+    """Timeline node missing 'time' gets default '未知'."""
+    bad_event = {**SAMPLE_EVENT}
+    bad_event["timeline"] = [{
+        "id": "tl-1",
+        "title": "No time node",
+        "description": "Missing time field",
+        "evidenceRefs": ["ev-1"],
+    }]
+    event = Event(**bad_event)
+    assert event.timeline[0].time == "未知"
+
+
+@pytest.mark.unit
+def test_sanitize_class_analysis_defaults():
+    """ClassAnalysis with missing sub-fields gets empty defaults."""
+    bad_event = {**SAMPLE_EVENT}
+    bad_event["classAnalysis"] = {}
+    event = Event(**bad_event)
+    assert event.classAnalysis.classNature == ""
+    assert event.classAnalysis.contradiction == ""
+    assert event.classAnalysis.historicalContext == ""
+
+
+@pytest.mark.unit
+def test_sanitize_class_analysis_not_dict():
+    """ClassAnalysis that is not a dict becomes default."""
+    bad_event = {**SAMPLE_EVENT}
+    bad_event["classAnalysis"] = "not a dict"
+    event = Event(**bad_event)
+    assert event.classAnalysis.classNature == ""
+    assert event.classAnalysis.contradiction == ""
+
+
+@pytest.mark.unit
+def test_sanitize_evidence_enum_fixup():
+    """Evidence with wrong enum values gets fuzzy fixed."""
+    bad_event = {**SAMPLE_EVENT}
+    bad_event["evidence"] = [{
+        "id": "ev-1",
+        "sourceType": "blog",  # not a valid value
+        "sourceName": "测试",
+        "content": "内容",
+        "authenticity": "不确定",  # not a valid value
+        "aiReason": "理由",
+        "classBias": "工人阶级立场",  # not a valid value, but "无产阶级立场" is a substring? No
+    }]
+    event = Event(**bad_event)
+    # sourceType falls back to "其他", authenticity to "待验证", classBias to "待判断"
+    assert event.evidence[0].sourceType == "其他"
+    assert event.evidence[0].authenticity == "待验证"
+    assert event.evidence[0].classBias == "待判断"
+
+
+@pytest.mark.unit
+def test_sanitize_synthesis_direction_fixup():
+    """Synthesis direction with wrong enum gets fixed."""
+    syn = WeeklySynthesis(
+        weeklyNarrative="测试",
+        crossCuttingThemes=[],
+        trends=[{
+            "name": "趋势", "description": "描述",
+            "direction": "隐性积累",  # AI confuses with currentState enum
+            "evidenceEventIds": ["evt-1"],  # need at least one ref to survive
+        }],
+        contradictionsInMotion=[],
+        globalAssessment="评估",
+    )
+    # "隐性积累" is in _DIRECTION_FIXUPS -> "缓和"
+    assert syn.trends[0].direction == "缓和"
+
+
+@pytest.mark.unit
+def test_sanitize_synthesis_current_state_fixup():
+    """Synthesis currentState with concatenated values gets fixed."""
+    syn = WeeklySynthesis(
+        weeklyNarrative="测试",
+        crossCuttingThemes=[],
+        trends=[],
+        contradictionsInMotion=[{
+            "contradiction": "矛盾", "opposingForces": "双方",
+            "eventsInvolved": ["evt-1"],  # need at least one ref to survive
+            "currentState": "外部对抗激化，内部隐性积累",  # known AI mistake
+            "outlook": "走向",
+        }],
+        globalAssessment="评估",
+    )
+    # substring "对抗激化" matches
+    assert syn.contradictionsInMotion[0].currentState == "对抗激化"
+
+
+@pytest.mark.unit
+def test_sanitize_synthesis_current_state_substring():
+    """Synthesis currentState fixup via substring match."""
+    syn = WeeklySynthesis(
+        weeklyNarrative="测试",
+        crossCuttingThemes=[],
+        trends=[],
+        contradictionsInMotion=[{
+            "contradiction": "矛盾", "opposingForces": "双方",
+            "eventsInvolved": ["evt-1"],  # need at least one ref to survive
+            "currentState": "当前处于向新形态转化过程中",  # substring match
+            "outlook": "走向",
+        }],
+        globalAssessment="评估",
+    )
+    assert syn.contradictionsInMotion[0].currentState == "向新形态转化"
+
+
+@pytest.mark.unit
+def test_sanitize_dialectical_summary_not_string():
+    """dialecticalSummary that's not a string gets converted."""
+    bad_event = {**SAMPLE_EVENT, "dialecticalSummary": 12345}
+    event = Event(**bad_event)
+    assert isinstance(event.dialecticalSummary, str)
+    assert "12345" in event.dialecticalSummary
