@@ -68,8 +68,9 @@ def grasp_phenomena(
         if not isinstance(e, dict):
             continue
         sanitized_e = dict(e)
-        if "id" not in sanitized_e:
-            sanitized_e["id"] = f"evt-{i+1}"
+        # Force id to string (LLM often returns integers)
+        raw_id = sanitized_e.get("id", f"evt-{i+1}")
+        sanitized_e["id"] = str(raw_id) if not isinstance(raw_id, str) else raw_id
         if "sourceGrade" not in sanitized_e:
             sanitized_e["sourceGrade"] = {
                 "reliability": "C",
