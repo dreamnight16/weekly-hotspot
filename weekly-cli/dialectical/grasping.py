@@ -54,7 +54,7 @@ def grasp_phenomena(
                 ),
         },
         {"role": "user", "content": prompt},
-        ], max_tokens=8192)
+                ], max_tokens=32768)
     except Exception as e:
         from config import get_logger as _gl
         _gl("grasping").warning("grasp_phenomena: chat_json failed: %s", e)

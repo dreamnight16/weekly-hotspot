@@ -81,7 +81,7 @@ def identify_contradictions(
                 },
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=16384,
+            max_tokens=32768,
         )
     except Exception as e:
         from config import get_logger as _gl
