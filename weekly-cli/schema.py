@@ -141,15 +141,17 @@ class SourceGrade(BaseModel):
                 _RELIABILITY_FIXUPS,
                 "C",
             )
-        # Clamp credibility
+        # Clamp and coerce credibility to int (LLM often returns floats)
         if "credibility" in data and isinstance(data["credibility"], (int, float)):
-            val = data["credibility"]
+            val = int(data["credibility"])
             if val < 1:
                 _logger.warning("  [sanitize] SourceGrade credibility=%s clamped to 1", val)
                 data["credibility"] = 1
             elif val > 6:
                 _logger.warning("  [sanitize] SourceGrade credibility=%s clamped to 6", val)
                 data["credibility"] = 6
+            else:
+                data["credibility"] = val
         return data
 
 
@@ -492,6 +494,32 @@ class Scenario(BaseModel):
                 _SCENARIO_TYPE_FIXUPS,
                 "baseline",
             )
+        # Coerce probability: LLM may return "55-80%" or "0.7" or other formats
+        if "probability" in data:
+            prob = data["probability"]
+            if isinstance(prob, str):
+                prob = prob.strip().rstrip("%")
+                if "-" in prob:
+                    # "55-80" → midpoint
+                    parts = prob.split("-")
+                    try:
+                        lo, hi = float(parts[0]), float(parts[1])
+                        prob = (lo + hi) / 200.0  # convert from percentage
+                    except (ValueError, IndexError):
+                        prob = 0.5
+                else:
+                    try:
+                        prob = float(prob)
+                        if prob > 1.0:
+                            prob = prob / 100.0  # treat as percentage
+                    except (ValueError, TypeError):
+                        prob = 0.5
+            elif isinstance(prob, (int, float)):
+                if prob > 1.0:
+                    prob = prob / 100.0
+            else:
+                prob = 0.5
+            data["probability"] = max(0.0, min(1.0, float(prob)))
         return data
 
 
@@ -505,6 +533,16 @@ class WatchSignal(BaseModel):
     threshold: str = ""
     trend: str = ""
     priority: int = Field(default=3, ge=1, le=5)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        # Coerce float priority to int (LLM often returns 3.0 instead of 3)
+        if "priority" in data and isinstance(data["priority"], float):
+            data["priority"] = int(data["priority"])
+        return data
 
 
 class LastWeekCalibration(BaseModel):
@@ -660,11 +698,13 @@ class TracedSource(BaseModel):
                 "C",
             )
         if "credibility" in data and isinstance(data["credibility"], (int, float)):
-            val = data["credibility"]
+            val = int(data["credibility"])
             if val < 1:
                 data["credibility"] = 1
             elif val > 6:
                 data["credibility"] = 6
+            else:
+                data["credibility"] = val
         return data
 
 
