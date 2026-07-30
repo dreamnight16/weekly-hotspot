@@ -1,13 +1,13 @@
 """Tests for cache.py — save/load/corruption/clean."""
 import json
 import pytest
-from cache import save_cache, load_cache, CACHE_DIR, CACHE_FILE
+from scraper.cache import save_cache, load_cache, CACHE_DIR, CACHE_FILE
 
 
 @pytest.mark.unit
 def test_save_and_load(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
-    monkeypatch.setattr("cache.CACHE_FILE", tmp_path / "last_raw_events.json")
+    monkeypatch.setattr("scraper.cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("scraper.cache.CACHE_FILE", tmp_path / "last_raw_events.json")
 
     events = [{"title": "test", "summary": "desc"}]
     save_cache(events)
@@ -19,7 +19,7 @@ def test_save_and_load(tmp_path, monkeypatch):
 def test_load_cache_nonexistent():
     # CACHE_FILE does not exist by default in clean env
     # Just verify load_cache doesn't crash when file is absent
-    import cache
+    from scraper import cache
     import tempfile
     with tempfile.TemporaryDirectory() as td:
         import pathlib
@@ -33,8 +33,8 @@ def test_load_cache_nonexistent():
 
 @pytest.mark.unit
 def test_load_cache_corrupted(tmp_path, monkeypatch):
-    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
-    monkeypatch.setattr("cache.CACHE_FILE", tmp_path / "last_raw_events.json")
+    monkeypatch.setattr("scraper.cache.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("scraper.cache.CACHE_FILE", tmp_path / "last_raw_events.json")
 
     tmp_path.mkdir(parents=True, exist_ok=True)
     (tmp_path / "last_raw_events.json").write_text("not valid json", encoding="utf-8")
@@ -45,8 +45,8 @@ def test_load_cache_corrupted(tmp_path, monkeypatch):
 @pytest.mark.unit
 def test_save_creates_dir(tmp_path, monkeypatch):
     subdir = tmp_path / "nested" / "cache"
-    monkeypatch.setattr("cache.CACHE_DIR", subdir)
-    monkeypatch.setattr("cache.CACHE_FILE", subdir / "last_raw_events.json")
+    monkeypatch.setattr("scraper.cache.CACHE_DIR", subdir)
+    monkeypatch.setattr("scraper.cache.CACHE_FILE", subdir / "last_raw_events.json")
 
     events = [{"title": "deep"}]
     save_cache(events)

@@ -160,7 +160,7 @@ def sample_synthesis() -> dict:
 @pytest.fixture
 def tmp_cache_dir():
     """Redirect cache.CACHE_DIR to a temporary directory."""
-    import cache
+    from scraper import cache
     with tempfile.TemporaryDirectory() as td:
         original = cache.CACHE_DIR
         cache.CACHE_DIR = Path(td)
@@ -168,3 +168,240 @@ def tmp_cache_dir():
         yield
         cache.CACHE_DIR = original
         cache.CACHE_FILE = original / "last_raw_events.json"
+
+
+# =============================================================================
+# v2 Pipeline Fixtures
+# =============================================================================
+
+
+@pytest.fixture
+def sample_grasping() -> dict:
+    """Phase 1: PhenomenonGrasping output for pipeline testing."""
+    return {
+        "phaseSummary": "本周共收集12个热点事件，经初步筛选留下3个有物质利益分析价值的事件。",
+        "selectedEvents": [
+            {
+                "id": "evt-1",
+                "title": "某平台调整骑手抽成比例引发争议",
+                "summary": "外卖平台将骑手抽成比例从20%提高至25%，引发骑手集体抗议。",
+                "sourceUrl": "https://example.com/news/1",
+                "materialContent": "平台资本通过提高抽成比例转嫁成本给劳动者",
+                "isDirectExpression": True,
+                "sourceGrade": {
+                    "reliability": "B",
+                    "credibility": 2,
+                    "rationale": "多家媒体交叉报道，信息一致",
+                },
+            },
+            {
+                "id": "evt-2",
+                "title": "某城市发布楼市新政松绑限购",
+                "summary": "地方政府发布通知，放宽购房限制，刺激房地产市场。",
+                "sourceUrl": "https://example.com/news/2",
+                "materialContent": "地方政府通过政策工具调节房地产供需关系",
+                "isDirectExpression": False,
+                "sourceGrade": {
+                    "reliability": "A",
+                    "credibility": 1,
+                    "rationale": "官方文件发布，来源确定",
+                },
+            },
+            {
+                "id": "evt-3",
+                "title": "AI大模型公司完成新一轮融资",
+                "summary": "某AI公司宣布完成10亿美元融资，估值达百亿美元。",
+                "sourceUrl": "https://example.com/news/3",
+                "materialContent": "资本向AI领域持续集中，技术生产力与资本所有权的矛盾",
+                "isDirectExpression": True,
+                "sourceGrade": {
+                    "reliability": "B",
+                    "credibility": 2,
+                    "rationale": "公司公告确认，多家财经媒体引用",
+                },
+            },
+        ],
+        "excludedEvents": [
+            {
+                "id": "ex-1",
+                "title": "某明星发布新专辑",
+                "summary": "娱乐新闻，无物质利益分析价值。",
+                "exclusionReason": "纯娱乐事件，缺乏阶级分析价值",
+            },
+        ],
+        "gdeltBaseline": None,
+        "sourceQualityReport": "本周信源质量总体良好，主要依赖官方文件和主流媒体报道。",
+    }
+
+
+@pytest.fixture
+def sample_contradiction() -> dict:
+    """Phase 2: ContradictionIdentification output for pipeline testing."""
+    return {
+        "phaseSummary": "本周三个事件从不同侧面反映了资本与劳动、中央与地方、技术与资本三组矛盾。",
+        "events": [
+            {
+                "id": "evt-1",
+                "title": "某平台调整骑手抽成比例引发争议",
+                "summary": "外卖平台将骑手抽成比例从20%提高至25%",
+                "materialContent": "平台资本通过提高抽成比例转嫁成本给劳动者",
+                "isDirectExpression": True,
+            },
+            {
+                "id": "evt-2",
+                "title": "某城市发布楼市新政松绑限购",
+                "summary": "地方政府发布通知，放宽购房限制",
+                "materialContent": "地方政府通过政策工具调节房地产供需关系",
+                "isDirectExpression": False,
+            },
+            {
+                "id": "evt-3",
+                "title": "AI大模型公司完成新一轮融资",
+                "summary": "某AI公司宣布完成10亿美元融资",
+                "materialContent": "资本向AI领域持续集中",
+                "isDirectExpression": True,
+            },
+        ],
+        "overallContradictionLandscape": "本周矛盾格局呈现多领域共振特征：劳动关系领域对抗激化，房地产领域政策博弈深化，科技领域资本加速集中。",
+        "interestStructures": [
+            {
+                "interestGroup": "平台资本",
+                "materialInterest": "通过提高抽成比例维持利润率",
+                "expressionForm": "单方面修改合作协议",
+                "intensity": 4,
+                "relatedEventIds": ["evt-1"],
+            },
+            {
+                "interestGroup": "外卖骑手",
+                "materialInterest": "维持或提高实际收入水平",
+                "expressionForm": "集体抗议和舆论施压",
+                "intensity": 4,
+                "relatedEventIds": ["evt-1"],
+            },
+        ],
+        "classPositions": [
+            {
+                "className": "平台资本所有者",
+                "position": "数字平台生产资料的控制者",
+                "coreInterest": "最大化资本回报率和市场份额",
+                "contradictions": ["与劳动者的分配矛盾", "与传统产业的竞争矛盾"],
+                "relatedEventIds": ["evt-1", "evt-3"],
+            },
+        ],
+        "nineDimScores": {
+            "magnitude": [7, 0.8],
+            "scope": [6, 0.7],
+            "velocity": [8, 0.9],
+            "novelty": [5, 0.6],
+            "cascadePotential": [7, 0.7],
+            "actorProminence": [6, 0.8],
+            "uncertainty": [5, 0.5],
+            "polarity": [8, 0.8],
+            "durability": [6, 0.6],
+        },
+        "competingHypotheses": [
+            {
+                "hypothesisId": "H1",
+                "description": "平台提高抽成是成本压力下的被动选择",
+                "supportingEvidence": "行业整体利润率下降",
+                "contradictingEvidence": "公司季度财报显示利润同比增长",
+                "assessedProbability": 0.4,
+                "relatedEventIds": ["evt-1"],
+            },
+        ],
+    }
+
+
+@pytest.fixture
+def sample_unfolding() -> dict:
+    """Phase 3: DialecticalUnfolding per-event output for pipeline testing."""
+    return {
+        "phaseSummary": "该事件体现了数字资本主义下劳资矛盾从量变向局部质变的过渡。",
+        "events": [
+            {
+                "id": "evt-1",
+                "title": "某平台调整骑手抽成比例引发争议",
+                "summary": "外卖平台将骑手抽成比例从20%提高至25%，引发骑手集体抗议。",
+                "materialContent": "平台资本通过提高抽成比例转嫁成本给劳动者",
+                "isDirectExpression": True,
+            },
+        ],
+        "dialecticalConfidence": "HIGH",
+        "unityOfOpposites": {
+            "identity": "平台与骑手在配送服务价值创造中相互依存",
+            "struggle": "双方围绕配送收益的分配比例展开博弈",
+            "particularity": "平台经济的算法控制使劳动者缺乏传统劳资谈判渠道",
+            "universality": "资本追求剩余价值最大化与劳动者追求报酬合理化的矛盾具有普遍性",
+        },
+        "quantityQuality": {
+            "currentPhase": "量变积累",
+            "quantitativeDirection": "抽成比例从20%到25%的变化超过劳动者承受阈值",
+            "measure": "劳动者最低生活保障线与平台利润率的平衡点",
+            "newQuality": "可能催生新型劳动者组织方式和议价机制",
+            "oldQualityNegated": "原有'灵活用工'的劳资关系框架被挑战",
+        },
+        "negationOfNegation": {
+            "oldThing": "传统雇佣关系下的固定工资制",
+            "firstNegation": "平台经济下的'灵活用工+算法控制'模式",
+            "internalNegation": "骑手集体抗议与舆论压力倒逼平台调整政策",
+            "direction": "螺旋上升",
+            "stageCharacteristics": "劳动者自组织意识的觉醒与新技术条件下的集体行动形式探索",
+        },
+        "adversarialReview": {
+            "reviewAspect": "关于矛盾对立统一性的认定",
+            "originalClaim": "平台与骑手的矛盾是典型的劳资矛盾",
+            "critique": "外卖骑手与平台的关系不完全等同于传统雇佣关系，其法律地位为'独立承包商'而非员工",
+            "revisedClaim": "矛盾本质是资本与劳动的矛盾，但表现形式为平台经济特有的'类雇佣关系'矛盾",
+            "confidence": "MEDIUM",
+        },
+        "causalLoopDiagram": {
+            "diagramId": "cld-001",
+            "description": "平台抽成与骑手抗议的因果循环",
+            "nodes": ["平台利润需求", "抽成比例", "骑手收入", "骑手抗议", "舆论压力", "政策介入"],
+            "positiveFeedbackLoops": ["抽成提高→骑手抗议→舆论扩大→更多骑手加入"],
+            "negativeFeedbackLoops": ["政策介入→限制抽成比例→平台利润下降→调整经营策略"],
+            "keyLeveragePoints": ["政策介入", "骑手组织化程度"],
+        },
+        "dataValidation": {
+            "validationCheck": "抽成比例的准确性验证",
+            "dataSource": "多家媒体交叉报道和平台公告",
+            "result": "20%至25%的变化幅度得到多方确认",
+            "issues": [],
+            "confidence": "HIGH",
+        },
+    }
+
+
+@pytest.fixture
+def sample_weekly_issue(sample_grasping, sample_contradiction, sample_unfolding) -> dict:
+    """Complete WeeklyIssue payload for integration testing."""
+    from datetime import datetime
+    today = datetime.now()
+    iso = today.isocalendar()
+
+    return {
+        "id": f"{today.year}-W{iso.week:02d}",
+        "weekStart": (today - __import__("datetime").timedelta(days=today.weekday())).strftime("%Y-%m-%d"),
+        "weekEnd": (today + __import__("datetime").timedelta(days=6 - today.weekday())).strftime("%Y-%m-%d"),
+        "events": sample_unfolding["events"],
+        "phase1": sample_grasping,
+        "phase2": sample_contradiction,
+        "phase3": sample_unfolding,
+        "phase4": None,
+        "phase5": None,
+        "evidenceTrace": {
+            "claims": [],
+            "totalVerifiedClaims": 0,
+        },
+        "metadata": {
+            "modelVersions": {
+                "dialectical": "deepseek-v4-pro",
+                "empirical": "deepseek-v4-flash",
+            },
+            "verificationPasses": 0,
+            "empiricalDegradations": [],
+            "totalApiCost": 0.0,
+            "runDuration": 0.0,
+            "runId": "test-run-id",
+        },
+    }
