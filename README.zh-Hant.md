@@ -1,6 +1,6 @@
 **語言 / Language:** [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md)
 
-# 每週熱點深度梳理
+# 格物（Dianalyze）— 辯證週報
 
 [![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/sixtdreanight/weekly-hotspot/actions)
 [![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/sixtdreanight/weekly-hotspot/actions)

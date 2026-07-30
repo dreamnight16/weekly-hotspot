@@ -203,7 +203,7 @@ def test_generate_article_minimal(tmp_path, sample_event, sample_synthesis):
     assert "published: 2026-05-24" in result
     assert "category: 周刊" in result
     assert "测试事件" in result
-    assert "weekly-hotspot" in result
+    assert "格物" in result
 
 
 @pytest.mark.unit

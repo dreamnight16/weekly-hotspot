@@ -1,12 +1,12 @@
 **Language:** [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md)
 
-# Weekly Hotspot Analysis
+# Dianalyze — Dialectical Weekly Deep Analysis
 
 [![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/sixtdreanight/weekly-hotspot/actions)
 [![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/sixtdreanight/weekly-hotspot/actions)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 
-Grabs trending news every Monday, runs each story through DeepSeek for filtering, scoring, and deep analysis. Output: timelines, evidence chains, and relationship graphs as structured JSON. Rendered on the blog.
+Dialectical weekly news analysis powered by AI. Uses dialectical materialism and historical materialism as core methodology, supported by modern analytical techniques (evidence verification, quantitative data, scenario planning). Output: structured JSON + Markdown article. Rendered on blog.
 
 ## Architecture
 

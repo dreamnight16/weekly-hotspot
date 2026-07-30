@@ -1,12 +1,12 @@
 **语言 / Language:** [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md)
 
-# 每周热点深度梳理
+# 格物（Dianalyze）— 辩证周报
 
 [![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/sixtdreanight/weekly-hotspot/actions)
 [![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/sixtdreanight/weekly-hotspot/actions)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 
-AI 驱动的热点事件分析工具。每周自动抓取热点新闻，通过 DeepSeek 进行政审过滤、价值评分、深度梳理（时间线 + 证据链 + 关系网），输出结构化 JSON 到博客渲染。
+以唯物辩证法和历史唯物主义为核心方法论的 AI 热点分析系统。每周自动抓取热点新闻，通过辩证认识运动五阶段（现象把握→矛盾识别→辩证展开→历史定位→实践指向）进行深度分析，辅以证据验证、定量数据、多轮对抗等现代分析手段。输出结构化 JSON + Markdown 文章到博客渲染。
 
 ## 架构
 

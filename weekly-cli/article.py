@@ -371,10 +371,10 @@ def generate_article(
 
     # 尾注
     lines.append(
-        "*本文由 [weekly-hotspot](https://github.com/sixtdreanight/weekly-hotspot) "
-        "分析系统自动生成，数据来自微博、知乎、Hacker News 实时热点。"
-        "每期周刊基于 DeepSeek 模型进行马列毛主义阶级分析，"
-        "力求在真实信息的基础上，讲清楚每件事背后的物质利益格局。*\n"
+        "*本文由 [格物 (Dianalyze)](https://github.com/sixtdreanight/weekly-hotspot) "
+        "分析系统自动生成，以唯物辩证法和历史唯物主义为方法论核心。"
+        "数据来自微博、知乎、Hacker News 实时热点——力求穿透现象，"
+        "把握矛盾运动的本质。*\n"
     )
 
     return "\n".join(lines)

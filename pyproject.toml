@@ -3,7 +3,7 @@
 [project]
 name = "weekly-hotspot"
 version = "0.1.0"
-description = "AI-driven weekly hotspot deep analysis — censorship filter, scoring, evidence chain extraction"
+description = "格物 (Dianalyze) — 以唯物辩证法为核心的 AI 热点深度分析 · 五阶段辩证认识运动"
 readme = "README.md"
 license = "MIT"
 authors = [
