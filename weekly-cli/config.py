@@ -12,6 +12,15 @@ DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 DEEPSEEK_MODEL = "deepseek-v4-flash"
 DEEPSEEK_MODEL_PRO = "deepseek-v4-pro"
 
+# v2 dialectical/empirical routing
+DEEPSEEK_MODEL_DIALECTICAL = "deepseek-v4-pro"   # thinking=True for dialectical layers
+DEEPSEEK_MODEL_EMPIRICAL = "deepseek-v4-flash"    # lighter model for empirical layers
+
+MODEL_ROUTING = {
+    "dialectical": DEEPSEEK_MODEL_DIALECTICAL,
+    "empirical": DEEPSEEK_MODEL_EMPIRICAL,
+}
+
 _default_blog_dir = Path.home() / "Documents" / "Blog-mizuki" / "src" / "content" / "weekly"
 BLOG_CONTENT_DIR = Path(os.environ.get("BLOG_CONTENT_DIR", str(_default_blog_dir)))
 
