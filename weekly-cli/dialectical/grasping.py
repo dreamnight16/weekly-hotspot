@@ -85,4 +85,19 @@ def grasp_phenomena(
         sanitized.append(sanitized_e)
     result = {**result, "selectedEvents": sanitized}
 
+    # Also sanitize excludedEvents — LLM may return integer IDs here too
+    excluded = result.get("excludedEvents")
+    if isinstance(excluded, list):
+        clean_excluded = []
+        for e in excluded:
+            if not isinstance(e, dict):
+                continue
+            ce = dict(e)
+            raw_id = ce.get("id", "")
+            ce["id"] = str(raw_id) if not isinstance(raw_id, str) else raw_id
+            clean_excluded.append(ce)
+        result["excludedEvents"] = clean_excluded
+    elif excluded is None:
+        result["excludedEvents"] = []
+
     return result
