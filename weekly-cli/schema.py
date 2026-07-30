@@ -1,50 +1,72 @@
+"""Pydantic v2 data models for 格物 (Dianalyze) v2 dialectical analysis system.
+
+Five-phase dialectical materialism analysis pipeline:
+  Phase 1 - Phenomenon Grasping (现象把握): empirical event collection
+  Phase 2 - Contradiction Identification (矛盾识别): interest + class analysis
+  Phase 3 - Dialectical Unfolding (辩证展开): unity of opposites, quantity-quality,
+             negation of negation
+  Phase 4 - Historical Positioning (历史定位): epoch themes, archetypes, analogies
+  Phase 5 - Practice Orientation (实践导向): scenarios, signals, calibration
+
+All models use Pydantic v2 with:
+  - model_validator(mode="before") for enum sanitization + score clamping
+  - model_validator(mode="after") for cross-reference validation
+  - _fuzzy_fix_enum() helper for AI output sanitization
+"""
+
+from __future__ import annotations
+
+import logging
 from typing import Any, Literal, Optional, Self
+
 from pydantic import BaseModel, Field, model_validator
 
-from config import get_logger
+try:
+    from config import get_logger
 
-_logger = get_logger("schema")
-
-
-# ---- Pipeline intermediate models ----
-
-class RawEvent(BaseModel):
-    """Phase 0 输出：原始抓取事件"""
-    title: str
-    summary: str
+    _logger = get_logger("schema")
+except ImportError:
+    _logger = logging.getLogger("schema")
 
 
-class CensoredEvent(BaseModel):
-    """Phase 1 输出：通过政审的事件"""
-    title: str
-    summary: str
+# =============================================================================
+# Enum value fixup maps
+# =============================================================================
+# These maps correct known AI mistakes in enum outputs.  Extend them as new
+# patterns are discovered in production logs.
+
+_RELIABILITY_FIXUPS: dict[str, str] = {}
+_CREDIBILITY_FIXUPS: dict[str, str] = {}
+_CURRENT_PHASE_FIXUPS: dict[str, str] = {}
+_DIRECTION_FIXUPS: dict[str, str] = {}
+_CONFIDENCE_FIXUPS: dict[str, str] = {}
+_ARCHETYPE_FIXUPS: dict[str, str] = {}
+_SCENARIO_TYPE_FIXUPS: dict[str, str] = {}
 
 
-class ScoredEvent(BaseModel):
-    """Phase 2 输出：评分后入选的事件"""
-    title: str
-    summary: str
-    impactScore: int = Field(ge=1, le=5)
-    infoGainScore: int = Field(ge=1, le=5)
+def _fuzzy_fix_enum(
+    value: str,
+    valid_values: frozenset[str],
+    fixups: dict[str, str],
+    default: str,
+) -> str:
+    """Try to map a non-enum value to a valid one.  Strips whitespace first.
 
+    Strategy (in order):
+      1. Exact match after stripping
+      2. Exact match in fixup map
+      3. Substring: valid value appears anywhere in the AI output
+      4. Fall back to default
 
-# ---- Enum value fixup maps ----
+    Args:
+        value: The raw AI-generated value.
+        valid_values: The set of acceptable enum values.
+        fixups: Known-error -> correct-value mapping.
+        default: Value to return when no match is found.
 
-# Maps known AI mistakes to correct enum values
-_CURRENT_STATE_FIXUPS: dict[str, str] = {
-    "外部对抗激化，内部隐性积累": "对抗激化",
-}
-_DIRECTION_FIXUPS: dict[str, str] = {
-    "隐性积累": "缓和",  # AI confuses currentState enum for direction
-}
-_AUTHENTICITY_FIXUPS: dict[str, str] = {}
-_SOURCE_TYPE_FIXUPS: dict[str, str] = {}
-_CLASS_BIAS_FIXUPS: dict[str, str] = {}
-_TYPE_FIXUPS: dict[str, str] = {}
-
-
-def _fuzzy_fix_enum(value: str, valid_values: frozenset[str], fixups: dict[str, str], default: str) -> str:
-    """Try to map a non-enum value to a valid one.  Strips whitespace first."""
+    Returns:
+        A value guaranteed to be in valid_values or equal to default.
+    """
     if not isinstance(value, str):
         return default
     v = value.strip()
@@ -52,336 +74,737 @@ def _fuzzy_fix_enum(value: str, valid_values: frozenset[str], fixups: dict[str, 
         return v
     if v in fixups:
         return fixups[v]
-    # Substring match: if the valid value appears anywhere in the AI output, use it
-    for valid in valid_values:
+    # Substring match: if the valid value appears anywhere in the AI output
+    for valid in sorted(valid_values, key=len, reverse=True):
         if valid in v:
-            _logger.warning("  [sanitize] enum fixup: %r -> %r (substring match)", v, valid)
+            _logger.warning(
+                "  [sanitize] enum fixup: %r -> %r (substring match)", v, valid
+            )
             return valid
-    _logger.warning("  [sanitize] enum default: %r -> %r (no match in %s)", v, default, sorted(valid_values))
+    _logger.warning(
+        "  [sanitize] enum default: %r -> %r (no match in %s)",
+        v,
+        default,
+        sorted(valid_values),
+    )
     return default
 
 
-# ---- Output models ----
+# =============================================================================
+# Phase 0-1: Pipeline intermediate models
+# =============================================================================
 
 
-class ClassAnalysis(BaseModel):
-    classNature: str = ""
-    contradiction: str = ""
-    historicalContext: str = ""
+class RawEvent(BaseModel):
+    """Phase 0 output: raw scraped event."""
 
-
-class TimelineNode(BaseModel):
-    id: str
-    time: str = ""  # default for AI that omits this field
     title: str
-    description: str
-    evidenceRefs: list[str] = Field(default_factory=list)
+    summary: str
+
+
+class CensoredEvent(BaseModel):
+    """Phase 1 intermediate: censorship-passed event."""
+
+    title: str
+    summary: str
+
+
+# =============================================================================
+# Phase 1: Phenomenon Grasping (现象把握) - Empirical models
+# =============================================================================
+
+_RELIABILITY_VALUES: frozenset[str] = frozenset({"A", "B", "C", "D", "E", "F"})
+
+
+class SourceGrade(BaseModel):
+    """Source reliability and credibility assessment.
+
+    reliability: A-F rating (analogous to intelligence source grading).
+    credibility: 1-6 where 1=highest credibility, 6=unverifiable.
+    rationale: Free-text explanation of the assessment.
+    """
+
+    reliability: str = Field(default="C")
+    credibility: int = Field(default=3, ge=1, le=6)
+    rationale: str = ""
 
     @model_validator(mode="before")
     @classmethod
     def _sanitize(cls, data: Any) -> Any:
-        if isinstance(data, dict):
-            if not data.get("time"):
-                data["time"] = "未知"
-                _logger.debug("  [sanitize] timeline node %s missing 'time', set to '未知'", data.get("id", "?"))
+        if not isinstance(data, dict):
+            return data
+        # Fuzzy-fix reliability enum
+        if "reliability" in data:
+            data["reliability"] = _fuzzy_fix_enum(
+                str(data.get("reliability", "C")),
+                _RELIABILITY_VALUES,
+                _RELIABILITY_FIXUPS,
+                "C",
+            )
+        # Clamp credibility
+        if "credibility" in data and isinstance(data["credibility"], (int, float)):
+            val = data["credibility"]
+            if val < 1:
+                _logger.warning("  [sanitize] SourceGrade credibility=%s clamped to 1", val)
+                data["credibility"] = 1
+            elif val > 6:
+                _logger.warning("  [sanitize] SourceGrade credibility=%s clamped to 6", val)
+                data["credibility"] = 6
         return data
 
 
-class EvidenceNode(BaseModel):
+class GDELTBaseline(BaseModel):
+    """GDELT baseline metrics for the week."""
+
+    totalArticles: int = 0
+    avgTone: float = 0.0
+    numEvents: int = 0
+    period: str = ""
+
+
+class SelectedEvent(BaseModel):
+    """Phase 1 output: event selected for dialectical analysis.
+
+    An event passes through empirical filtering and is found to have material
+    interest content worth analyzing.
+    """
+
     id: str
-    sourceType: Literal["官媒", "社交平台", "一手材料", "其他"]
-    sourceName: str
+    title: str
+    summary: str
     sourceUrl: Optional[str] = None
-    content: str
-    authenticity: Literal["真实", "存疑", "不实", "待验证"]
-    aiReason: str
-    classBias: Literal["无产阶级立场", "资产阶级立场", "小资产阶级立场", "帝国主义话语", "待判断"] = "待判断"
-
-    @model_validator(mode="before")
-    @classmethod
-    def _sanitize(cls, data: Any) -> Any:
-        if not isinstance(data, dict):
-            return data
-        # Fix classBias: AI often writes explanation text instead of enum value
-        if "classBias" in data:
-            valid = frozenset({"无产阶级立场", "资产阶级立场", "小资产阶级立场", "帝国主义话语", "待判断"})
-            data["classBias"] = _fuzzy_fix_enum(
-                str(data["classBias"]), valid, _CLASS_BIAS_FIXUPS, "待判断"
-            )
-        # Fix sourceType
-        if "sourceType" in data:
-            valid_st = frozenset({"官媒", "社交平台", "一手材料", "其他"})
-            data["sourceType"] = _fuzzy_fix_enum(
-                str(data["sourceType"]), valid_st, _SOURCE_TYPE_FIXUPS, "其他"
-            )
-        # Fix authenticity
-        if "authenticity" in data:
-            valid_auth = frozenset({"真实", "存疑", "不实", "待验证"})
-            data["authenticity"] = _fuzzy_fix_enum(
-                str(data["authenticity"]), valid_auth, _AUTHENTICITY_FIXUPS, "待验证"
-            )
-        return data
+    materialContent: str = ""
+    isDirectExpression: bool = False
+    sourceGrade: Optional[SourceGrade] = None
 
 
-class Edge(BaseModel):
-    from_: str = Field(alias="from")
-    to: str
-    type: Literal["因果", "关联", "矛盾"]
-    description: str
+class ExcludedEvent(BaseModel):
+    """Phase 1 output: event excluded from further analysis."""
 
-    model_config = {"populate_by_name": True}
-
-    @model_validator(mode="before")
-    @classmethod
-    def _sanitize(cls, data: Any) -> Any:
-        if not isinstance(data, dict):
-            return data
-        if "type" in data:
-            valid_types = frozenset({"因果", "关联", "矛盾"})
-            data["type"] = _fuzzy_fix_enum(
-                str(data["type"]), valid_types, _TYPE_FIXUPS, "关联"
-            )
-        return data
+    id: str
+    title: str
+    summary: str
+    exclusionReason: str = ""
 
 
-# ---- Phase 4: Synthesis models ----
+# =============================================================================
+# Phase 2: Contradiction Identification (矛盾识别) - Analysis models
+# =============================================================================
 
 
-class CrossCuttingTheme(BaseModel):
-    name: str = Field(max_length=80)
-    description: str = Field(max_length=500)
+class InterestStructure(BaseModel):
+    """Material interest structure analysis for a stakeholder group."""
+
+    interestGroup: str = ""
+    materialInterest: str = ""
+    expressionForm: str = ""
+    intensity: int = Field(default=3, ge=1, le=5)
     relatedEventIds: list[str] = Field(default_factory=list)
-    significance: str = Field(max_length=500)
 
 
-class IdentifiedTrend(BaseModel):
-    name: str = Field(max_length=80)
-    description: str = Field(max_length=500)
-    direction: Literal["上升", "下降", "转型", "激化", "缓和"]
-    evidenceEventIds: list[str] = Field(default_factory=list)
+class ClassPosition(BaseModel):
+    """Class position analysis in production relations."""
+
+    className: str = ""
+    position: str = ""
+    coreInterest: str = ""
+    contradictions: list[str] = Field(default_factory=list)
+    relatedEventIds: list[str] = Field(default_factory=list)
 
 
-class ContradictionInMotion(BaseModel):
-    contradiction: str = Field(max_length=300)
-    opposingForces: str = Field(max_length=500)
-    eventsInvolved: list[str] = Field(default_factory=list)
-    currentState: Literal["对抗激化", "暂时缓和", "向新形态转化", "隐性积累"]
-    outlook: str = Field(max_length=500)
+class NineDimScores(BaseModel):
+    """Nine-dimensional dialectical score assessment.
 
+    Each dimension is a (score, confidence) tuple where:
+      - score: 1-10 integer
+      - confidence: 0.0-1.0 float
+    """
 
-class WeeklySynthesis(BaseModel):
-    weeklyNarrative: str = Field(max_length=2000)
-    crossCuttingThemes: list[CrossCuttingTheme] = Field(default_factory=list, max_length=5)
-    trends: list[IdentifiedTrend] = Field(default_factory=list, max_length=5)
-    contradictionsInMotion: list[ContradictionInMotion] = Field(default_factory=list, max_length=5)
-    globalAssessment: str = Field(default="", max_length=1000)
-    dataGaps: list[str] = Field(default_factory=list, max_length=5)
-
-    @model_validator(mode="before")
-    @classmethod
-    def _sanitize_synthesis(cls, data: Any) -> Any:
-        """Fix common AI-generated enum errors in synthesis output."""
-        if not isinstance(data, dict):
-            return data
-
-        # Fix direction enum in trends
-        valid_directions = frozenset({"上升", "下降", "转型", "激化", "缓和"})
-        for i, trend in enumerate(data.get("trends", []) or []):
-            if isinstance(trend, dict) and "direction" in trend:
-                trend["direction"] = _fuzzy_fix_enum(
-                    str(trend["direction"]), valid_directions, _DIRECTION_FIXUPS, "转型"
-                )
-
-        # Fix currentState enum in contradictionsInMotion
-        valid_states = frozenset({"对抗激化", "暂时缓和", "向新形态转化", "隐性积累"})
-        for i, c in enumerate(data.get("contradictionsInMotion", []) or []):
-            if isinstance(c, dict) and "currentState" in c:
-                c["currentState"] = _fuzzy_fix_enum(
-                    str(c["currentState"]), valid_states, _CURRENT_STATE_FIXUPS, "隐性积累"
-                )
-
-        return data
-
-    @model_validator(mode="after")
-    def _validate_synthesis_refs(self) -> Self:
-        # Drop items with empty required refs (AI often generates hollow items)
-        self.crossCuttingThemes = [t for t in self.crossCuttingThemes if t.relatedEventIds]
-        self.trends = [t for t in self.trends if t.evidenceEventIds]
-        self.contradictionsInMotion = [c for c in self.contradictionsInMotion if c.eventsInvolved]
-
-        return self
-
-
-class Event(BaseModel):
-    id: str = Field(max_length=100)
-    title: str = Field(max_length=500)
-    impactScore: int = Field(ge=1, le=5)
-    infoGainScore: int = Field(ge=1, le=5)
-    summary: str = Field(max_length=5000)
-    classAnalysis: ClassAnalysis = Field(default_factory=ClassAnalysis)
-    dialecticalSummary: str = Field(default="", max_length=200)
-    timeline: list[TimelineNode] = Field(default_factory=list, max_length=50)
-    evidence: list[EvidenceNode] = Field(default_factory=list, max_length=100)
-    edges: list[Edge] = Field(default_factory=list, max_length=200)
+    magnitude: tuple[int, float] = (5, 0.5)
+    scope: tuple[int, float] = (5, 0.5)
+    velocity: tuple[int, float] = (5, 0.5)
+    novelty: tuple[int, float] = (5, 0.5)
+    cascadePotential: tuple[int, float] = (5, 0.5)
+    actorProminence: tuple[int, float] = (5, 0.5)
+    uncertainty: tuple[int, float] = (5, 0.5)
+    polarity: tuple[int, float] = (5, 0.5)
+    durability: tuple[int, float] = (5, 0.5)
 
     @model_validator(mode="before")
     @classmethod
-    def _sanitize_event(cls, data: Any) -> Any:
-        """Fix common AI-generated data issues before strict validation."""
+    def _clamp_scores(cls, data: Any) -> Any:
+        """Clamp each dimension's score to [1,10] and confidence to [0.0,1.0]."""
         if not isinstance(data, dict):
             return data
-
-        # Clamp scores to valid range
-        for field in ("impactScore", "infoGainScore"):
-            if field in data and isinstance(data[field], (int, float)):
-                val = data[field]
-                if val < 1:
-                    _logger.warning("  [sanitize] evt %s %s=%s clamped to 1", data.get("id", "?"), field, val)
-                    data[field] = 1
-                elif val > 5:
-                    _logger.warning("  [sanitize] evt %s %s=%s clamped to 5", data.get("id", "?"), field, val)
-                    data[field] = 5
-
-        # Ensure dialecticalSummary is a string and not too long
-        if "dialecticalSummary" in data and not isinstance(data.get("dialecticalSummary"), str):
-            data["dialecticalSummary"] = str(data.get("dialecticalSummary", ""))
-
-        # Ensure classAnalysis has all required sub-fields
-        if "classAnalysis" in data:
-            if not isinstance(data["classAnalysis"], dict):
-                data["classAnalysis"] = {}
-            for sub in ("classNature", "contradiction", "historicalContext"):
-                data["classAnalysis"].setdefault(sub, "")
-
-        # Fix edge cross-references: drop edges whose from/to don't match any
-        # known timeline/evidence id
-        timeline_data = data.get("timeline", [])
-        evidence_data = data.get("evidence", [])
-        valid_ids = set()
-        for t in timeline_data:
-            if isinstance(t, dict) and "id" in t:
-                valid_ids.add(t["id"])
-        for e in evidence_data:
-            if isinstance(e, dict) and "id" in e:
-                valid_ids.add(e["id"])
-
-        edges = data.get("edges", [])
-        fixed_edges = []
-        for i, edge in enumerate(edges or []):
-            if not isinstance(edge, dict):
-                continue
-            from_id = edge.get("from", "")
-            to_id = edge.get("to", "")
-            from_ok = from_id in valid_ids
-            to_ok = to_id in valid_ids
-            if from_ok and to_ok:
-                fixed_edges.append(edge)
-            else:
-                missing = []
-                if not from_ok:
-                    missing.append(f"from='{from_id}'")
-                if not to_ok:
-                    missing.append(f"to='{to_id}'")
-                _logger.warning(
-                    "  [sanitize] evt %s: drop Edge[%d] (%s) — reference(s) %s not found in timeline/evidence",
-                    data.get("id", "?"), i, edge.get("description", "")[:40], ", ".join(missing),
-                )
-        if len(fixed_edges) < len(edges):
-            data["edges"] = fixed_edges
-
-        # Fix timeline evidenceRefs: drop references to non-existent evidence
-        if evidence_data and timeline_data:
-            ev_ids = {e["id"] for e in evidence_data if isinstance(e, dict) and "id" in e}
-            for i, t in enumerate(timeline_data):
-                if not isinstance(t, dict):
-                    continue
-                refs = t.get("evidenceRefs", [])
-                if refs:
-                    clean_refs = [r for r in refs if r in ev_ids]
-                    if len(clean_refs) < len(refs):
-                        dropped = set(refs) - set(clean_refs)
-                        _logger.warning(
-                            "  [sanitize] evt %s timeline[%d]: drop invalid evidenceRefs %s",
-                            data.get("id", "?"), i, sorted(dropped),
-                        )
-                    t["evidenceRefs"] = clean_refs
-
+        for field_name in (
+            "magnitude", "scope", "velocity", "novelty",
+            "cascadePotential", "actorProminence", "uncertainty",
+            "polarity", "durability",
+        ):
+            if field_name in data:
+                val = data[field_name]
+                if isinstance(val, (list, tuple)) and len(val) >= 2:
+                    score, conf = val[0], val[1]
+                    score = max(1, min(10, int(score)))
+                    conf = max(0.0, min(1.0, float(conf)))
+                    data[field_name] = (score, conf)
         return data
 
-    @model_validator(mode="after")
-    def _validate_cross_ids(self) -> Self:
-        timeline_ids = {t.id for t in self.timeline}
-        evidence_ids = {e.id for e in self.evidence}
-        valid_refs = timeline_ids | evidence_ids
 
-        invalid_edges = []
-        for i, edge in enumerate(self.edges):
-            if edge.from_ not in valid_refs or edge.to not in valid_refs:
-                invalid_edges.append(i)
+class CompetingHypothesis(BaseModel):
+    """Competing explanatory hypothesis with evidence assessment."""
 
-        if invalid_edges:
-            _logger.error(
-                "Edge cross-ref validation failed for %s: edges %s still have invalid refs after sanitization",
-                self.id, invalid_edges,
+    hypothesisId: str = ""
+    description: str = ""
+    supportingEvidence: str = ""
+    contradictingEvidence: str = ""
+    assessedProbability: float = Field(default=0.5, ge=0.0, le=1.0)
+    relatedEventIds: list[str] = Field(default_factory=list)
+
+
+# =============================================================================
+# Phase 3: Dialectical Unfolding (辩证展开) - Dialectical models
+# =============================================================================
+
+_CURRENT_PHASE_VALUES: frozenset[str] = frozenset(
+    {"量变积累", "质的飞跃", "量变中的局部质变"}
+)
+
+
+class UnityOfOpposites(BaseModel):
+    """Unity of opposites analysis for a contradiction."""
+
+    identity: str = ""
+    struggle: str = ""
+    particularity: str = ""
+    universality: str = ""
+
+
+class QuantityQuality(BaseModel):
+    """Quantity-quality transformation analysis."""
+
+    currentPhase: str = Field(default="量变积累")
+    quantitativeDirection: str = ""
+    measure: str = ""
+    newQuality: Optional[str] = None
+    oldQualityNegated: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if "currentPhase" in data:
+            data["currentPhase"] = _fuzzy_fix_enum(
+                str(data.get("currentPhase", "量变积累")),
+                _CURRENT_PHASE_VALUES,
+                _CURRENT_PHASE_FIXUPS,
+                "量变积累",
             )
-            self.edges = [e for i, e in enumerate(self.edges) if i not in invalid_edges]
+        return data
 
-        for node in self.timeline:
-            clean_refs = [r for r in node.evidenceRefs if r in evidence_ids]
-            if len(clean_refs) != len(node.evidenceRefs):
-                _logger.warning(
-                    "Timeline %s evidenceRefs stripped: %s -> %s",
-                    node.id, node.evidenceRefs, clean_refs,
-                )
-                node.evidenceRefs = clean_refs
 
+_DIRECTION_VALUES: frozenset[str] = frozenset({"螺旋上升", "暂时倒退", "停滞"})
+
+
+class NegationOfNegation(BaseModel):
+    """Negation of negation analysis."""
+
+    oldThing: str = ""
+    firstNegation: str = ""
+    internalNegation: str = ""
+    direction: str = Field(default="螺旋上升")
+    stageCharacteristics: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if "direction" in data:
+            data["direction"] = _fuzzy_fix_enum(
+                str(data.get("direction", "螺旋上升")),
+                _DIRECTION_VALUES,
+                _DIRECTION_FIXUPS,
+                "螺旋上升",
+            )
+        return data
+
+
+_CONFIDENCE_VALUES: frozenset[str] = frozenset({"HIGH", "MEDIUM", "LOW"})
+
+
+class AdversarialReview(BaseModel):
+    """Adversarial review of a dialectical claim."""
+
+    reviewAspect: str = ""
+    originalClaim: str = ""
+    critique: str = ""
+    revisedClaim: Optional[str] = None
+    confidence: str = Field(default="MEDIUM")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if "confidence" in data:
+            data["confidence"] = _fuzzy_fix_enum(
+                str(data.get("confidence", "MEDIUM")),
+                _CONFIDENCE_VALUES,
+                _CONFIDENCE_FIXUPS,
+                "MEDIUM",
+            )
+        return data
+
+
+class CausalLoopDiagram(BaseModel):
+    """Causal loop diagram representing feedback structures."""
+
+    diagramId: str = ""
+    description: str = ""
+    nodes: list[str] = Field(default_factory=list)
+    positiveFeedbackLoops: list[str] = Field(default_factory=list)
+    negativeFeedbackLoops: list[str] = Field(default_factory=list)
+    keyLeveragePoints: list[str] = Field(default_factory=list)
+
+
+class DataValidation(BaseModel):
+    """Data validation check result."""
+
+    validationCheck: str = ""
+    dataSource: str = ""
+    result: str = ""
+    issues: list[str] = Field(default_factory=list)
+    confidence: str = Field(default="HIGH")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if "confidence" in data:
+            data["confidence"] = _fuzzy_fix_enum(
+                str(data.get("confidence", "HIGH")),
+                _CONFIDENCE_VALUES,
+                _CONFIDENCE_FIXUPS,
+                "HIGH",
+            )
+        return data
+
+
+# =============================================================================
+# Phase 4: Historical Positioning (历史定位) - Historical models
+# =============================================================================
+
+
+class EpochTheme(BaseModel):
+    """A theme characteristic of the current historical epoch."""
+
+    themeName: str = ""
+    description: str = ""
+    relevanceToCurrentEvents: str = ""
+    relatedEventIds: list[str] = Field(default_factory=list)
+
+
+_ARCHETYPE_VALUES: frozenset[str] = frozenset(
+    {"FixesThatFail", "LimitsToGrowth", "ShiftingTheBurden", "TragedyOfCommons"}
+)
+
+
+class SystemArchetype(BaseModel):
+    """Systems thinking archetype identified in the current situation."""
+
+    archetypeType: str = Field(default="LimitsToGrowth")
+    patternName: str = ""
+    description: str = ""
+    structuralFeatures: str = ""
+    relatedEventIds: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if "archetypeType" in data:
+            data["archetypeType"] = _fuzzy_fix_enum(
+                str(data.get("archetypeType", "LimitsToGrowth")),
+                _ARCHETYPE_VALUES,
+                _ARCHETYPE_FIXUPS,
+                "LimitsToGrowth",
+            )
+        return data
+
+
+class HiddenConnection(BaseModel):
+    """A non-obvious connection between seemingly unrelated phenomena."""
+
+    connectionName: str = ""
+    entityA: str = ""
+    entityB: str = ""
+    connectionMechanism: str = ""
+    significance: str = ""
+    relatedEventIds: list[str] = Field(default_factory=list)
+
+
+class HistoricalAnalogy(BaseModel):
+    """Historical analogy for understanding the current situation."""
+
+    analogyName: str = ""
+    historicalPeriod: str = ""
+    historicalEvent: str = ""
+    similarity: str = ""
+    difference: str = ""
+    lessonForToday: str = ""
+    relatedEventIds: list[str] = Field(default_factory=list)
+
+
+# =============================================================================
+# Phase 5: Practice Orientation (实践导向) - Forward-looking models
+# =============================================================================
+
+_SCENARIO_TYPE_VALUES: frozenset[str] = frozenset(
+    {"baseline", "alternative", "wildcard"}
+)
+
+
+class Scenario(BaseModel):
+    """Forward-looking scenario for practice guidance."""
+
+    scenarioId: str = ""
+    title: str = ""
+    description: str = ""
+    scenarioType: str = Field(default="baseline")
+    probability: float = Field(default=0.5, ge=0.0, le=1.0)
+    keyAssumptions: list[str] = Field(default_factory=list)
+    earlySignals: list[str] = Field(default_factory=list)
+    relatedEventIds: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if "scenarioType" in data:
+            data["scenarioType"] = _fuzzy_fix_enum(
+                str(data.get("scenarioType", "baseline")),
+                _SCENARIO_TYPE_VALUES,
+                _SCENARIO_TYPE_FIXUPS,
+                "baseline",
+            )
+        return data
+
+
+class WatchSignal(BaseModel):
+    """A signal to watch for scenario validation in coming weeks."""
+
+    signalName: str = ""
+    description: str = ""
+    indicator: str = ""
+    currentValue: str = ""
+    threshold: str = ""
+    trend: str = ""
+    priority: int = Field(default=3, ge=1, le=5)
+
+
+class LastWeekCalibration(BaseModel):
+    """Calibration against last week's predictions."""
+
+    predictionSummary: str = ""
+    actualOutcome: str = ""
+    calibrationNote: str = ""
+    accuracyScore: Optional[float] = None
+
+
+# =============================================================================
+# Phase aggregate models (one per pipeline phase)
+# =============================================================================
+
+
+class PhenomenonGrasping(BaseModel):
+    """Phase 1 aggregate: empirical phenomenon grasping output."""
+
+    phaseSummary: str = ""
+    selectedEvents: list[SelectedEvent] = Field(default_factory=list)
+    excludedEvents: list[ExcludedEvent] = Field(default_factory=list)
+    gdeltBaseline: Optional[GDELTBaseline] = None
+    sourceQualityReport: str = ""
+
+    @model_validator(mode="after")
+    def _filter_empty(self) -> Self:
+        # Phase 1 has no empty-ref filtering needed for events
         return self
+
+
+class ContradictionIdentification(BaseModel):
+    """Phase 2 aggregate: contradiction identification output."""
+
+    phaseSummary: str = ""
+    events: list[SelectedEvent] = Field(default_factory=list)
+    overallContradictionLandscape: str = ""
+    interestStructures: list[InterestStructure] = Field(default_factory=list)
+    classPositions: list[ClassPosition] = Field(default_factory=list)
+    nineDimScores: Optional[NineDimScores] = None
+    competingHypotheses: list[CompetingHypothesis] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _filter_empty_refs(self) -> Self:
+        self.interestStructures = [
+            i for i in self.interestStructures if i.relatedEventIds
+        ]
+        self.classPositions = [
+            c for c in self.classPositions if c.relatedEventIds
+        ]
+        self.competingHypotheses = [
+            h for h in self.competingHypotheses if h.relatedEventIds
+        ]
+        return self
+
+
+class DialecticalUnfolding(BaseModel):
+    """Phase 3 aggregate: dialectical unfolding output."""
+
+    phaseSummary: str = ""
+    events: list[SelectedEvent] = Field(default_factory=list)
+    dialecticalConfidence: str = Field(default="MEDIUM")
+    unityOfOpposites: Optional[UnityOfOpposites] = None
+    quantityQuality: Optional[QuantityQuality] = None
+    negationOfNegation: Optional[NegationOfNegation] = None
+    adversarialReview: Optional[AdversarialReview] = None
+    causalLoopDiagram: Optional[CausalLoopDiagram] = None
+    dataValidation: Optional[DataValidation] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if "dialecticalConfidence" in data:
+            data["dialecticalConfidence"] = _fuzzy_fix_enum(
+                str(data.get("dialecticalConfidence", "MEDIUM")),
+                _CONFIDENCE_VALUES,
+                _CONFIDENCE_FIXUPS,
+                "MEDIUM",
+            )
+        return data
+
+    @model_validator(mode="after")
+    def _filter_empty(self) -> Self:
+        return self
+
+
+class HistoricalPositioning(BaseModel):
+    """Phase 4 aggregate: historical positioning output."""
+
+    phaseSummary: str = ""
+    events: list[SelectedEvent] = Field(default_factory=list)
+    crossCuttingSynthesis: Optional[str] = None
+    epochThemes: list[EpochTheme] = Field(default_factory=list)
+    systemArchetypes: list[SystemArchetype] = Field(default_factory=list)
+    hiddenConnections: list[HiddenConnection] = Field(default_factory=list)
+    historicalAnalogies: list[HistoricalAnalogy] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _filter_empty_refs(self) -> Self:
+        self.epochThemes = [t for t in self.epochThemes if t.relatedEventIds]
+        self.systemArchetypes = [
+            a for a in self.systemArchetypes if a.relatedEventIds
+        ]
+        self.hiddenConnections = [
+            c for c in self.hiddenConnections if c.relatedEventIds
+        ]
+        self.historicalAnalogies = [
+            a for a in self.historicalAnalogies if a.relatedEventIds
+        ]
+        return self
+
+
+class PracticeOrientation(BaseModel):
+    """Phase 5 aggregate: practice orientation output."""
+
+    overallJudgment: str = ""
+    scenarios: list[Scenario] = Field(default_factory=list)
+    practiceSignificance: str = ""
+    signalsToWatch: list[WatchSignal] = Field(default_factory=list)
+    lastWeekCalibration: Optional[LastWeekCalibration] = None
+
+    @model_validator(mode="after")
+    def _filter_empty_refs(self) -> Self:
+        self.scenarios = [s for s in self.scenarios if s.relatedEventIds]
+        return self
+
+
+# =============================================================================
+# Evidence trace and metadata models
+# =============================================================================
+
+
+class TracedSource(BaseModel):
+    """A single source reference with reliability metadata."""
+
+    sourceName: str = ""
+    sourceUrl: str = ""
+    reliability: str = Field(default="C")
+    credibility: int = Field(default=3, ge=1, le=6)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if "reliability" in data:
+            data["reliability"] = _fuzzy_fix_enum(
+                str(data.get("reliability", "C")),
+                _RELIABILITY_VALUES,
+                _RELIABILITY_FIXUPS,
+                "C",
+            )
+        if "credibility" in data and isinstance(data["credibility"], (int, float)):
+            val = data["credibility"]
+            if val < 1:
+                data["credibility"] = 1
+            elif val > 6:
+                data["credibility"] = 6
+        return data
+
+
+class TracedClaim(BaseModel):
+    """A verifiable claim with source tracing."""
+
+    claimId: str = ""
+    claim: str = ""
+    phase: str = ""
+    confidence: str = Field(default="MEDIUM")
+    sources: list[TracedSource] = Field(default_factory=list)
+    independentCorroborations: int = 0
+    verificationMethod: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if "confidence" in data:
+            data["confidence"] = _fuzzy_fix_enum(
+                str(data.get("confidence", "MEDIUM")),
+                _CONFIDENCE_VALUES,
+                _CONFIDENCE_FIXUPS,
+                "MEDIUM",
+            )
+        return data
+
+
+class EvidenceTrace(BaseModel):
+    """Complete evidence trace for an analysis issue."""
+
+    claims: list[TracedClaim] = Field(default_factory=list)
+    totalVerifiedClaims: int = 0
+
+
+class IssueMetadata(BaseModel):
+    """Run-level metadata for an analysis issue."""
+
+    modelVersions: dict[str, str] = Field(default_factory=dict)
+    verificationPasses: int = 0
+    empiricalDegradations: list[str] = Field(default_factory=list)
+    totalApiCost: float = 0.0
+    runDuration: float = 0.0
+    runId: str = ""
+
+
+# =============================================================================
+# Top-level WeeklyIssue model
+# =============================================================================
 
 
 class WeeklyIssue(BaseModel):
+    """Top-level weekly dialectical analysis output.
+
+    Contains all five phases of analysis plus evidence tracing and metadata.
+    Phases 2-5 may be None if the pipeline did not execute them (e.g. if
+    no events survived Phase 1 filtering).
+    """
+
     id: str
     weekStart: str
     weekEnd: str
-    events: list[Event] = Field(default_factory=list)
-    synthesis: WeeklySynthesis | None = Field(default=None)
+    events: list[SelectedEvent] = Field(default_factory=list)
+    phase1: PhenomenonGrasping
+    phase2: Optional[ContradictionIdentification] = None
+    phase3: Optional[DialecticalUnfolding] = None
+    phase4: Optional[HistoricalPositioning] = None
+    phase5: Optional[PracticeOrientation] = None
+    evidenceTrace: EvidenceTrace = Field(default_factory=EvidenceTrace)
+    metadata: IssueMetadata = Field(default_factory=IssueMetadata)
 
     @model_validator(mode="after")
-    def _validate_synthesis_event_ids(self) -> Self:
-        if self.synthesis is None:
-            return self
+    def _validate_cross_phase_refs(self) -> Self:
+        """Validate cross-phase event id references.
 
+        Events referenced in later phases should exist in the events list.
+        Missing references are logged but not removed (they may refer to
+        events that were excluded after filtering).
+        """
         event_ids = {e.id for e in self.events}
+        all_events: set[str] = set()
+        # Collect ids from phase 1
+        all_events.update(e.id for e in self.phase1.selectedEvents)
 
-        # Sanitize crossCuttingThemes: drop invalid event id references
-        for theme in self.synthesis.crossCuttingThemes:
-            clean_refs = [eid for eid in theme.relatedEventIds if eid in event_ids]
-            if len(clean_refs) != len(theme.relatedEventIds):
-                _logger.warning(
-                    "  [sanitize] synthesis theme '%s': dropped invalid event refs %s",
-                    theme.name,
-                    sorted(set(theme.relatedEventIds) - set(clean_refs)),
-                )
-                theme.relatedEventIds = clean_refs
+        # Check phase 2 event refs
+        if self.phase2 is not None:
+            for e in self.phase2.events:
+                if e.id and e.id not in all_events:
+                    all_events.add(e.id)
 
-        # Sanitize trends
-        for trend in self.synthesis.trends:
-            clean_refs = [eid for eid in trend.evidenceEventIds if eid in event_ids]
-            if len(clean_refs) != len(trend.evidenceEventIds):
-                _logger.warning(
-                    "  [sanitize] synthesis trend '%s': dropped invalid event refs %s",
-                    trend.name,
-                    sorted(set(trend.evidenceEventIds) - set(clean_refs)),
-                )
-                trend.evidenceEventIds = clean_refs
+        # Check phase 3 event refs
+        if self.phase3 is not None:
+            for e in self.phase3.events:
+                if e.id and e.id not in all_events:
+                    all_events.add(e.id)
 
-        # Sanitize contradictionsInMotion
-        for c in self.synthesis.contradictionsInMotion:
-            clean_refs = [eid for eid in c.eventsInvolved if eid in event_ids]
-            if len(clean_refs) != len(c.eventsInvolved):
-                _logger.warning(
-                    "  [sanitize] synthesis contradiction: dropped invalid event refs %s",
-                    sorted(set(c.eventsInvolved) - set(clean_refs)),
-                )
-                c.eventsInvolved = clean_refs
+        # Check phase 4 event refs
+        if self.phase4 is not None:
+            for e in self.phase4.events:
+                if e.id and e.id not in all_events:
+                    all_events.add(e.id)
 
         return self
+
+
+# =============================================================================
+# Rebuild forward references (needed for Pydantic v2 in some configurations)
+# =============================================================================
+
+RawEvent.model_rebuild()
+CensoredEvent.model_rebuild()
+SourceGrade.model_rebuild()
+GDELTBaseline.model_rebuild()
+SelectedEvent.model_rebuild()
+ExcludedEvent.model_rebuild()
+InterestStructure.model_rebuild()
+ClassPosition.model_rebuild()
+NineDimScores.model_rebuild()
+CompetingHypothesis.model_rebuild()
+UnityOfOpposites.model_rebuild()
+QuantityQuality.model_rebuild()
+NegationOfNegation.model_rebuild()
+AdversarialReview.model_rebuild()
+CausalLoopDiagram.model_rebuild()
+DataValidation.model_rebuild()
+EpochTheme.model_rebuild()
+SystemArchetype.model_rebuild()
+HiddenConnection.model_rebuild()
+HistoricalAnalogy.model_rebuild()
+Scenario.model_rebuild()
+WatchSignal.model_rebuild()
+LastWeekCalibration.model_rebuild()
+PhenomenonGrasping.model_rebuild()
+ContradictionIdentification.model_rebuild()
+DialecticalUnfolding.model_rebuild()
+HistoricalPositioning.model_rebuild()
+PracticeOrientation.model_rebuild()
+TracedSource.model_rebuild()
+TracedClaim.model_rebuild()
+EvidenceTrace.model_rebuild()
+IssueMetadata.model_rebuild()
+WeeklyIssue.model_rebuild()
