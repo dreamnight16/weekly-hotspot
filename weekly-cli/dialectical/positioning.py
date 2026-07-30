@@ -82,21 +82,26 @@ def position_historically(
         events_text=events_text,
     )
 
-    result = client.chat_json(
-        [
-            {
-                "role": "system",
-                "content": (
-                    "你是一个唯物辩证法研究者。你的任务是历史定位——"
-                    "在辩证展开的基础上，将每个事件置于历史唯物主义的"
-                    "框架中定位，并进行跨事件的综合。用朴实中文写作，"
-                    "不堆砌术语，不贴标签。严格按JSON格式输出。"
-                ),
-            },
-            {"role": "user", "content": prompt},
-        ],
-        max_tokens=16384,
-    )
+    try:
+        result = client.chat_json(
+            [
+                {
+                    "role": "system",
+                    "content": (
+                        "你是一个唯物辩证法研究者。你的任务是历史定位——"
+                        "在辩证展开的基础上，将每个事件置于历史唯物主义的"
+                        "框架中定位，并进行跨事件的综合。用朴实中文写作，"
+                        "不堆砌术语，不贴标签。严格按JSON格式输出。"
+                    ),
+                },
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=16384,
+        )
+    except Exception as e:
+        from config import get_logger as _gl
+        _gl("positioning").warning("position_historically: chat_json failed: %s", e)
+        return {"phaseSummary": "LLM调用失败", "events": [], "crossCuttingSynthesis": {}, "historicalAnalogies": []}
 
     # ── Defensive: ensure events list is valid ──
     events_list = result.get("events")

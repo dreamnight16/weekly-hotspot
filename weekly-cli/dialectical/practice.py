@@ -133,21 +133,26 @@ def orient_practice(
         events_text=events_text,
     )
 
-    result = client.chat_json(
-        [
-            {
-                "role": "system",
-                "content": (
-                    "你是一个唯物辩证法研究者。你的任务是实践导向——"
-                    "将辩证分析转化为对实践的指导，包括情景推演、"
-                    "信号监测和校准。用朴实中文写作，不堆砌术语，"
-                    "不贴标签。严格按JSON格式输出。"
-                ),
-            },
-            {"role": "user", "content": prompt},
-        ],
-        max_tokens=16384,
-    )
+    try:
+        result = client.chat_json(
+            [
+                {
+                    "role": "system",
+                    "content": (
+                        "你是一个唯物辩证法研究者。你的任务是实践导向——"
+                        "将辩证分析转化为对实践的指导，包括情景推演、"
+                        "信号监测和校准。用朴实中文写作，不堆砌术语，"
+                        "不贴标签。严格按JSON格式输出。"
+                    ),
+                },
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=16384,
+        )
+    except Exception as e:
+        from config import get_logger as _gl
+        _gl("practice").warning("orient_practice: chat_json failed: %s", e)
+        return {"overallJudgment": "LLM调用失败", "scenarios": [], "practiceSignificance": "", "signalsToWatch": [], "lastWeekCalibration": None}
 
     # ── Defensive: ensure top-level string fields ──
     if result.get("overallJudgment") is None:

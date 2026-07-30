@@ -43,17 +43,22 @@ def grasp_phenomena(
         events_text=events_text,
     )
 
-    result = client.chat_json([
-        {
-            "role": "system",
-            "content": (
-                "你是一个唯物辩证法研究者。你的任务是现象把握——"
-                "认识运动的第一个阶段。用朴实中文写作，不堆砌术语，"
-                "不贴标签。严格按JSON格式输出。"
-            ),
+    try:
+        result = client.chat_json([
+            {
+                "role": "system",
+                "content": (
+                    "你是一个唯物辩证法研究者。你的任务是现象把握——"
+                    "认识运动的第一个阶段。用朴实中文写作，不堆砌术语，"
+                    "不贴标签。严格按JSON格式输出。"
+                ),
         },
         {"role": "user", "content": prompt},
-    ], max_tokens=8192)
+        ], max_tokens=8192)
+    except Exception as e:
+        from config import get_logger as _gl
+        _gl("grasping").warning("grasp_phenomena: chat_json failed: %s", e)
+        return {"selectedEvents": [], "excludedEvents": [], "sourceQualityReport": "LLM调用失败"}
 
     # Ensure selectedEvents have required fields and are a valid list
     selected = result.get("selectedEvents")

@@ -67,21 +67,26 @@ def identify_contradictions(
         events_text=events_text,
     )
 
-    result = client.chat_json(
-        [
-            {
-                "role": "system",
-                "content": (
-                    "你是一个唯物辩证法研究者。你的任务是矛盾识别——"
-                    "从现象把握的结果出发，提取每个事件背后的矛盾结构、"
-                    "利益格局和阶级立场。用朴实中文写作，不堆砌术语，"
-                    "不贴标签。严格按JSON格式输出。"
-                ),
-            },
-            {"role": "user", "content": prompt},
-        ],
-        max_tokens=16384,
-    )
+    try:
+        result = client.chat_json(
+            [
+                {
+                    "role": "system",
+                    "content": (
+                        "你是一个唯物辩证法研究者。你的任务是矛盾识别——"
+                        "从现象把握的结果出发，提取每个事件背后的矛盾结构、"
+                        "利益格局和阶级立场。用朴实中文写作，不堆砌术语，"
+                        "不贴标签。严格按JSON格式输出。"
+                    ),
+                },
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=16384,
+        )
+    except Exception as e:
+        from config import get_logger as _gl
+        _gl("contradiction").warning("identify_contradictions: chat_json failed: %s", e)
+        return {"phaseSummary": "LLM调用失败", "events": [], "overallContradictionLandscape": ""}
 
     # ── Defensive: ensure events list is valid ──
     events_list = result.get("events")
