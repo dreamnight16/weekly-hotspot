@@ -33,22 +33,6 @@ def retry_call(fn, *args, phase: str = "", max_retries: int = 2, **kwargs):
                 raise
 
 
-def is_quality(event: dict) -> bool:
-    """Quality gate: events must have real substance."""
-    timeline = event.get("timeline", [])
-    evidence = event.get("evidence", [])
-    if len(timeline) < 3:
-        return False
-    if len(evidence) < 2:
-        return False
-    verified = [e for e in evidence if e.get("authenticity") in ("真实", "存疑")]
-    if len(verified) == 0:
-        return False
-    if len(event.get("dialecticalSummary", "")) < 30:
-        return False
-    return True
-
-
 def section_label(n: int) -> str:
     """数字转中文序号。"""
     labels = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]

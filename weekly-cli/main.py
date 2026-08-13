@@ -48,6 +48,7 @@ from empirical.scorer import score_event
 from empirical.verifier import verify_evidence
 from merger import merge_phase
 from narrative.article import generate_article
+from quality import is_quality_event
 from schema import (
     WeeklyIssue,
     PhenomenonGrasping,
@@ -78,7 +79,11 @@ def safe_call(fn: Any, *args: Any, **kwargs: Any) -> Any:
     """
     try:
         return fn(*args, **kwargs)
-    except Exception:
+    except Exception as exc:
+        logger.warning(
+            "[empirical] %s 失败: %s",
+            getattr(fn, "__name__", repr(fn)), exc,
+        )
         return None
 
 
@@ -136,43 +141,6 @@ def _scrape_or_load_cache(args: argparse.Namespace) -> tuple[list[dict], bool]:
 # =============================================================================
 # Phase 3 helpers: parallel analysis + quality gate
 # =============================================================================
-
-
-def _v2_quality_gate(event: dict) -> bool:
-    """Quality gate for v2 dialectical unfolding results.
-
-    Checks that the event has meaningful dialectical content:
-    - dialecticalConfidence is not LOW
-    - at least one dialectical law has substantive content
-    - the event has a title
-    """
-    confidence = event.get("dialecticalConfidence", "LOW")
-    if confidence == "LOW":
-        return False
-
-    uoo = event.get("unityOfOpposites", {})
-    qq = event.get("quantityQuality", {})
-    non_ = event.get("negationOfNegation", {})
-
-    has_dialectical_content = any([
-        isinstance(uoo, dict) and any(
-            v for v in uoo.values() if isinstance(v, str) and len(v) >= 10
-        ),
-        isinstance(qq, dict) and any(
-            v for v in qq.values() if isinstance(v, str) and len(v) >= 10
-        ),
-        isinstance(non_, dict) and any(
-            v for v in non_.values() if isinstance(v, str) and len(v) >= 10
-        ),
-    ])
-
-    if not has_dialectical_content:
-        return False
-
-    if not event.get("title"):
-        return False
-
-    return True
 
 
 def _parallel_analyze(
@@ -246,7 +214,7 @@ def _parallel_analyze(
         log.critical("  Phase 3: 没有事件通过分析，退出。")
         sys.exit(1)
 
-    quality = [e for e in analyzed if _v2_quality_gate(e)]
+    quality = [e for e in analyzed if is_quality_event(e)]
     dropped = len(analyzed) - len(quality)
     if dropped > 0:
         log.info("  质量筛选: 剔除了 %d 个证据不足或内容空洞的事件", dropped)

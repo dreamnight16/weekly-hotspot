@@ -5,27 +5,41 @@ before being accepted into the final WeeklyIssue.
 """
 
 
-def is_quality_event(event) -> bool:
-    """Quality gate for a single analyzed event (Phase 3+).
+def is_quality_event(event: dict) -> bool:
+    """Quality gate for a single dialectically-analyzed event (Phase 3).
 
     An event must have:
-    - At least 3 timeline entries
-    - At least 2 evidence items
-    - At least 1 verified or suspect evidence item
-    - A dialecticalSummary of at least 30 characters
+    - dialecticalConfidence that is not LOW
+    - substantive dialectical content (at least one of unityOfOpposites /
+      quantityQuality / negationOfNegation contributes a >= 10-char string)
+    - a title
     """
-    timeline = getattr(event, "timeline", [])
-    evidence = getattr(event, "evidence", [])
-    if len(timeline) < 3:
+    confidence = event.get("dialecticalConfidence", "LOW")
+    if confidence == "LOW":
         return False
-    if len(evidence) < 2:
+
+    uoo = event.get("unityOfOpposites", {})
+    qq = event.get("quantityQuality", {})
+    non_ = event.get("negationOfNegation", {})
+
+    has_dialectical_content = any([
+        isinstance(uoo, dict) and any(
+            v for v in uoo.values() if isinstance(v, str) and len(v) >= 10
+        ),
+        isinstance(qq, dict) and any(
+            v for v in qq.values() if isinstance(v, str) and len(v) >= 10
+        ),
+        isinstance(non_, dict) and any(
+            v for v in non_.values() if isinstance(v, str) and len(v) >= 10
+        ),
+    ])
+
+    if not has_dialectical_content:
         return False
-    verified = [e for e in evidence if getattr(e, "authenticity", None) in ("真实", "存疑")]
-    if len(verified) == 0:
+
+    if not event.get("title"):
         return False
-    summary = getattr(event, "dialecticalSummary", "")
-    if len(summary) < 30:
-        return False
+
     return True
 
 

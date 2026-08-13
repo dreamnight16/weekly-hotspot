@@ -3,43 +3,38 @@ import pytest
 from types import SimpleNamespace
 from quality import is_quality_event, is_quality_issue
 
-SUMMARY_OK = "这是一段足够长的辩证总结文字，必须要超过三十个字符才能通过质量门控的检查"
+CONTENT_OK = "这是一段足够长的辩证内容文本，用来满足质量门控的最低长度要求"
 
 
-def _make_event(timeline_count=3, evidence_list=None, summary=SUMMARY_OK):
-    ev = SimpleNamespace()
-    ev.timeline = [SimpleNamespace(id=f"t{i}") for i in range(timeline_count)]
-    ev.evidence = evidence_list or []
-    ev.dialecticalSummary = summary
-    return ev
-
-
-def _make_evidence(authenticity="真实"):
-    e = SimpleNamespace()
-    e.authenticity = authenticity
-    return e
+def _make_event(confidence="HIGH", title="测试事件", content=CONTENT_OK):
+    return {
+        "dialecticalConfidence": confidence,
+        "title": title,
+        "unityOfOpposites": {"对立面": content},
+        "quantityQuality": {},
+        "negationOfNegation": {},
+    }
 
 
 class TestIsQualityEvent:
     def test_valid_event_passes(self):
-        event = _make_event(3, [_make_evidence("真实"), _make_evidence("存疑")])
-        assert is_quality_event(event) is True
+        assert is_quality_event(_make_event()) is True
 
-    def test_too_few_timeline(self):
-        event = _make_event(1, [_make_evidence("真实"), _make_evidence("真实")])
+    def test_low_confidence_rejected(self):
+        assert is_quality_event(_make_event(confidence="LOW")) is False
+
+    def test_no_dialectical_content_rejected(self):
+        event = _make_event()
+        event["unityOfOpposites"] = {}
+        event["quantityQuality"] = {}
+        event["negationOfNegation"] = {}
         assert is_quality_event(event) is False
 
-    def test_too_few_evidence(self):
-        event = _make_event(3, [_make_evidence("真实")])
-        assert is_quality_event(event) is False
+    def test_short_dialectical_content_rejected(self):
+        assert is_quality_event(_make_event(content="短")) is False
 
-    def test_no_verified_evidence(self):
-        event = _make_event(3, [_make_evidence("不实"), _make_evidence("不实")])
-        assert is_quality_event(event) is False
-
-    def test_summary_too_short(self):
-        event = _make_event(3, [_make_evidence("真实"), _make_evidence("真实")], summary="太短")
-        assert is_quality_event(event) is False
+    def test_missing_title_rejected(self):
+        assert is_quality_event(_make_event(title="")) is False
 
 
 class TestIsQualityIssue:

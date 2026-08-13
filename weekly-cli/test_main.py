@@ -2,7 +2,7 @@
 from unittest.mock import patch, MagicMock
 
 import pytest
-from utils import get_week_id, get_week_range, retry_call, is_quality
+from utils import get_week_id, get_week_range, retry_call
 from main import parse_args, main
 
 
@@ -65,80 +65,6 @@ def testretry_call_all_fail():
 
     with pytest.raises(RuntimeError, match="persistent error"):
         retry_call(always_fail, phase="test", max_retries=2)
-
-
-# ---- Quality gate tests ----
-
-@pytest.mark.unit
-def test_is_quality_valid():
-    event = {
-        "timeline": [
-            {"id": "tl-1"}, {"id": "tl-2"}, {"id": "tl-3"}
-        ],
-        "evidence": [
-            {"id": "ev-1", "authenticity": "真实"},
-            {"id": "ev-2", "authenticity": "存疑"},
-        ],
-        "dialecticalSummary": "这是一个足够长的辩证总结，超过三十个字符的限制，确保不会被质量门控误杀。",
-    }
-    assert is_quality(event) is True
-
-
-@pytest.mark.unit
-def test_is_quality_short_timeline():
-    event = {
-        "timeline": [{"id": "tl-1"}],
-        "evidence": [
-            {"id": "ev-1", "authenticity": "真实"},
-            {"id": "ev-2", "authenticity": "真实"},
-        ],
-        "dialecticalSummary": "足够长的总结文字，超过三十个字符的要求，确保通过质量门控的检查。",
-    }
-    assert is_quality(event) is False
-
-
-@pytest.mark.unit
-def test_is_quality_insufficient_evidence():
-    event = {
-        "timeline": [
-            {"id": "tl-1"}, {"id": "tl-2"}, {"id": "tl-3"}
-        ],
-        "evidence": [
-            {"id": "ev-1", "authenticity": "真实"},
-        ],
-        "dialecticalSummary": "足够长的总结文字，超过三十个字符的要求，确保通过质量门控的检查。",
-    }
-    assert is_quality(event) is False
-
-
-@pytest.mark.unit
-def test_is_quality_no_authentic_evidence():
-    event = {
-        "timeline": [
-            {"id": "tl-1"}, {"id": "tl-2"}, {"id": "tl-3"}
-        ],
-        "evidence": [
-            {"id": "ev-1", "authenticity": "不实"},
-            {"id": "ev-2", "authenticity": "不实"},
-        ],
-        "dialecticalSummary": "足够长的总结文字，超过三十个字符的要求，确保通过质量门控的检查。",
-    }
-    assert is_quality(event) is False
-
-
-@pytest.mark.unit
-def test_is_quality_short_summary():
-    event = {
-        "timeline": [
-            {"id": "tl-1"}, {"id": "tl-2"}, {"id": "tl-3"}
-        ],
-        "evidence": [
-            {"id": "ev-1", "authenticity": "真实"},
-            {"id": "ev-2", "authenticity": "存疑"},
-        ],
-        "dialecticalSummary": "太短",
-    }
-    assert is_quality(event) is False
 
 
 # ---- CLI argument tests ----
