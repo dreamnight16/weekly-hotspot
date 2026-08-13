@@ -23,7 +23,7 @@ jobs:
       - name: Checkout Blog-mizuki
         uses: actions/checkout@v4
         with:
-          repository: sixtdreanight/Blog-mizuki
+          repository: dreamnight16/Blog-mizuki
           path: blog
           token: ${{ secrets.BLOG_PAT }}
 
@@ -44,5 +44,5 @@ jobs:
           else
             WEEK=$(date +%Y-W%V)
             git commit -m "chore: update weekly hotspot $WEEK"
-            git -c http.extraheader= push https://x-access-token:${{ secrets.BLOG_PAT }}@github.com/sixtdreanight/Blog-mizuki.git
+            git -c http.extraheader= push https://x-access-token:${{ secrets.BLOG_PAT }}@github.com/dreamnight16/Blog-mizuki.git
           fi

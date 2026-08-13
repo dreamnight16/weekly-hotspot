@@ -19,12 +19,15 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 requires-python = ">=3.11"
+# Pinned to exact versions for reproducible installs. Generate a lockfile after
+# any change (e.g. `pip-compile` or `uv lock`). The git dep is pinned to the
+# exact commit SHA of chinese-scraper-utils master to avoid a mutable ref.
 dependencies = [
-    "chinese-scraper-utils @ git+https://github.com/sixtdreanight/chinese-scraper-utils.git@master",
-    "openai>=1.0.0",
-    "pydantic>=2.0.0",
-    "httpx>=0.28",
-    "ddgs>=7.0",
+    "chinese-scraper-utils @ git+https://github.com/dreamnight16/chinese-scraper-utils.git@4fff8609682522cf671ee1996b85c928e9477a23",
+    "openai==1.109.1",
+    "pydantic==2.13.4",
+    "httpx==0.28.1",
+    "ddgs==9.14.4",
 ]
 
 [project.optional-dependencies]
@@ -42,9 +45,9 @@ markers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/sixtdreanight/weekly-hotspot"
-Repository = "https://github.com/sixtdreanight/weekly-hotspot.git"
-Issues = "https://github.com/sixtdreanight/weekly-hotspot/issues"
+Homepage = "https://github.com/dreamnight16/weekly-hotspot"
+Repository = "https://github.com/dreamnight16/weekly-hotspot.git"
+Issues = "https://github.com/dreamnight16/weekly-hotspot/issues"
 
 [build-system]
 requires = ["setuptools>=68"]

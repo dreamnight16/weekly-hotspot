@@ -5,7 +5,7 @@ Thanks for your interest in contributing!
 ## Getting Started
 
 ```bash
-git clone https://github.com/sixtdreanight/weekly-hotspot.git
+git clone https://github.com/dreamnight16/weekly-hotspot.git
 cd weekly-hotspot
 pip install -r weekly-cli/requirements.txt
 export DEEPSEEK_API_KEY=sk-your-key
@@ -70,6 +70,6 @@ LLM prompts are externalized in `prompts/*.json`.
 
 ## Questions?
 
-Open a [discussion](https://github.com/sixtdreanight/weekly-hotspot/discussions).
+Open a [discussion](https://github.com/dreamnight16/weekly-hotspot/discussions).
 
 [conv]: https://www.conventionalcommits.org/

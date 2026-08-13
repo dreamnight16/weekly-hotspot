@@ -2,8 +2,8 @@
 
 # Dianalyze — Dialectical Weekly Deep Analysis
 
-[![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/sixtdreanight/weekly-hotspot/actions)
-[![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/sixtdreanight/weekly-hotspot/actions)
+[![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/dreamnight16/weekly-hotspot/actions)
+[![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/dreamnight16/weekly-hotspot/actions)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 
 Dialectical weekly news analysis powered by AI. Uses dialectical materialism and historical materialism as core methodology, supported by modern analytical techniques (evidence verification, quantitative data, scenario planning). Output: structured JSON + Markdown article. Rendered on blog.
@@ -70,8 +70,8 @@ Required GitHub Secrets:
 
 ## Related
 
-- [chinese-scraper-utils](https://github.com/sixtdreanight/chinese-scraper-utils) — Shared utilities used by this project
-- [Blog-mizuki](https://github.com/sixtdreanight/Blog-mizuki) — Weekly reports published at dreamnight.net.cn
+- [chinese-scraper-utils](https://github.com/dreamnight16/chinese-scraper-utils) — Shared utilities used by this project
+- [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki) — Weekly reports published at dreamnight.net.cn
 
 ---
 

@@ -2,8 +2,8 @@
 
 # 格物（Dianalyze）— 辯證週報
 
-[![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/sixtdreanight/weekly-hotspot/actions)
-[![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/sixtdreanight/weekly-hotspot/actions)
+[![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/dreamnight16/weekly-hotspot/actions)
+[![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/dreamnight16/weekly-hotspot/actions)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 
 AI 驅動的熱點事件分析工具。每週自動抓取熱點新聞，透過 DeepSeek 進行政審過濾、價值評分、深度梳理（時間線 + 證據鏈 + 關係網），輸出結構化 JSON 到部落格渲染。
@@ -70,8 +70,8 @@ cd weekly-cli && pip install -r requirements.txt && python main.py
 
 ## 相關專案
 
-- [chinese-scraper-utils](https://github.com/sixtdreanight/chinese-scraper-utils) — 本專案使用的通用工具庫
-- [Blog-mizuki](https://github.com/sixtdreanight/Blog-mizuki) — 每週報告發佈在 dreamnight.net.cn
+- [chinese-scraper-utils](https://github.com/dreamnight16/chinese-scraper-utils) — 本專案使用的通用工具庫
+- [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki) — 每週報告發佈在 dreamnight.net.cn
 
 ---
 

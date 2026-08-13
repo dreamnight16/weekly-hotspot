@@ -45,7 +45,7 @@ curl -H "Authorization: Bearer $DEEPSEEK_API_KEY" https://api.deepseek.com/v1/mo
 **解决：**
 1. 重新生成 PAT：Settings → Developer settings → Tokens (classic) → 勾选 `repo` scope
 2. 更新 GitHub Secrets 中的 `BLOG_PAT`
-3. 检查 PAT 是否对 `sixtdreanight/Blog-mizuki` 仓库有效
+3. 检查 PAT 是否对 `dreamnight16/Blog-mizuki` 仓库有效
 
 ---
 

@@ -2,8 +2,8 @@
 
 # 格物（Dianalyze）— 辩证周报
 
-[![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/sixtdreanight/weekly-hotspot/actions)
-[![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/sixtdreanight/weekly-hotspot/actions)
+[![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/dreamnight16/weekly-hotspot/actions)
+[![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/dreamnight16/weekly-hotspot/actions)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 
 以唯物辩证法和历史唯物主义为核心方法论的 AI 热点分析系统。每周自动抓取热点新闻，通过辩证认识运动五阶段（现象把握→矛盾识别→辩证展开→历史定位→实践指向）进行深度分析，辅以证据验证、定量数据、多轮对抗等现代分析手段。输出结构化 JSON + Markdown 文章到博客渲染。
@@ -70,8 +70,8 @@ cd weekly-cli && pip install -r requirements.txt && python main.py
 
 ## 相关项目
 
-- [chinese-scraper-utils](https://github.com/sixtdreanight/chinese-scraper-utils) — 本项目使用的通用工具库
-- [Blog-mizuki](https://github.com/sixtdreanight/Blog-mizuki) — 每周报告发布在 dreamnight.net.cn
+- [chinese-scraper-utils](https://github.com/dreamnight16/chinese-scraper-utils) — 本项目使用的通用工具库
+- [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki) — 每周报告发布在 dreamnight.net.cn
 
 ---
 

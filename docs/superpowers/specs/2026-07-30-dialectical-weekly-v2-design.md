@@ -3,7 +3,7 @@
 > **状态**: 已确认
 > **日期**: 2026-07-30
 > **项目名**: 格物（取"格物致知"——探究事物原理，穷究矛盾本质）
-> **仓库**: `sixtdreanight/gewu`（从 `weekly-hotspot` 更名）
+> **仓库**: `dreamnight16/gewu`（从 `weekly-hotspot` 更名）
 > **目标**: 以唯物辩证法和历史唯物主义为绝对核心方法论，辅以现代分析手段，全量重构
 
 ---
@@ -597,7 +597,7 @@ tags: [...]
 
 ---
 
-*本文由 [格物](https://github.com/sixtdreanight/gewu)
+*本文由 [格物](https://github.com/dreamnight16/gewu)
 分析系统自动生成，以唯物辩证法和历史唯物主义为方法论核心。*
 *所有判断均标注证据来源、置信度和不确定性。*
 *[查看完整证据溯源](link-to-json)*

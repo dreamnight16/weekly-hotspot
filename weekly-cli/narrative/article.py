@@ -628,7 +628,7 @@ def generate_article(issue: WeeklyIssue, blog_dir: Path) -> str:
 
     # ---- footer ----
     lines.append(
-        "*本文由 [格物 (Dianalyze)](https://github.com/sixtdreanight/weekly-hotspot) "
+        "*本文由 [格物 (Dianalyze)](https://github.com/dreamnight16/weekly-hotspot) "
         "分析系统自动生成，以唯物辩证法和历史唯物主义为方法论核心。"
         "数据来自全网实时热点——力求穿透现象，把握矛盾运动的本质。*"
     )

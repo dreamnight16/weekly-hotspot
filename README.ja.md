@@ -2,8 +2,8 @@
 
 # 格物（Dianalyze）— 弁証法的週次分析
 
-[![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/sixtdreanight/weekly-hotspot/actions)
-[![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/sixtdreanight/weekly-hotspot/actions)
+[![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/dreamnight16/weekly-hotspot/actions)
+[![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/dreamnight16/weekly-hotspot/actions)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 
 AI 駆動のホットスポット分析ツール。毎週自動でホットニュースを収集し、DeepSeek による思想審査フィルタリング、価値スコアリング、深掘り分析（タイムライン + 証拠連鎖 + 関係性ネットワーク）を実施し、構造化 JSON をブログに出力してレンダリングします。
@@ -70,8 +70,8 @@ GitHub Secrets の設定が必要：
 
 ## 関連プロジェクト
 
-- [chinese-scraper-utils](https://github.com/sixtdreanight/chinese-scraper-utils) — 本プロジェクトで使用する汎用ユーティリティライブラリ
-- [Blog-mizuki](https://github.com/sixtdreanight/Blog-mizuki) — 毎週のレポートは dreamnight.net.cn で公開
+- [chinese-scraper-utils](https://github.com/dreamnight16/chinese-scraper-utils) — 本プロジェクトで使用する汎用ユーティリティライブラリ
+- [Blog-mizuki](https://github.com/dreamnight16/Blog-mizuki) — 毎週のレポートは dreamnight.net.cn で公開
 
 ---
 
