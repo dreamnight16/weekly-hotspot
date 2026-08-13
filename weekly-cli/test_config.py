@@ -37,6 +37,7 @@ def test_models_configured():
 @pytest.mark.unit
 def test_path_safety_reject_outside_home(monkeypatch):
     """The path safety check logic detects out-of-home paths."""
-    outside = Path("/tmp/evil/path/outside/home")
+    # Test fixture: a path outside $HOME, not an actual temp directory.
+    outside = Path("/tmp/evil/path/outside/home")  # nosec B108
     home = Path.home()
     assert not str(outside.resolve()).startswith(str(home))

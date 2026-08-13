@@ -23,7 +23,8 @@ def _search_bing(query: str, max_results: int = 10) -> list[dict]:
     url = f"https://api.bing.microsoft.com/v7.0/search?q={encoded}&count={max_results}&mkt=zh-CN"
     req = urllib.request.Request(url, headers={"Ocp-Apim-Subscription-Key": BING_API_KEY})
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        # Scheme is hardcoded to https; not attacker-controlled.
+        with urllib.request.urlopen(req, timeout=10) as resp:  # nosec B310
             data = json.loads(resp.read().decode("utf-8"))
     except Exception:
         return []
