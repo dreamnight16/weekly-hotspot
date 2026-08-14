@@ -13,12 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r weekly-cli/requirements.txt
+        run: uv sync --locked
 
       - name: Checkout Blog-mizuki
         uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           BLOG_CONTENT_DIR: ${{ github.workspace }}/blog/src/content/weekly
-        run: python weekly-cli/main.py
+        run: uv run python weekly-cli/main.py
 
       - name: Push to Blog-mizuki
         working-directory: blog
