@@ -211,10 +211,9 @@ wheels = [
 [[package]]
 name = "chinese-scraper-utils"
 version = "0.3.0"
-source = { git = "https://github.com/dreamnight16/chinese-scraper-utils.git?rev=4fff8609682522cf671ee1996b85c928e9477a23#4fff8609682522cf671ee1996b85c928e9477a23" }
+source = { git = "https://github.com/dreamnight16/chinese-scraper-utils.git?rev=76580468b8efd491ef46860c1bd307dfc49d783b#76580468b8efd491ef46860c1bd307dfc49d783b" }
 dependencies = [
     { name = "httpx" },
-    { name = "openai" },
 ]
 
 [[package]]
@@ -1019,7 +1018,6 @@ dependencies = [
     { name = "chinese-scraper-utils" },
     { name = "ddgs" },
     { name = "httpx" },
-    { name = "openai" },
     { name = "pydantic" },
 ]
 
@@ -1028,15 +1026,18 @@ dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
 ]
+llm = [
+    { name = "openai" },
+]
 
 [package.metadata]
 requires-dist = [
-    { name = "chinese-scraper-utils", git = "https://github.com/dreamnight16/chinese-scraper-utils.git?rev=4fff8609682522cf671ee1996b85c928e9477a23" },
+    { name = "chinese-scraper-utils", git = "https://github.com/dreamnight16/chinese-scraper-utils.git?rev=76580468b8efd491ef46860c1bd307dfc49d783b" },
     { name = "ddgs", specifier = "==9.14.4" },
     { name = "httpx", specifier = "==0.28.1" },
-    { name = "openai", specifier = "==1.109.1" },
+    { name = "openai", marker = "extra == 'llm'", specifier = "==1.109.1" },
     { name = "pydantic", specifier = "==2.13.4" },
     { name = "pytest", marker = "extra == 'dev'", specifier = "==8.3.4" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = "==5.0.0" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["llm", "dev"]

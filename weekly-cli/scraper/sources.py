@@ -46,7 +46,11 @@ def scrape_all() -> list[dict]:
 
     # Convert to event dicts for the pipeline
     events = [
-        {"title": t.title, "summary": f"{t.summary}\n来源: {t.url}"}
+        {
+            "title": t.title,
+            "summary": f"{t.summary}\n来源: {t.url}",
+            "sourceUrl": t.url,
+        }
         for t in deduped
     ]
     save_cache(events)

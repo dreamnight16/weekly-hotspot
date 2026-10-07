@@ -16,10 +16,10 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import re
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathlib import Path
 from typing import Any
 
 from chinese_scraper_utils import DeepSeekClient
@@ -87,9 +87,46 @@ def safe_call(fn: Any, *args: Any, **kwargs: Any) -> Any:
         return None
 
 
+_SOURCE_URL_RE = re.compile(r"(?:^|\n)来源:\s*(https?://\S+)")
+
+
+def _source_url(event: dict) -> str:
+    """Read a source URL from the explicit field or the scraper summary."""
+    explicit = str(event.get("sourceUrl") or "").strip()
+    if explicit:
+        return explicit
+    summary = str(event.get("summary") or "")
+    match = _SOURCE_URL_RE.search(summary)
+    return match.group(1).strip() if match else ""
+
+
+def _carry_source_urls(events: list[dict], raw_events: list[dict]) -> list[dict]:
+    """Preserve scraper provenance when a model returns a new event shape."""
+    by_id = {
+        str(event.get("id")): _source_url(event)
+        for event in raw_events
+        if event.get("id") and _source_url(event)
+    }
+    by_title = {
+        str(event.get("title", "")).strip(): _source_url(event)
+        for event in raw_events
+        if str(event.get("title", "")).strip() and _source_url(event)
+    }
+    carried: list[dict] = []
+    for event in events:
+        item = dict(event)
+        item["sourceUrl"] = (
+            by_id.get(str(item.get("id")), "")
+            or by_title.get(str(item.get("title", "")).strip(), "")
+            or _source_url(item)
+        ) or None
+        carried.append(item)
+    return carried
+
+
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="每周热点深度分析 — AI 驱动的五阶段唯物辩证法分析工具",
+        description="每周热点证据收集，支持可选的五阶段模型分析",
     )
     parser.add_argument(
         "--dry-run", action="store_true",
@@ -181,9 +218,11 @@ def _parallel_analyze(
         # Extract the primary event from the unfolding result
         unfolded_events = unfolding.get("events", [])
         if unfolded_events and isinstance(unfolded_events, list):
-            analyzed = dict(unfolded_events[0])
+            analyzed = {**event, **dict(unfolded_events[0])}
         else:
             analyzed = dict(event)
+
+        analyzed["sourceUrl"] = event.get("sourceUrl") or analyzed.get("sourceUrl")
 
         # Merge top-level dialectical analysis into the event dict
         for key in (
@@ -211,8 +250,8 @@ def _parallel_analyze(
     analyzed = [results_map[i] for i in sorted(results_map)]
 
     if not analyzed:
-        log.critical("  Phase 3: 没有事件通过分析，退出。")
-        sys.exit(1)
+        log.warning("  Phase 3: 没有事件通过分析")
+        return []
 
     quality = [e for e in analyzed if is_quality_event(e)]
     dropped = len(analyzed) - len(quality)
@@ -287,9 +326,115 @@ def _combine_empirical(*results: dict | None) -> dict | None:
     return combined
 
 
+def _build_evidence_only_issue(
+    raw_events: list[dict],
+    from_cache: bool,
+) -> WeeklyIssue:
+    """Build a readable source report without calling a model provider."""
+    events: list[SelectedEvent] = []
+    for index, raw in enumerate(raw_events):
+        if not isinstance(raw, dict):
+            continue
+        title = str(raw.get("title") or "(无标题)").strip()
+        summary = str(raw.get("summary") or "").strip()
+        source_url = _source_url(raw)
+        if source_url:
+            summary = re.sub(
+                rf"\s*来源:\s*{re.escape(source_url)}\s*$", "", summary,
+            ).strip()
+        events.append(SelectedEvent(
+            id=str(raw.get("id") or f"raw-{index + 1}"),
+            title=title,
+            summary=summary,
+            sourceUrl=source_url or None,
+        ))
+
+    cache_note = "本期数据来自上次成功抓取的缓存。" if from_cache else "本期数据来自本次抓取。"
+    phase1 = PhenomenonGrasping(
+        phaseSummary=(
+            f"{cache_note} 共整理 {len(events)} 条公开热点素材。"
+            "本报告保留标题、摘要和来源，未生成模型分析结论。"
+        ),
+        selectedEvents=events,
+        sourceQualityReport="以下内容是来源素材的整理，不代表独立核验或事实判断。",
+    )
+    week_start, week_end = get_week_range()
+    return WeeklyIssue(
+        id=get_week_id(),
+        weekStart=week_start,
+        weekEnd=week_end,
+        events=events,
+        phase1=phase1,
+        evidenceTrace=EvidenceTrace(),
+        metadata=IssueMetadata(
+            modelVersions={},
+            totalApiCost=0.0,
+            runDuration=0.0,
+            runId=RUN_ID,
+        ),
+    )
+
+
+def _write_outputs(
+    issue: WeeklyIssue,
+    events_payload: list[dict],
+    phase_payloads: dict[str, Any] | None = None,
+) -> None:
+    """Write the JSON and Markdown forms of an issue."""
+    phase_payloads = phase_payloads or {}
+    BLOG_CONTENT_DIR.mkdir(parents=True, exist_ok=True)
+    json_path = BLOG_CONTENT_DIR / f"{issue.id}.json"
+    json_payload = {
+        "id": issue.id,
+        "weekStart": issue.weekStart,
+        "weekEnd": issue.weekEnd,
+        "events": events_payload,
+        "phase1": phase_payloads.get("phase1", issue.phase1.model_dump()),
+        "phase2": phase_payloads.get(
+            "phase2", issue.phase2.model_dump() if issue.phase2 else None,
+        ),
+        "phase4": phase_payloads.get(
+            "phase4", issue.phase4.model_dump() if issue.phase4 else None,
+        ),
+        "phase5": phase_payloads.get(
+            "phase5", issue.phase5.model_dump() if issue.phase5 else None,
+        ),
+        "evidenceTrace": issue.evidenceTrace.model_dump(),
+        "metadata": issue.metadata.model_dump(),
+    }
+    json_path.write_text(
+        json.dumps(json_payload, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    blog_root = BLOG_CONTENT_DIR.parent
+    posts_dir = blog_root / "posts" / issue.id
+    posts_dir.mkdir(parents=True, exist_ok=True)
+    article_path = posts_dir / "index.md"
+    article_path.write_text(generate_article(issue, blog_root), encoding="utf-8")
+    logger.info("输出 JSON: %s", json_path)
+    logger.info("输出文章: %s", article_path)
+    logger.info("共 %d 个素材事件", len(events_payload))
+
+
 # =============================================================================
 # Main pipeline
 # =============================================================================
+
+
+def _write_evidence_report(
+    raw_events: list[dict],
+    from_cache: bool,
+    dry_run: bool,
+    *,
+    total_cost: float = 0.0,
+) -> None:
+    issue = _build_evidence_only_issue(raw_events, from_cache)
+    issue.metadata.totalApiCost = total_cost
+    if dry_run:
+        logger.info("Evidence-only dry run complete. 共 %d 个素材", len(issue.events))
+        return
+    _write_outputs(issue, [event.model_dump() for event in issue.events])
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -306,20 +451,30 @@ def main(argv: list[str] | None = None) -> None:
         elapsed = time.time() - phase_start.get(name, time.time())
         logger.info("[%s] 耗时 %.1fs", name, elapsed)
 
-    # ---- Model clients ----
-    dialectical_client = DeepSeekClient(
-        DEEPSEEK_API_KEY, model=DEEPSEEK_MODEL_DIALECTICAL, thinking=True,
-    )
-    empirical_client = DeepSeekClient(
-        DEEPSEEK_API_KEY, model=DEEPSEEK_MODEL_EMPIRICAL,
-    )
-
     # =====================================================================
     # Phase 0: Scrape
     # =====================================================================
     _phase_begin("Phase 0")
-    raw_events, _from_cache = _scrape_or_load_cache(args)
+    raw_events, from_cache = _scrape_or_load_cache(args)
     _phase_done("Phase 0")
+
+    if not DEEPSEEK_API_KEY:
+        logger.info("未配置模型服务，输出证据整理报告")
+        _write_evidence_report(raw_events, from_cache, args.dry_run)
+        return
+
+    # ---- Model clients ----
+    try:
+        dialectical_client = DeepSeekClient(
+            DEEPSEEK_API_KEY, model=DEEPSEEK_MODEL_DIALECTICAL, thinking=True,
+        )
+        empirical_client = DeepSeekClient(
+            DEEPSEEK_API_KEY, model=DEEPSEEK_MODEL_EMPIRICAL,
+        )
+    except ImportError:
+        logger.warning("模型 SDK 未安装，输出证据整理报告")
+        _write_evidence_report(raw_events, from_cache, args.dry_run)
+        return
 
     # =====================================================================
     # Phase 1: Phenomenon Grasping
@@ -343,13 +498,17 @@ def main(argv: list[str] | None = None) -> None:
     p1_merged = merge_phase(p1_model, p1_empirical)
     _phase_done("Phase 1")
 
-    selected = p1_merged.get("selectedEvents", [])
+    selected = _carry_source_urls(
+        p1_merged.get("selectedEvents", []), raw_events,
+    )
+    p1_merged["selectedEvents"] = selected
     if not selected:
-        logger.critical("Phase 1: 无入选事件，退出。")
-        if args.dry_run:
-            total_cost = float(dialectical_client.total_cost + empirical_client.total_cost)
-            logger.info("Dry run complete. 预估费用 $%.4f", total_cost)
-        sys.exit(1)
+        logger.warning("Phase 1 未返回事件，降级为证据整理报告")
+        _write_evidence_report(
+            raw_events, from_cache, args.dry_run,
+            total_cost=float(dialectical_client.total_cost + empirical_client.total_cost),
+        )
+        return
 
     # =====================================================================
     # Phase 2: Contradiction Identification
@@ -371,13 +530,15 @@ def main(argv: list[str] | None = None) -> None:
     p2_merged = merge_phase(p2_model, p2_empirical)
     _phase_done("Phase 2")
 
-    p2_events = p2_merged.get("events", [])
+    p2_events = _carry_source_urls(p2_merged.get("events", []), selected)
+    p2_merged["events"] = p2_events
     if not p2_events:
-        logger.critical("Phase 2: 无事件通过矛盾识别，退出。")
-        if args.dry_run:
-            total_cost = float(dialectical_client.total_cost + empirical_client.total_cost)
-            logger.info("Dry run complete. 预估费用 $%.4f", total_cost)
-        sys.exit(1)
+        logger.warning("Phase 2 未返回事件，降级为证据整理报告")
+        _write_evidence_report(
+            raw_events, from_cache, args.dry_run,
+            total_cost=float(dialectical_client.total_cost + empirical_client.total_cost),
+        )
+        return
 
     # Cap events for analysis
     p2_events = p2_events[:args.max_events]
@@ -393,11 +554,12 @@ def main(argv: list[str] | None = None) -> None:
     _phase_done("Phase 3")
 
     if not quality_events:
-        logger.critical("质量筛选后没有事件留存，退出。")
-        if args.dry_run:
-            total_cost = float(dialectical_client.total_cost + empirical_client.total_cost)
-            logger.info("Dry run complete. 预估费用 $%.4f", total_cost)
-        sys.exit(1)
+        logger.warning("质量筛选后没有事件留存，降级为证据整理报告")
+        _write_evidence_report(
+            raw_events, from_cache, args.dry_run,
+            total_cost=float(dialectical_client.total_cost + empirical_client.total_cost),
+        )
+        return
 
     # =====================================================================
     # Phase 4: Historical Positioning (skip if < 2 quality events)
@@ -476,6 +638,7 @@ def main(argv: list[str] | None = None) -> None:
                 id=e.get("id", f"evt-{len(issue_events)+1}"),
                 title=e.get("title", "(无标题)"),
                 summary=e.get("summary", ""),
+                sourceUrl=e.get("sourceUrl"),
                 materialContent=e.get("materialContent", ""),
                 isDirectExpression=e.get("isDirectExpression", False),
             ))
@@ -484,6 +647,7 @@ def main(argv: list[str] | None = None) -> None:
                 id=f"evt-{len(issue_events)+1}",
                 title=e.get("title", "(无标题)"),
                 summary=e.get("summary", ""),
+                sourceUrl=e.get("sourceUrl"),
             ))
 
     issue = WeeklyIssue(
@@ -525,37 +689,16 @@ def main(argv: list[str] | None = None) -> None:
         ),
     )
 
-    # ---- JSON output ----
-    BLOG_CONTENT_DIR.mkdir(parents=True, exist_ok=True)
-    json_path = BLOG_CONTENT_DIR / f"{week_id}.json"
-    json_payload = {
-        "id": issue.id,
-        "weekStart": issue.weekStart,
-        "weekEnd": issue.weekEnd,
-        "events": quality_events,  # full v2 event dicts with analysis
-        "phase1": p1_merged,
-        "phase2": p2_merged,
-        "phase4": p4_final,
-        "phase5": p5_final,
-        "evidenceTrace": issue.evidenceTrace.model_dump(),
-        "metadata": issue.metadata.model_dump(),
-    }
-    json_path.write_text(
-        json.dumps(json_payload, indent=2, ensure_ascii=False),
-        encoding="utf-8",
+    _write_outputs(
+        issue,
+        quality_events,
+        phase_payloads={
+            "phase1": p1_merged,
+            "phase2": p2_merged,
+            "phase4": p4_final,
+            "phase5": p5_final,
+        },
     )
-
-    # ---- Markdown article output ----
-    blog_root = BLOG_CONTENT_DIR.parent  # src/content
-    posts_dir = blog_root / "posts" / week_id
-    posts_dir.mkdir(parents=True, exist_ok=True)
-    article_path = posts_dir / "index.md"
-    md = generate_article(issue, blog_root)
-    article_path.write_text(md, encoding="utf-8")
-
-    logger.info("输出 JSON: %s", json_path)
-    logger.info("输出文章: %s", article_path)
-    logger.info("共 %d 个质量事件", len(quality_events))
     logger.info("API 费用: $%.4f", total_cost)
 
 

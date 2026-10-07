@@ -5,3 +5,6 @@ ComiRadar/
 .coverage
 .venv/
 *.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/

@@ -1,7 +1,6 @@
 # Pinned to exact versions for reproducible installs.
 # Regenerate a lockfile after any change (e.g. `pip-compile` or `uv lock`).
-chinese-scraper-utils @ git+https://github.com/dreamnight16/chinese-scraper-utils.git@4fff8609682522cf671ee1996b85c928e9477a23
-openai==1.109.1
+chinese-scraper-utils @ git+https://github.com/dreamnight16/chinese-scraper-utils.git@76580468b8efd491ef46860c1bd307dfc49d783b
 pydantic==2.13.4
 httpx==0.28.1
 ddgs==9.14.4

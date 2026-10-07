@@ -6,7 +6,7 @@
 [![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/dreamnight16/weekly-hotspot/actions)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 
-以唯物辩证法和历史唯物主义为核心方法论的 AI 热点分析系统。每周自动抓取热点新闻，通过辩证认识运动五阶段（现象把握→矛盾识别→辩证展开→历史定位→实践指向）进行深度分析，辅以证据验证、定量数据、多轮对抗等现代分析手段。输出结构化 JSON + Markdown 文章到博客渲染。
+每周热点素材收集与可选分析工具。无模型时仍可抓取或读取缓存，并输出带来源的 JSON + Markdown 素材报告；配置模型后再运行现有的五阶段分析、证据验证和情景梳理。
 
 ## 架构
 
@@ -15,11 +15,11 @@
   ↓ 获取热点话题 + 去重
 [Phase 0] 抓取 & 缓存
   ↓ 抓取全失败时回退缓存
-[Phase 1] 政审过滤（MLM 相关性）
+[Phase 1] 可选相关性筛选
   ↓ 排除娱乐八卦 / 政治敏感内容
-[Phase 2] AI 评分筛选
+[Phase 2] 可选评分筛选
   ↓ 事件影响 × 信息增量 → 前 8 个
-[Phase 3] 逐事件深度梳理（并行 3 线程）
+[Phase 3] 可选逐事件梳理（并行 3 线程）
   ↓ DuckDuckGo + Bing 搜索 → 时间线 + 证据 + 关系
 [Phase 4] 跨事件综合梳理
   ↓ 主题 + 趋势 + 矛盾运动
@@ -48,6 +48,7 @@ prompts/              # 外部化 LLM 提示词模板
 ### 手动执行
 
 ```bash
+# 可选：启用分析阶段
 export DEEPSEEK_API_KEY=sk-your-key
 export BLOG_CONTENT_DIR=/path/to/Blog-mizuki/src/content/weekly
 cd weekly-cli && pip install -r requirements.txt && python main.py
@@ -57,14 +58,15 @@ cd weekly-cli && pip install -r requirements.txt && python main.py
 
 每周一 00:00 UTC 自动运行，结果推送到 Blog-mizuki repo。
 
-需要设置 GitHub Secrets：
-- `DEEPSEEK_API_KEY` — DeepSeek API 密钥
+可选的 GitHub Secrets：
+- `DEEPSEEK_API_KEY` — 启用分析；素材收集和证据报告不需要此密钥
+- `pip install -r requirements-llm.txt` — 可选的模型分析依赖
 - `BLOG_PAT` — 对 Blog-mizuki repo 有写权限的 Personal Access Token
 
 ## 技术栈
 
-- **AI**: DeepSeek API (deepseek-chat)
-- **后端**: Python 3 + openai SDK + Pydantic
+- **可选分析**: DeepSeek API (deepseek-chat)
+- **后端**: Python 3 + Pydantic；模型分析才需要 OpenAI SDK
 - **前端**: Astro 4 + React 18 + TypeScript + Tailwind CSS
 - **可视化**: react-force-graph-2d (D3-force)
 

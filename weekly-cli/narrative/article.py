@@ -20,35 +20,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
-from utils import section_label
-
 if TYPE_CHECKING:
     from schema import (
-        AdversarialReview,
-        CausalLoopDiagram,
-        ClassPosition,
-        CompetingHypothesis,
         ContradictionIdentification,
-        DataValidation,
         DialecticalUnfolding,
-        EpochTheme,
-        ExcludedEvent,
         GDELTBaseline,
-        HiddenConnection,
-        HistoricalAnalogy,
         HistoricalPositioning,
-        InterestStructure,
-        LastWeekCalibration,
-        NegationOfNegation,
         NineDimScores,
         PhenomenonGrasping,
         PracticeOrientation,
-        QuantityQuality,
-        Scenario,
         SelectedEvent,
-        SystemArchetype,
-        UnityOfOpposites,
-        WatchSignal,
         WeeklyIssue,
     )
 
@@ -138,7 +119,9 @@ def _render_phase1(phase: PhenomenonGrasping) -> str:
             if e.materialContent:
                 lines.append(f"  *物质内容：{e.materialContent}*")
             if e.isDirectExpression:
-                lines.append(f"  *直接表现*")
+                lines.append("  *直接表现*")
+            if e.sourceUrl:
+                lines.append(f"  来源：{e.sourceUrl}")
         lines.append("")
 
     excluded = phase.excludedEvents
@@ -572,13 +555,20 @@ def generate_article(issue: WeeklyIssue, blog_dir: Path) -> str:
                 keywords.insert(3, t.themeName)
 
     # ---- description ----
+    model_backed = bool(issue.metadata.modelVersions)
     desc = issue.phase1.phaseSummary[:120].replace("\n", " ") if issue.phase1.phaseSummary else ""
     if not desc:
         sample_titles = "、".join(e.title[:15] for e in events[:3])
-        desc = (
-            f"本周（{issue.weekStart} 至 {issue.weekEnd}）热点事件阶级分析，"
-            f"涵盖 {sample_titles}等 {len(events)} 个事件。"
-        )
+        if model_backed:
+            desc = (
+                f"本周（{issue.weekStart} 至 {issue.weekEnd}）热点事件分析，"
+                f"涵盖 {sample_titles}等 {len(events)} 个事件。"
+            )
+        else:
+            desc = (
+                f"本周（{issue.weekStart} 至 {issue.weekEnd}）公开热点素材整理，"
+                f"涵盖 {sample_titles}等 {len(events)} 个事件。"
+            )
     if len(desc) > 150:
         desc = desc[:147] + "..."
 
@@ -627,10 +617,16 @@ def generate_article(issue: WeeklyIssue, blog_dir: Path) -> str:
         lines.append("")
 
     # ---- footer ----
-    lines.append(
-        "*本文由 [格物 (Dianalyze)](https://github.com/dreamnight16/weekly-hotspot) "
-        "分析系统自动生成，以唯物辩证法和历史唯物主义为方法论核心。"
-        "数据来自全网实时热点——力求穿透现象，把握矛盾运动的本质。*"
-    )
+    if model_backed:
+        footer = (
+            "*本文由 [格物 (Dianalyze)](https://github.com/dreamnight16/weekly-hotspot) "
+            "根据公开热点素材生成，分析结论和来源仍需读者核对。*"
+        )
+    else:
+        footer = (
+            "*本文由 [格物 (Dianalyze)](https://github.com/dreamnight16/weekly-hotspot) "
+            "整理公开热点素材；本期未进行模型分析，请打开来源核对原文。*"
+        )
+    lines.append(footer)
 
     return "\n".join(lines)

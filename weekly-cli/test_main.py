@@ -1,5 +1,6 @@
 """Tests for main.py — helpers, retry, quality gate, week utils."""
-from unittest.mock import patch, MagicMock
+import json
+from unittest.mock import patch
 
 import pytest
 from utils import get_week_id, get_week_range, retry_call
@@ -104,3 +105,64 @@ def test_main_dry_run_exits_cleanly_without_scraping():
         with pytest.raises(SystemExit) as exc:
             main(["--dry-run", "--skip-scrape"])
         assert exc.value.code == 1  # exits because no cache + no scrape
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("missing_sdk", [False, True])
+def test_main_writes_evidence_report_without_model(tmp_path, monkeypatch, missing_sdk):
+    """Collection and report output do not require a model key."""
+    import main as main_module
+
+    output_dir = tmp_path / "weekly"
+    monkeypatch.setattr(main_module, "DEEPSEEK_API_KEY", "test-key" if missing_sdk else "")
+    monkeypatch.setattr(main_module, "BLOG_CONTENT_DIR", output_dir)
+    events = [{
+        "title": "测试素材",
+        "summary": "公开来源摘要",
+        "sourceUrl": "https://example.com/source",
+    }]
+
+    with patch.object(main_module, "scrape_all", return_value=events), \
+         patch.object(main_module, "DeepSeekClient", side_effect=ImportError("openai")):
+        main_module.main([])
+
+    json_files = list(output_dir.glob("*.json"))
+    assert len(json_files) == 1
+    payload = json.loads(json_files[0].read_text(encoding="utf-8"))
+    assert payload["metadata"]["modelVersions"] == {}
+    assert payload["events"][0]["sourceUrl"] == "https://example.com/source"
+    article = (tmp_path / "posts" / json_files[0].stem / "index.md").read_text(encoding="utf-8")
+    assert "未进行模型分析" in article
+    assert "https://example.com/source" in article
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("model_url", [None, "https://example.com/model-made-up"])
+def test_model_stage_preserves_scraper_source_url(model_url):
+    """Model-shaped events inherit provenance when the model omits it."""
+    import main as main_module
+
+    events = main_module._carry_source_urls(
+        [{"id": "evt-1", "title": "测试素材", "summary": "改写后的摘要", "sourceUrl": model_url}],
+        [{
+            "id": "evt-1",
+            "title": "测试素材",
+            "summary": "原始摘要",
+            "sourceUrl": "https://example.com/source",
+        }],
+    )
+
+    assert events[0]["sourceUrl"] == "https://example.com/source"
+
+
+@pytest.mark.unit
+def test_evidence_report_keeps_cost_of_completed_model_calls(tmp_path, monkeypatch):
+    import main as main_module
+
+    monkeypatch.setattr(main_module, "BLOG_CONTENT_DIR", tmp_path / "weekly")
+    main_module._write_evidence_report(
+        [{"title": "测试素材"}], False, False, total_cost=0.25,
+    )
+    output = next((tmp_path / "weekly").glob("*.json"))
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert payload["metadata"]["totalApiCost"] == 0.25

@@ -1,12 +1,12 @@
 **Language:** [English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md)
 
-# Dianalyze — Dialectical Weekly Deep Analysis
+# Dianalyze — Weekly Hotspot Evidence And Analysis
 
 [![Tests](https://img.shields.io/badge/tests-70%20unit%20%2B%209%20integration-green)](https://github.com/dreamnight16/weekly-hotspot/actions)
 [![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/dreamnight16/weekly-hotspot/actions)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 
-Dialectical weekly news analysis powered by AI. Uses dialectical materialism and historical materialism as core methodology, supported by modern analytical techniques (evidence verification, quantitative data, scenario planning). Output: structured JSON + Markdown article. Rendered on blog.
+Collects weekly hotspot material and can optionally add structured analysis. The evidence-only path produces JSON and Markdown from fetched or cached source items without requiring a model provider. When analysis is enabled, the existing methodology adds verification, quantitative context, and scenario planning.
 
 ## Architecture
 
@@ -15,11 +15,11 @@ Weibo / Zhihu / Hacker News (real-time scrape)
   ↓ Fetch trending topics + deduplication
 [Phase 0] Scrape & Cache
   ↓ Fall back to cache if all sources fail
-[Phase 1] Censorship Filter (MLM relevance)
+[Phase 1] Optional relevance filter
   ↓ Exclude entertainment / politically sensitive content
-[Phase 2] AI Scoring & Selection
+[Phase 2] Optional scoring & selection
   ↓ Event impact × Information novelty → top 5-8
-[Phase 3] Per-event Deep Analysis (parallel, 3 workers)
+[Phase 3] Optional per-event analysis (parallel, 3 workers)
   ↓ DuckDuckGo + Bing search → Timeline + Evidence + Edges
 [Phase 4] Cross-event Synthesis
   ↓ Themes + Trends + Contradictions in motion
@@ -48,6 +48,7 @@ prompts/              # Externalized LLM prompt templates
 ### Manual
 
 ```bash
+# Optional: enables the analysis phases
 export DEEPSEEK_API_KEY=sk-your-key
 export BLOG_CONTENT_DIR=/path/to/Blog-mizuki/src/content/weekly
 cd weekly-cli && pip install -r requirements.txt && python main.py
@@ -57,14 +58,15 @@ cd weekly-cli && pip install -r requirements.txt && python main.py
 
 Runs every Monday 00:00 UTC. Results pushed to Blog-mizuki repo.
 
-Required GitHub Secrets:
-- `DEEPSEEK_API_KEY` — DeepSeek API key
+Optional GitHub Secrets:
+- `DEEPSEEK_API_KEY` — enables generated analysis; collection and evidence-only reports do not require it
+- `pip install -r requirements-llm.txt` — optional model-analysis dependencies
 - `BLOG_PAT` — Personal Access Token with write access to Blog-mizuki repo
 
 ## Tech Stack
 
-- **AI**: DeepSeek API (deepseek-chat)
-- **Backend**: Python 3 + openai SDK + Pydantic
+- **Optional analysis**: DeepSeek API (deepseek-chat)
+- **Backend**: Python 3 + Pydantic; OpenAI SDK is optional for model analysis
 - **Frontend**: Astro 4 + React 18 + TypeScript + Tailwind CSS
 - **Visualization**: react-force-graph-2d (D3-force)
 

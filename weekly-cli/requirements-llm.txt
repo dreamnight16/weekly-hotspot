@@ -1,0 +1,4 @@
+# Optional model-analysis dependencies. Core collection and evidence reports
+# only need requirements.txt.
+-r requirements.txt
+openai==1.109.1

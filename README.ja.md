@@ -6,7 +6,7 @@
 [![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)](https://github.com/dreamnight16/weekly-hotspot/actions)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
 
-AI 駆動のホットスポット分析ツール。毎週自動でホットニュースを収集し、DeepSeek による思想審査フィルタリング、価値スコアリング、深掘り分析（タイムライン + 証拠連鎖 + 関係性ネットワーク）を実施し、構造化 JSON をブログに出力してレンダリングします。
+毎週のホットスポット素材を収集し、必要に応じて分析するツールです。モデルがなくても取得またはキャッシュの読み込みと、出典付き JSON + Markdown レポートの出力ができます。モデルを設定した場合は、既存の分析、証拠確認、シナリオ整理を追加します。
 
 ## アーキテクチャ
 
@@ -17,7 +17,7 @@ Weibo / Zhihu / Hacker News（リアルタイムスクレイピング）
   ↓ 全ソース失敗時はキャッシュにフォールバック
 [Phase 1] 思想審査フィルタリング（MLM 関連性）
   ↓ エンタメ / 政治的にセンシティブな内容を除外
-[Phase 2] AI スコアリング選別
+[Phase 2] 任意のスコアリング選別
   ↓ イベント影響度 × 情報付加価値 → 上位 8 件
 [Phase 3] イベントごとの深掘り分析（並列 3 スレッド）
   ↓ DuckDuckGo + Bing 検索 → タイムライン + 証拠 + 関係
@@ -48,6 +48,7 @@ prompts/              # 外部化 LLM プロンプトテンプレート
 ### 手動実行
 
 ```bash
+# 任意：分析フェーズを有効にする
 export DEEPSEEK_API_KEY=sk-your-key
 export BLOG_CONTENT_DIR=/path/to/Blog-mizuki/src/content/weekly
 cd weekly-cli && pip install -r requirements.txt && python main.py
@@ -57,14 +58,15 @@ cd weekly-cli && pip install -r requirements.txt && python main.py
 
 毎週月曜 00:00 UTC に自動実行され、結果が Blog-mizuki リポジトリにプッシュされます。
 
-GitHub Secrets の設定が必要：
-- `DEEPSEEK_API_KEY` — DeepSeek API キー
+任意の GitHub Secrets：
+- `DEEPSEEK_API_KEY` — 分析を有効にする。素材収集と証拠レポートには不要
+- `pip install -r requirements-llm.txt` — モデル分析用のオプション依存関係
 - `BLOG_PAT` — Blog-mizuki リポジトリへの書き込み権限を持つ Personal Access Token
 
 ## 技術スタック
 
-- **AI**: DeepSeek API (deepseek-chat)
-- **バックエンド**: Python 3 + openai SDK + Pydantic
+- **任意の分析**: DeepSeek API (deepseek-chat)
+- **バックエンド**: Python 3 + Pydantic。モデル分析時のみ OpenAI SDK が必要
 - **フロントエンド**: Astro 4 + React 18 + TypeScript + Tailwind CSS
 - **可視化**: react-force-graph-2d (D3-force)
 

@@ -3,13 +3,13 @@
 [project]
 name = "weekly-hotspot"
 version = "0.3.1"
-description = "格物 (Dianalyze) — 以唯物辩证法为核心的 AI 热点深度分析 · 五阶段辩证认识运动"
+description = "格物 (Dianalyze) — 热点证据收集与可选的五阶段模型分析"
 readme = "README.md"
 license = "MIT"
 authors = [
     { name = "DreamNight", email = "support@dreamnight.net.cn" }
 ]
-keywords = ["hotspot", "news", "analysis", "deepseek", "llm", "weekly"]
+keywords = ["hotspot", "news", "evidence", "analysis", "weekly"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop",
@@ -23,14 +23,16 @@ requires-python = ">=3.11"
 # any change (e.g. `pip-compile` or `uv lock`). The git dep is pinned to the
 # exact commit SHA of chinese-scraper-utils master to avoid a mutable ref.
 dependencies = [
-    "chinese-scraper-utils @ git+https://github.com/dreamnight16/chinese-scraper-utils.git@4fff8609682522cf671ee1996b85c928e9477a23",
-    "openai==1.109.1",
+    "chinese-scraper-utils @ git+https://github.com/dreamnight16/chinese-scraper-utils.git@76580468b8efd491ef46860c1bd307dfc49d783b",
     "pydantic==2.13.4",
     "httpx==0.28.1",
     "ddgs==9.14.4",
 ]
 
 [project.optional-dependencies]
+llm = [
+    "openai==1.109.1",
+]
 dev = [
     "pytest==8.3.4",
     "pytest-cov==5.0.0",
