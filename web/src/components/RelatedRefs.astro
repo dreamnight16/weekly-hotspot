@@ -1,0 +1,52 @@
+---
+interface Props {
+  ids?: string[];
+  titles: Map<string, { title: string; href?: string }>;
+  label?: string;
+}
+
+const { ids, titles, label = '关联事件' } = Astro.props;
+const list = (ids ?? []).map((id) => ({ id: String(id), hit: titles.get(String(id)) }));
+---
+
+{list.length > 0 && (
+  <p class="refs">
+    <span class="refs-label">{label}</span>
+    {list.map(({ id, hit }) =>
+      hit?.href ? (
+        <a class="ref" href={hit.href}>{hit.title}</a>
+      ) : (
+        <span class="ref ref-plain">{hit?.title ?? `候选 #${id}`}</span>
+      ),
+    )}
+  </p>
+)}
+
+<style>
+  .refs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8125rem;
+  }
+  .refs-label {
+    color: var(--dn-text-secondary);
+    font-weight: var(--dn-weight-kicker);
+  }
+  .ref {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border: 1px solid var(--dn-divider);
+    color: var(--dn-text-secondary);
+    text-decoration: none;
+  }
+  .ref:hover {
+    border-color: var(--dn-control-border);
+    color: var(--dn-text-primary);
+    text-decoration: underline;
+  }
+  .ref-plain {
+    border-style: dashed;
+  }
+</style>

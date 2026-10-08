@@ -2,7 +2,7 @@
 #   pip hash chinese_scraper_utils-0.2.6-py3-none-any.whl
 [project]
 name = "weekly-hotspot"
-version = "0.3.1"
+version = "0.4.0"
 description = "格物 (Dianalyze) — 热点证据收集与可选的五阶段模型分析"
 readme = "README.md"
 license = "MIT"

@@ -2,12 +2,23 @@
 interface Props {
   title: string;
   description?: string;
+  /** 页面主色块所用的品牌色，用于页头之外的视觉区分 */
+  accent?: 'teal' | 'cyan' | 'violet';
 }
 
 const {
   title,
   description = '格物（Dianalyze）— 每周热点的辩证分析：现象、矛盾与物质利益。',
+  accent = 'teal',
 } = Astro.props;
+
+const nav = [
+  { href: '/', label: '期次索引', external: false },
+  { href: '/method/', label: '方法论', external: false },
+  { href: 'https://blog.dreamnight.net.cn/archive/?category=%E5%91%A8%E5%88%8A', label: '博客文章 ↗', external: true },
+  { href: 'https://github.com/dreamnight16/weekly-hotspot', label: 'GitHub ↗', external: true },
+  { href: 'https://dreamnight.net.cn', label: 'DreamNight ↗', external: true },
+];
 ---
 
 <!doctype html>
@@ -21,28 +32,134 @@ const {
     <link rel="stylesheet" href="/vendor/dndl/materials.css" />
     <link rel="stylesheet" href="/vendor/dndl/motion.css" />
   </head>
-  <body>
-    <a class="skip dn-focus" href="#main">跳至内容</a>
+  <body data-accent={accent}>
+    <a class="skip" href="#main">跳至内容</a>
+
     <header class="site-header dn-acrylic">
-      <a class="wordmark dn-focus" href="/">格物<span>/ Dianalyze</span></a>
-      <nav aria-label="相关链接">
-        <a class="dn-focus" href="https://blog.dreamnight.net.cn/archive/?category=%E5%91%A8%E5%88%8A" target="_blank" rel="noopener">博客文章 ↗</a>
-        <a class="dn-focus" href="https://github.com/dreamnight16/weekly-hotspot" target="_blank" rel="noopener">GitHub ↗</a>
-        <a class="dn-focus" href="https://dreamnight.net.cn" target="_blank" rel="noopener">DreamNight ↗</a>
+      <a class="wordmark" href="/">
+        <span class="wordmark-cn">格物</span>
+        <span class="wordmark-en">Dianalyze</span>
+      </a>
+      <nav class="site-nav" aria-label="站点导航">
+        {nav.map((item) => (
+          <a href={item.href} target={item.external ? '_blank' : undefined} rel={item.external ? 'noopener' : undefined}>
+            {item.label}
+          </a>
+        ))}
       </nav>
     </header>
+
     <main id="main">
       <slot />
     </main>
+
     <footer class="site-footer">
-      <p>数据由格物分析系统每周一自动生成（UTC 00:37） · 文章同步发表于博客 · 静态构建</p>
-      <a class="dn-focus" href="#main">回到顶部 ↑</a>
+      <div class="footer-inner">
+        <div class="footer-lead">
+          <p class="kicker">DIANALYZE · STATIC BUILD</p>
+          <p class="footer-statement">
+            本页由仓库中的静态数据构建，不含实时接口、跟踪脚本或统计代码。
+          </p>
+        </div>
+        <div class="footer-facts">
+          <p>
+            数据由 weekly-cli 流水线生成：GitHub Actions 每周一 00:37 UTC 运行，
+            结果提交到本仓库 <code>web/src/data/weekly/</code>；文章同步发表于博客。
+          </p>
+          <p>
+            分析方法与证据层规则见
+            <a href="https://github.com/dreamnight16/weekly-hotspot/blob/main/docs/dianalyze-v3-evidence-layer.md" target="_blank" rel="noopener">dianalyze-v3-evidence-layer.md ↗</a>。
+          </p>
+          <p class="footer-links">
+            <a href="#main">回到顶部 ↑</a>
+            <a href="/method/">方法论</a>
+            <a href="https://github.com/dreamnight16/weekly-hotspot" target="_blank" rel="noopener">源码 ↗</a>
+          </p>
+        </div>
+      </div>
     </footer>
+
+    <dialog id="dn-reader" class="reader">
+      <div class="reader-bar">
+        <p class="kicker">专注阅读</p>
+        <button type="button" class="reader-close" data-dn-reader-close>关闭 ✕</button>
+      </div>
+      <div class="reader-body" data-dn-reader-body></div>
+    </dialog>
+
+    <script>
+      // 渐进增强：内联详情 Esc 关闭 + 焦点返回；专注阅读层由原生 <dialog> 提供焦点约束。
+      // 脚本不可用时下列控件不显示，内容本身仍完整可读（见 EventCard 的内联详情）。
+      document.documentElement.dataset.dnJs = 'on';
+
+      const panelSelector = '[data-dn-panel]';
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        if (document.querySelector('dialog[open]')) return;
+        const open = document.querySelector('details[open]');
+        if (!open) return;
+        const summary = open.querySelector('summary');
+        if (!summary || !open.contains(document.activeElement) && document.activeElement !== open) return;
+        event.preventDefault();
+        open.open = false;
+        (summary as HTMLElement).focus();
+      });
+
+      const reader = document.querySelector<HTMLDialogElement>('#dn-reader');
+      const readerBody = reader?.querySelector<HTMLElement>('[data-dn-reader-body]');
+      let moved: { node: HTMLElement; parent: Node; next: Node | null } | null = null;
+      let opener: HTMLElement | null = null;
+
+      function closeReader() {
+        if (!moved) return;
+        const { node, parent, next } = moved;
+        parent.insertBefore(node, next);
+        moved = null;
+        if (opener && document.contains(opener)) opener.focus();
+        opener = null;
+      }
+
+      document.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement | null;
+        if (!target) return;
+
+        const zoom = target.closest<HTMLElement>('[data-dn-zoom]');
+        if (zoom && reader && readerBody) {
+          const details = zoom.closest('details');
+          const panel = details?.querySelector<HTMLElement>(panelSelector);
+          if (!panel || typeof reader.showModal !== 'function') return;
+          opener = zoom;
+          moved = { node: panel, parent: panel.parentNode as Node, next: panel.nextSibling };
+          readerBody.appendChild(panel);
+          reader.showModal();
+          return;
+        }
+
+        if (target.closest('[data-dn-reader-close]')) {
+          reader?.close();
+        }
+      });
+
+      reader?.addEventListener('close', closeReader);
+    </script>
+
     <style is:global>
-      /* 站点样式：只引用 DNDL Tokens，不覆写品牌原始值 */
+      /* 站点样式：品牌色板、字体、曲线与材质值全部取自 DNDL Tokens，此处不重定义。 */
+      :root {
+        --site-max: 1180px;
+        --site-gutter: clamp(1rem, 4vw, 3rem);
+        --site-gap: clamp(1.5rem, 4vw, 3.5rem);
+      }
+
       * {
         box-sizing: border-box;
       }
+
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+
       body {
         margin: 0;
         background: var(--dn-canvas);
@@ -50,11 +167,239 @@ const {
         font-family: var(--dn-font);
         font-size: var(--dn-size-body);
         line-height: var(--dn-leading-body);
+        overflow-wrap: anywhere;
       }
+
       :focus-visible {
         outline: var(--dn-focus-width) solid var(--dn-focus);
         outline-offset: var(--dn-focus-offset);
       }
+      @media (forced-colors: active) {
+        :focus-visible {
+          outline-color: Highlight;
+        }
+      }
+
+      a {
+        color: inherit;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 4px;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        margin: 0;
+        font-family: var(--dn-font-display);
+        font-weight: var(--dn-weight-display);
+        line-height: 1.15;
+      }
+      h1 {
+        font-size: var(--dn-size-h1);
+      }
+      h2 {
+        font-size: var(--dn-size-h2);
+      }
+      h3 {
+        font-size: 1.25rem;
+        font-weight: var(--dn-weight-body);
+      }
+      h4 {
+        font-size: 1rem;
+        font-weight: var(--dn-weight-kicker);
+      }
+      p {
+        margin: 0;
+      }
+
+      code {
+        font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+        font-size: 0.9em;
+      }
+
+      /* --- 排版工具类 --- */
+      .kicker {
+        font-size: var(--dn-size-kicker);
+        font-weight: var(--dn-weight-kicker);
+        letter-spacing: var(--dn-tracking-kicker);
+        text-transform: uppercase;
+        color: var(--dn-text-secondary);
+      }
+      .display {
+        font-family: var(--dn-font-display);
+        font-weight: var(--dn-weight-display);
+        font-size: var(--dn-size-display);
+        line-height: var(--dn-leading-display);
+      }
+      .lede {
+        font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+        line-height: 1.65;
+        color: var(--dn-text-secondary);
+        max-width: 54ch;
+      }
+      .shell {
+        width: 100%;
+        max-width: var(--site-max);
+        margin: 0 auto;
+        padding: 0 var(--site-gutter);
+      }
+
+      /* 网格与弹性子项的最小尺寸由内容决定；长中文文本会因此把容器撑出视口。
+         这里统一允许收缩，横向溢出由实际浏览器检查确认。 */
+      .shell,
+      main section,
+      main article,
+      main aside,
+      main div,
+      main ul,
+      main ol,
+      main li,
+      main dl,
+      main header,
+      main form,
+      main details,
+      main summary,
+      .site-header,
+      .site-header div,
+      .site-footer div {
+        min-width: 0;
+      }
+      main p,
+      main h1,
+      main h2,
+      main h3,
+      main h4,
+      main dd,
+      main dt,
+      main table {
+        min-width: 0;
+      }
+      .shell-wide {
+        max-width: 1440px;
+      }
+
+      /* --- 大色块：内容驱动的实色区域，正文统一使用 --dn-text-on-color --- */
+      .field {
+        color: var(--dn-text-on-color);
+        padding: clamp(1.75rem, 5vw, 4rem) 0;
+      }
+      .field a {
+        color: var(--dn-text-on-color);
+      }
+      .field .kicker,
+      .field .lede,
+      .field .field-note {
+        color: var(--dn-text-on-color);
+      }
+      .field-teal { background: var(--dn-teal); }
+      .field-cyan { background: var(--dn-cyan); }
+      .field-emerald { background: var(--dn-emerald); }
+      .field-violet { background: var(--dn-violet); }
+      .field-amber { background: var(--dn-amber); }
+      .field-orange { background: var(--dn-orange); }
+      .field-steel { background: var(--dn-steel); }
+      .field-crimson { background: var(--dn-crimson); }
+      .field-ink {
+        background: var(--dn-ink-primary);
+        color: var(--dn-text-on-ink);
+      }
+      .field-ink a,
+      .field-ink .kicker {
+        color: var(--dn-text-on-ink);
+      }
+      .field-note {
+        font-size: 0.875rem;
+        line-height: 1.6;
+      }
+
+      /* --- 状态与标记：文字承载语义，颜色只作辅助 --- */
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4em;
+        max-width: 100%;
+        padding: 0 0.5rem;
+        font-size: 0.75rem;
+        font-weight: var(--dn-weight-kicker);
+        line-height: 1.75;
+        color: var(--dn-text-on-color);
+      }
+      .chip-teal { background: var(--dn-teal); }
+      .chip-cyan { background: var(--dn-cyan); }
+      .chip-emerald { background: var(--dn-emerald); }
+      .chip-violet { background: var(--dn-violet); }
+      .chip-amber { background: var(--dn-amber); }
+      .chip-orange { background: var(--dn-orange); }
+      .chip-steel { background: var(--dn-steel); }
+      .chip-crimson { background: var(--dn-crimson); }
+      .chip-ghost {
+        background: transparent;
+        border: 1px solid var(--dn-control-border);
+        color: var(--dn-text-secondary);
+      }
+
+      /* 入场：保留 DNDL 的交错节奏（--dn-stagger / --dn-enter-index）、时长与曲线，
+         但只用位移、不做不透明度淡化 —— 淡化会在 0.4–0.8s 的窗口里把正文对比度压到
+         4.5:1 以下（实测 2.81–4.27:1）。动效仍然只解释「内容正在进入」，不承担信息。 */
+      .dn-enter-rise {
+        animation: dn-site-rise var(--dn-duration-page) var(--dn-ease-in) backwards;
+        animation-delay: calc(var(--dn-enter-index, 0) * var(--dn-stagger));
+      }
+      @keyframes dn-site-rise {
+        from {
+          transform: translateY(18px);
+        }
+        to {
+          transform: translateY(0);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .dn-enter-rise {
+          animation: none;
+        }
+      }
+
+      .section-rule {
+        border: 0;
+        border-top: 2px solid var(--dn-text-primary);
+        margin: 0;
+      }
+      .hairline {
+        border: 0;
+        border-top: 1px solid var(--dn-divider);
+        margin: 0;
+      }
+
+      .section {
+        padding: clamp(2rem, 5vw, 3.5rem) 0;
+      }
+      .section-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.5rem 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--dn-text-primary);
+      }
+      .section-head .kicker {
+        margin: 0;
+      }
+      .section-head h2 {
+        margin-left: auto;
+        text-align: right;
+      }
+
+      .backlink {
+        display: inline-block;
+        color: var(--dn-text-secondary);
+        font-size: 0.9rem;
+      }
+
+      /* --- 站点框架 --- */
       .skip {
         position: absolute;
         left: 1rem;
@@ -62,92 +407,166 @@ const {
         transform: translateY(-200%);
         background: var(--dn-surface);
         color: var(--dn-text-primary);
-        padding: 0.5rem 1rem;
-        border: 1px solid var(--dn-control-border);
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--dn-control-border);
         z-index: var(--dn-z-modal);
         text-decoration: none;
       }
       .skip:focus {
         transform: translateY(0.5rem);
       }
+
       .site-header {
         position: sticky;
         top: 0;
         z-index: var(--dn-z-floating);
         display: flex;
-        justify-content: space-between;
+        flex-wrap: wrap;
         align-items: center;
-        gap: 1rem;
-        padding: 0.75rem clamp(1rem, 4vw, 3rem);
+        justify-content: space-between;
+        gap: 0.5rem 1.25rem;
+        padding: 0.5rem var(--site-gutter);
+        border-top: 6px solid var(--dn-teal);
+        border-bottom: 1px solid var(--dn-divider);
       }
       .wordmark {
-        font-size: 1.05rem;
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        min-height: var(--dn-target-min);
+        padding: 0.25rem 0;
+        text-decoration: none;
+      }
+      .wordmark-cn {
+        font-size: 1.2rem;
         font-weight: 600;
-        letter-spacing: 0.4px;
-        color: var(--dn-text-primary);
-        text-decoration: none;
+        letter-spacing: 0.08em;
       }
-      .wordmark span {
-        color: var(--dn-text-secondary);
-        font-weight: 400;
-      }
-      .site-header nav a {
-        margin-left: 1.25rem;
-        color: var(--dn-text-secondary);
-        text-decoration: none;
-      }
-      .site-header nav a:hover {
-        color: var(--dn-text-primary);
-        text-decoration: underline;
-        text-underline-offset: 4px;
-      }
-      main {
-        max-width: 960px;
-        margin: 0 auto;
-        padding: clamp(1.25rem, 4vw, 2.5rem);
-      }
-      .site-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-        max-width: 960px;
-        margin: 4rem auto 0;
-        padding: 1.5rem clamp(1.25rem, 4vw, 2.5rem);
-        border-top: 1px solid var(--dn-divider);
-        color: var(--dn-text-secondary);
-        font-size: 0.85rem;
-      }
-      .site-footer a {
-        color: var(--dn-text-secondary);
-      }
-      .kicker {
-        margin: 0 0 0.75rem;
-        font-size: var(--dn-size-kicker);
-        font-weight: var(--dn-weight-kicker);
-        letter-spacing: var(--dn-tracking-kicker);
+      .wordmark-en {
+        font-size: 0.8rem;
+        letter-spacing: 0.18em;
         text-transform: uppercase;
         color: var(--dn-text-secondary);
       }
-      h1 {
-        margin: 0;
-        font-weight: var(--dn-weight-display);
-        font-size: var(--dn-size-h1);
-        line-height: 1.15;
+      .site-nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0 1.25rem;
       }
-      h2 {
-        margin: 0;
-        font-weight: var(--dn-weight-display);
-        font-size: var(--dn-size-h2);
-        line-height: 1.2;
+      .site-nav a {
+        display: inline-flex;
+        align-items: center;
+        min-height: var(--dn-target-min);
+        font-size: 0.9rem;
+        color: var(--dn-text-secondary);
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
       }
-      @media (max-width: 640px) {
-        .site-header {
-          flex-wrap: wrap;
+      .site-nav a:hover {
+        color: var(--dn-text-primary);
+        border-bottom-color: var(--dn-teal);
+        text-decoration: none;
+      }
+
+      .site-footer {
+        margin-top: clamp(3rem, 8vw, 6rem);
+        background: var(--dn-ink-primary);
+        color: var(--dn-text-on-ink);
+        border-top: 6px solid var(--dn-teal);
+      }
+      .footer-inner {
+        display: grid;
+        gap: var(--site-gap);
+        grid-template-columns: minmax(0, 1fr);
+        max-width: var(--site-max);
+        margin: 0 auto;
+        padding: clamp(2rem, 5vw, 3.5rem) var(--site-gutter);
+      }
+      @media (min-width: 860px) {
+        .footer-inner {
+          grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
         }
-        .site-header nav a {
-          margin-left: 0;
-          margin-right: 1rem;
+      }
+      .site-footer .kicker {
+        color: var(--dn-text-on-ink);
+      }
+      .footer-statement {
+        margin-top: 0.75rem;
+        font-family: var(--dn-font-display);
+        font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+        font-weight: var(--dn-weight-display);
+        line-height: 1.3;
+      }
+      .footer-facts {
+        display: grid;
+        gap: 0.85rem;
+        align-content: start;
+        font-size: 0.9rem;
+        line-height: 1.7;
+      }
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.4);
+      }
+      .footer-links a {
+        display: inline-flex;
+        align-items: center;
+        min-height: var(--dn-target-min);
+        color: var(--dn-text-on-ink);
+      }
+
+      /* --- 专注阅读层：覆盖层使用不透明 Surface 与 Level 4 阴影 --- */
+      .reader {
+        width: min(920px, calc(100vw - 2rem));
+        max-height: min(88vh, 100%);
+        margin: auto;
+        padding: 0;
+        border: 0;
+        border-top: 6px solid var(--dn-teal);
+        border-radius: var(--dn-radius);
+        background: var(--dn-surface);
+        color: var(--dn-text-primary);
+        box-shadow: var(--dn-shadow-4);
+      }
+      .reader::backdrop {
+        background: var(--dn-overlay);
+      }
+      .reader-bar {
+        position: sticky;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.75rem clamp(1rem, 3vw, 2rem);
+        background: var(--dn-surface);
+        border-bottom: 1px solid var(--dn-divider);
+      }
+      .reader-close {
+        min-height: var(--dn-target-min);
+        padding: 0 1rem;
+        border: 1px solid var(--dn-control-border);
+        border-radius: var(--dn-radius);
+        background: var(--dn-surface);
+        color: var(--dn-text-primary);
+        font: inherit;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+      .reader-body {
+        padding: 0 clamp(1rem, 3vw, 2rem) clamp(1.5rem, 3vw, 2rem);
+      }
+
+      @media (max-width: 520px) {
+        .site-nav {
+          gap: 0 1rem;
+        }
+        .site-nav a {
+          font-size: 0.85rem;
         }
       }
     </style>

@@ -1,0 +1,1407 @@
+---
+import type { Week } from '../lib/weeks';
+import RelatedRefs from './RelatedRefs.astro';
+import { eventTitles } from '../lib/weeks';
+
+interface Props {
+  week: Week;
+}
+
+const { week } = Astro.props;
+const titles = eventTitles(week);
+
+const phase1 = week.phase1;
+const phase2 = week.phase2;
+const phase4 = week.phase4;
+const phase5 = week.phase5;
+
+const candidates = (phase1?.excludedEvents.length ?? 0) + week.events.length;
+
+const severityTone: Record<string, string> = {
+  CRITICAL: 'chip-crimson',
+  HIGH: 'chip-orange',
+  MEDIUM: 'chip-amber',
+  LOW: 'chip-steel',
+};
+const severityText: Record<string, string> = {
+  CRITICAL: '严重',
+  HIGH: '高',
+  MEDIUM: '中',
+  LOW: '低',
+};
+const claimStatusTone = (status?: string) => {
+  if (!status) return 'chip-ghost';
+  if (status.includes('验证')) return 'chip-emerald';
+  if (status.includes('单源')) return 'chip-amber';
+  if (status.includes('推断')) return 'chip-orange';
+  if (status.includes('矛盾') || status.includes('否')) return 'chip-crimson';
+  return 'chip-steel';
+};
+const scoreTone = (score: number) => (score >= 7 ? 'bar-high' : score >= 4 ? 'bar-mid' : 'bar-low');
+const scenarioTone: Record<string, string> = {
+  baseline: 'chip-teal',
+  alternative: 'chip-violet',
+  wildcard: 'chip-orange',
+};
+const scenarioName: Record<string, string> = {
+  baseline: '基准情景',
+  alternative: '替代情景',
+  wildcard: '黑马情景',
+};
+
+const duration = week.meta?.runDurationSeconds
+  ? `${Math.floor(week.meta.runDurationSeconds / 60)} 分 ${Math.round(week.meta.runDurationSeconds % 60)} 秒`
+  : null;
+const cost = typeof week.meta?.totalApiCost === 'number' ? `$${week.meta.totalApiCost.toFixed(4)}` : null;
+---
+
+{phase1 && (
+  <section class="phase" id="phase1" aria-labelledby="phase1-title">
+    <header class="phase-head field field-cyan">
+      <div class="shell">
+        <p class="kicker">PHASE 1</p>
+        <h2 id="phase1-title">现象把握</h2>
+        <p class="phase-note">
+          从抓取到的候选热点中筛选可分析的事件，记录排除理由，并在检索后给出信源评级与断言核验结果。
+        </p>
+        <p class="phase-flags">
+          <span class={`chip ${phase1.empiricalVerified ? 'chip-emerald' : 'chip-steel'}`}>
+            经验层{phase1.empiricalVerified ? '已核验' : '未核验'}
+          </span>
+          <span class={`chip ${phase1.empiricalDegraded ? 'chip-crimson' : 'chip-emerald'}`}>
+            {phase1.empiricalDegraded ? '本期经验层被降级' : '本期经验层未降级'}
+          </span>
+        </p>
+      </div>
+    </header>
+
+    <div class="shell phase-body">
+      {phase1.phaseSummary && (
+        <div class="ledger">
+          <div class="rail rail-cyan"><h3>阶段小结</h3></div>
+          <p class="ledger-text">{phase1.phaseSummary}</p>
+        </div>
+      )}
+
+      <div class="tally">
+        <div class="tally-item">
+          <p class="tally-value">{candidates}</p>
+          <p class="tally-label">条候选热点</p>
+        </div>
+        <div class="tally-item">
+          <p class="tally-value">{week.events.length}</p>
+          <p class="tally-label">条进入分析</p>
+        </div>
+        <div class="tally-item">
+          <p class="tally-value">{phase1.excludedEvents.length}</p>
+          <p class="tally-label">条被排除</p>
+        </div>
+      </div>
+
+      {phase1.excludedEvents.length > 0 && (
+        <details class="sub">
+          <summary class="sub-row">
+            <span>被排除的候选项与理由（{phase1.excludedEvents.length} 条）</span>
+            <span class="sub-toggle" aria-hidden="true">展开 ▾</span>
+          </summary>
+          <ul class="excluded">
+            {phase1.excludedEvents.map((item) => (
+              <li id={`excluded-${item.id}`}>
+                <p class="excluded-title">{item.title}</p>
+                <p class="excluded-reason">{item.exclusionReason}</p>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+
+      {phase1.sourceQualityReport && (
+        <div class="ledger">
+          <div class="rail rail-cyan"><h3>来源质量报告</h3></div>
+          <p class="ledger-text">{phase1.sourceQualityReport}</p>
+        </div>
+      )}
+
+      {phase1.dossiers.length > 0 && (
+        <section class="sub-section" aria-labelledby="dossiers-title">
+          <h3 class="sub-title" id="dossiers-title">证据核验档案</h3>
+          <p class="sub-note">
+            每份档案对应一个入选事件：断言被拆成单条，逐条给出核验状态、独立来源数量与未解决的问题。
+          </p>
+          {phase1.dossiers.map((dossier, i) => {
+            const eventId = dossier.achResults?.[0]?.eventId;
+            const hit = eventId ? titles.get(String(eventId)) : undefined;
+            return (
+              <article class="dossier">
+                <header class="dossier-head">
+                  <p class="dossier-no">档案 {i + 1}</p>
+                  <h4>{hit?.title ?? `核验档案 ${i + 1}`}</h4>
+                  <p class="dossier-facts">
+                    <span class="chip chip-ghost">
+                      {dossier.verificationResults?.length ?? 0} 条断言
+                    </span>
+                    <span class="chip chip-ghost">
+                      {dossier.sourceGrades?.length ?? 0} 个信源评级
+                    </span>
+                    <span class="chip chip-ghost">
+                      {dossier.informationGaps?.length ?? 0} 个信息缺口
+                    </span>
+                  </p>
+                </header>
+
+                {dossier.verificationSummary && (
+                  <p class="dossier-summary">{dossier.verificationSummary}</p>
+                )}
+
+                {(dossier.verificationResults?.length ?? 0) > 0 && (
+                  <details class="sub sub-inset">
+                    <summary class="sub-row">
+                      <span>断言核验清单</span>
+                      <span class="sub-toggle" aria-hidden="true">展开 ▾</span>
+                    </summary>
+                    <ul class="claims">
+                      {(dossier.verificationResults ?? []).map((claim) => (
+                        <li>
+                          <p class="claim-text">{claim.claim}</p>
+                          <p class="claim-meta">
+                            {claim.claimType && <span class="chip chip-ghost">{claim.claimType}</span>}
+                            <span class={`chip ${claimStatusTone(claim.verificationStatus)}`}>
+                              核验状态 {claim.verificationStatus ?? '未标注'}
+                            </span>
+                            {claim.confidence && (
+                              <span class="chip chip-ghost">置信度 {claim.confidence}</span>
+                            )}
+                            <span class="chip chip-ghost">
+                              独立来源 {claim.independentSources?.length ?? 0}
+                            </span>
+                          </p>
+                          {claim.verificationNote && <p class="claim-note">{claim.verificationNote}</p>}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+
+                {(dossier.sourceGrades?.length ?? 0) > 0 && (
+                  <details class="sub sub-inset">
+                    <summary class="sub-row">
+                      <span>信源评级</span>
+                      <span class="sub-toggle" aria-hidden="true">展开 ▾</span>
+                    </summary>
+                    <ul class="grades">
+                      {(dossier.sourceGrades ?? []).map((grade) => (
+                        <li>
+                          <p class="grade-name">
+                            {grade.sourceName}
+                            <span class="chip chip-cyan">
+                              等级 {grade.reliability}/{grade.credibility}
+                            </span>
+                          </p>
+                          {grade.rationale && <p>{grade.rationale}</p>}
+                          {grade.impactOnAnalysis && (
+                            <p class="grade-impact">对分析的影响：{grade.impactOnAnalysis}</p>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+
+                {(dossier.informationGaps?.length ?? 0) > 0 && (
+                  <details class="sub sub-inset">
+                    <summary class="sub-row">
+                      <span>未解决的信息缺口</span>
+                      <span class="sub-toggle" aria-hidden="true">展开 ▾</span>
+                    </summary>
+                    <ul class="gaps">
+                      {(dossier.informationGaps ?? []).map((gap) => (
+                        <li>
+                          <p class="gap-head">
+                            <span class={`chip ${severityTone[gap.severity] ?? 'chip-steel'}`}>
+                              缺失程度 {severityText[gap.severity] ?? gap.severity}
+                            </span>
+                          </p>
+                          <p>{gap.gapDescription}</p>
+                          {gap.possibleSources && (
+                            <p class="gap-sources">可补来源：{gap.possibleSources}</p>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+
+                {(dossier.achResults?.length ?? 0) > 0 && (
+                  <details class="sub sub-inset">
+                    <summary class="sub-row">
+                      <span>竞争性假设检验（ACH）</span>
+                      <span class="sub-toggle" aria-hidden="true">展开 ▾</span>
+                    </summary>
+                    {(dossier.achResults ?? []).map((ach) => (
+                      <div class="ach">
+                        <p class="ach-prop">{ach.proposition}</p>
+                        <ul class="ach-list">
+                          {(ach.hypotheses ?? []).map((hypothesis) => (
+                            <li>
+                              <p class="ach-label">
+                                <span class="chip chip-violet">{hypothesis.hypothesisLabel}</span>
+                                {hypothesis.description}
+                              </p>
+                              {hypothesis.consistencyWithEvidence && (
+                                <p class="ach-line">
+                                  <strong>与证据一致处　</strong>
+                                  {hypothesis.consistencyWithEvidence}
+                                </p>
+                              )}
+                              {hypothesis.contradictionsWithEvidence && (
+                                <p class="ach-line">
+                                  <strong>与证据矛盾处　</strong>
+                                  {hypothesis.contradictionsWithEvidence}
+                                </p>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </details>
+                )}
+
+                {(dossier.corroborationMatrix?.length ?? 0) > 0 && (
+                  <details class="sub sub-inset">
+                    <summary class="sub-row">
+                      <span>交叉印证矩阵</span>
+                      <span class="sub-toggle" aria-hidden="true">展开 ▾</span>
+                    </summary>
+                    <ul class="matrix">
+                      {(dossier.corroborationMatrix ?? []).map((row) => (
+                        <li>
+                          <p class="matrix-fact">{row.factStatement}</p>
+                          <p class="matrix-meta">
+                            <span class="chip chip-ghost">独立来源 {row.independentCount ?? 0}</span>
+                            {row.sourceDiversity && (
+                              <span class="chip chip-ghost">多样性 {row.sourceDiversity}</span>
+                            )}
+                            {row.crossConsistency && (
+                              <span class="chip chip-ghost">一致性 {row.crossConsistency}</span>
+                            )}
+                          </p>
+                          {(row.sources?.length ?? 0) > 0 && (
+                            <p class="matrix-sources">{row.sources?.join('、')}</p>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+              </article>
+            );
+          })}
+        </section>
+      )}
+    </div>
+  </section>
+)}
+
+{phase2 && (
+  <section class="phase" id="phase2" aria-labelledby="phase2-title">
+    <header class="phase-head field field-violet">
+      <div class="shell">
+        <p class="kicker">PHASE 2</p>
+        <h2 id="phase2-title">矛盾识别</h2>
+        <p class="phase-note">
+          把事件还原为阶级位置与物质利益，给出多维评分与相互竞争的假设，而不是先定结论。
+        </p>
+      </div>
+    </header>
+
+    <div class="shell phase-body">
+      {phase2.overallContradictionLandscape && (
+        <div class="statement">
+          <p class="kicker">本期的矛盾图景</p>
+          <p class="statement-text">{phase2.overallContradictionLandscape}</p>
+        </div>
+      )}
+
+      {phase2.phaseSummary && (
+        <div class="ledger">
+          <div class="rail rail-violet"><h3>阶段小结</h3></div>
+          <p class="ledger-text">{phase2.phaseSummary}</p>
+        </div>
+      )}
+
+      {phase2.classPositions.length > 0 && (
+        <section class="sub-section" aria-labelledby="classes-title">
+          <h3 class="sub-title" id="classes-title">阶级位置与核心利益</h3>
+          <div class="cards">
+            {phase2.classPositions.map((cls) => (
+              <article class="class-card">
+                <h4>{cls.className}</h4>
+                {cls.position && <p><strong>位置　</strong>{cls.position}</p>}
+                {cls.coreInterest && <p><strong>核心利益　</strong>{cls.coreInterest}</p>}
+                {(cls.contradictions?.length ?? 0) > 0 && (
+                  <ul class="tension">
+                    {(cls.contradictions ?? []).map((item) => (
+                      <li>{item}</li>
+                    ))}
+                  </ul>
+                )}
+                <RelatedRefs ids={cls.relatedEventIds} titles={titles} />
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {phase2.interestStructures.length > 0 && (
+        <section class="sub-section" aria-labelledby="interests-title">
+          <h3 class="sub-title" id="interests-title">物质利益结构</h3>
+          <ul class="interests">
+            {phase2.interestStructures.map((item) => (
+              <li>
+                <div class="interest-head">
+                  <p class="interest-group">{item.interestGroup}</p>
+                  <p class="interest-intensity">
+                    <span>强度 {item.intensity ?? '—'}/5</span>
+                    <span class="meter" aria-hidden="true">
+                      {[1, 2, 3, 4, 5].map((step) => (
+                        <span class={`seg ${(item.intensity ?? 0) >= step ? 'seg-on' : ''}`} />
+                      ))}
+                    </span>
+                  </p>
+                </div>
+                {item.materialInterest && <p>{item.materialInterest}</p>}
+                {item.expressionForm && (
+                  <p class="interest-form">表现形式：{item.expressionForm}</p>
+                )}
+                <RelatedRefs ids={item.relatedEventIds} titles={titles} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {phase2.scorecards.length > 0 && (
+        <section class="sub-section" aria-labelledby="scores-title">
+          <h3 class="sub-title" id="scores-title">九维评分</h3>
+          <p class="sub-note">
+            每个入选事件按九个维度打分，并标注每个维度评分的置信度与理由；
+            综合分低不代表事件不重要，而常意味着可核验的信息不足。
+          </p>
+          <div class="scores">
+            {phase2.scorecards.map((card) => (
+              <details class="score-card">
+                <summary class="score-row">
+                  <span class="score-value">{card.compositeScore?.toFixed(2) ?? '—'}</span>
+                  <span class="score-head">
+                    <span class="score-title">{card.eventTitle}</span>
+                    <span class="score-facts">
+                      {card.overallConfidence && (
+                        <span class="chip chip-ghost">综合置信度 {card.overallConfidence}</span>
+                      )}
+                      {card.informationSufficiency && (
+                        <span class="chip chip-ghost">{card.informationSufficiency}</span>
+                      )}
+                    </span>
+                  </span>
+                  <span class="sub-toggle" aria-hidden="true">展开 ▾</span>
+                </summary>
+                <div class="score-body">
+                  <ul class="dims">
+                    {(card.dimensions ?? []).map((dim) => (
+                      <li>
+                        <p class="dim-head">
+                          <span class="dim-name">
+                            {dim.id} {dim.name}
+                          </span>
+                          <span class="dim-score">{dim.score}/10</span>
+                        </p>
+                        <span class={`bar ${scoreTone(dim.score)}`}>
+                          <span class="bar-fill" style={`width:${Math.max(0, Math.min(100, dim.score * 10))}%`} />
+                        </span>
+                        <p class="dim-note">
+                          {dim.confidence ? `置信度 ${dim.confidence} · ` : ''}
+                          {dim.rationale}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                  {card.scoringSummary && <p class="score-summary">{card.scoringSummary}</p>}
+                </div>
+              </details>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {phase2.competingHypotheses.length > 0 && (
+        <section class="sub-section" aria-labelledby="hyp-title">
+          <h3 class="sub-title" id="hyp-title">竞争性假设</h3>
+          <ul class="hypotheses">
+            {phase2.competingHypotheses.map((hypothesis) => (
+              <li>
+                <div class="hyp-head">
+                  <p class="hyp-id">{hypothesis.hypothesisId}</p>
+                  <p class="hyp-prob">
+                    评估概率 {Math.round((hypothesis.assessedProbability ?? 0) * 100)}%
+                  </p>
+                </div>
+                <p class="hyp-desc">{hypothesis.description}</p>
+                <div class="hyp-cols">
+                  {hypothesis.supportingEvidence && (
+                    <p class="hyp-col"><strong>支持证据　</strong>{hypothesis.supportingEvidence}</p>
+                  )}
+                  {hypothesis.contradictingEvidence && (
+                    <p class="hyp-col"><strong>相反证据　</strong>{hypothesis.contradictingEvidence}</p>
+                  )}
+                </div>
+                <RelatedRefs ids={hypothesis.relatedEventIds} titles={titles} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  </section>
+)}
+
+{phase4 && (
+  <section class="phase" id="phase4" aria-labelledby="phase4-title">
+    <header class="phase-head field field-amber">
+      <div class="shell">
+        <p class="kicker">PHASE 4</p>
+        <h2 id="phase4-title">历史定位</h2>
+        <p class="phase-note">
+          把本周事件放进更长的时间尺度：时代主题、跨领域的隐藏联系、历史类比与系统原型。
+        </p>
+        <p class="phase-flags">
+          <span class={`chip ${phase4.empiricalDegraded ? 'chip-crimson' : 'chip-emerald'}`}>
+            {phase4.empiricalDegraded ? '本期该阶段被降级' : '本期该阶段未降级'}
+          </span>
+        </p>
+      </div>
+    </header>
+
+    <div class="shell phase-body">
+      {phase4.phaseSummary && (
+        <div class="ledger">
+          <div class="rail rail-amber"><h3>阶段小结</h3></div>
+          <p class="ledger-text">{phase4.phaseSummary}</p>
+        </div>
+      )}
+
+      {phase4.epochThemes.length > 0 && (
+        <section class="sub-section" aria-labelledby="epoch-title">
+          <h3 class="sub-title" id="epoch-title">时代主题</h3>
+          <div class="cards">
+            {phase4.epochThemes.map((theme) => (
+              <article class="class-card">
+                <h4>{theme.themeName}</h4>
+                {theme.description && <p>{theme.description}</p>}
+                {theme.relevanceToCurrentEvents && (
+                  <p class="theme-relevance">与本周事件的关联：{theme.relevanceToCurrentEvents}</p>
+                )}
+                <RelatedRefs ids={theme.relatedEventIds} titles={titles} />
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {phase4.hiddenConnections.length > 0 && (
+        <section class="sub-section" aria-labelledby="hidden-title">
+          <h3 class="sub-title" id="hidden-title">隐藏联系</h3>
+          <ul class="pairs">
+            {phase4.hiddenConnections.map((connection) => (
+              <li>
+                <p class="pair-name">{connection.connectionName}</p>
+                <p class="pair-route">
+                  <span>{connection.entityA}</span>
+                  <span class="pair-arrow" aria-hidden="true">↔</span>
+                  <span>{connection.entityB}</span>
+                </p>
+                {connection.connectionMechanism && (
+                  <p><strong>作用机制　</strong>{connection.connectionMechanism}</p>
+                )}
+                {connection.significance && (
+                  <p class="pair-significance">意义：{connection.significance}</p>
+                )}
+                <RelatedRefs ids={connection.relatedEventIds} titles={titles} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {phase4.historicalAnalogies.length > 0 && (
+        <section class="sub-section" aria-labelledby="analogy-title">
+          <h3 class="sub-title" id="analogy-title">历史类比</h3>
+          <ul class="analogies">
+            {phase4.historicalAnalogies.map((analogy) => (
+              <li>
+                <p class="analogy-name">{analogy.analogyName}</p>
+                {analogy.historicalPeriod && (
+                  <p class="analogy-period">
+                    {analogy.historicalPeriod} · {analogy.historicalEvent}
+                  </p>
+                )}
+                <div class="analogy-cols">
+                  {analogy.similarity && (
+                    <p class="analogy-col"><strong>相似　</strong>{analogy.similarity}</p>
+                  )}
+                  {analogy.difference && (
+                    <p class="analogy-col"><strong>差异　</strong>{analogy.difference}</p>
+                  )}
+                </div>
+                {analogy.lessonForToday && (
+                  <p class="analogy-lesson">对当下的启示：{analogy.lessonForToday}</p>
+                )}
+                <RelatedRefs ids={analogy.relatedEventIds} titles={titles} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {phase4.systemArchetypes.length > 0 && (
+        <section class="sub-section" aria-labelledby="archetype-title">
+          <h3 class="sub-title" id="archetype-title">系统原型</h3>
+          <ul class="archetypes">
+            {phase4.systemArchetypes.map((archetype) => (
+              <li>
+                <p class="archetype-name">
+                  {archetype.patternName}
+                  {archetype.archetypeType && (
+                    <span class="chip chip-steel">{archetype.archetypeType}</span>
+                  )}
+                </p>
+                {archetype.description && <p>{archetype.description}</p>}
+                {archetype.structuralFeatures && (
+                  <p class="archetype-structure">结构特征：{archetype.structuralFeatures}</p>
+                )}
+                <RelatedRefs ids={archetype.relatedEventIds} titles={titles} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  </section>
+)}
+
+{phase5 && (
+  <section class="phase" id="phase5" aria-labelledby="phase5-title">
+    <header class="phase-head field field-emerald">
+      <div class="shell">
+        <p class="kicker">PHASE 5</p>
+        <h2 id="phase5-title">实践导向</h2>
+        <p class="phase-note">
+          把判断落回可检验的形式：情景概率、先行信号与阈值、上周预测的校准结果。
+        </p>
+      </div>
+    </header>
+
+    <div class="shell phase-body">
+      {phase5.practiceSignificance && (
+        <div class="statement">
+          <p class="kicker">实践意义</p>
+          <p class="statement-text">{phase5.practiceSignificance}</p>
+        </div>
+      )}
+
+      {phase5.scenarios.length > 0 && (
+        <section class="sub-section" aria-labelledby="scenario-title">
+          <h3 class="sub-title" id="scenario-title">情景推演</h3>
+          <div class="cards cards-3">
+            {phase5.scenarios.map((scenario) => (
+              <article class="scenario">
+                <p class="scenario-prob">
+                  {Math.round((scenario.probability ?? 0) * 100)}%
+                </p>
+                <span class={`bar ${scoreTone((scenario.probability ?? 0) * 10)}`}>
+                  <span
+                    class="bar-fill"
+                    style={`width:${Math.min(100, Math.max(0, (scenario.probability ?? 0) * 100))}%`}
+                  />
+                </span>
+                <p class="scenario-kind">
+                  <span class={`chip ${scenarioTone[scenario.scenarioType ?? ''] ?? 'chip-steel'}`}>
+                    {scenarioName[scenario.scenarioType ?? ''] ?? scenario.scenarioType ?? '未标注类型'}
+                  </span>
+                </p>
+                <h4>{scenario.title}</h4>
+                {scenario.description && <p>{scenario.description}</p>}
+                {(scenario.keyAssumptions?.length ?? 0) > 0 && (
+                  <div class="scenario-block">
+                    <p class="scenario-label">关键假设</p>
+                    <ul>
+                      {(scenario.keyAssumptions ?? []).map((item) => (
+                        <li>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {(scenario.earlySignals?.length ?? 0) > 0 && (
+                  <div class="scenario-block">
+                    <p class="scenario-label">先行信号</p>
+                    <ul>
+                      {(scenario.earlySignals ?? []).map((item) => (
+                        <li>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <RelatedRefs ids={scenario.relatedEventIds} titles={titles} />
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {phase5.signalsToWatch.length > 0 && (
+        <section class="sub-section" aria-labelledby="signal-title">
+          <h3 class="sub-title" id="signal-title">待观察信号</h3>
+          <ul class="signals">
+            {phase5.signalsToWatch.map((signal) => (
+              <li>
+                <div class="signal-head">
+                  <p class="signal-name">{signal.signalName}</p>
+                  <p class="signal-meta">
+                    {signal.priority !== undefined && (
+                      <span class="chip chip-ghost">优先级 {signal.priority}</span>
+                    )}
+                    {signal.trend && <span class="chip chip-ghost">趋势 {signal.trend}</span>}
+                  </p>
+                </div>
+                {signal.indicator && <p><strong>观察指标　</strong>{signal.indicator}</p>}
+                {signal.threshold && <p><strong>触发阈值　</strong>{signal.threshold}</p>}
+                {signal.currentValue && <p><strong>当前值　</strong>{signal.currentValue}</p>}
+                {signal.description && <p class="signal-note">{signal.description}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {phase5.calibration && (
+        <section class="sub-section" aria-labelledby="calib-title">
+          <h3 class="sub-title" id="calib-title">上周校准</h3>
+          <div class="calib">
+            <p class="calib-score">
+              {typeof phase5.calibration.accuracyScore === 'number'
+                ? `准确度评分 ${phase5.calibration.accuracyScore.toFixed(2)}`
+                : '准确度评分：本期未记录'}
+            </p>
+            {phase5.calibration.predictionSummary && (
+              <p><strong>上周预测　</strong>{phase5.calibration.predictionSummary}</p>
+            )}
+            {phase5.calibration.actualOutcome && (
+              <p><strong>实际结果　</strong>{phase5.calibration.actualOutcome}</p>
+            )}
+            {phase5.calibration.calibrationNote && (
+              <p><strong>校准说明　</strong>{phase5.calibration.calibrationNote}</p>
+            )}
+          </div>
+        </section>
+      )}
+    </div>
+  </section>
+)}
+
+{week.meta && (
+  <section class="run field field-steel" id="run" aria-labelledby="run-title">
+    <div class="shell">
+      <p class="kicker">RUN RECORD</p>
+      <h2 id="run-title">生成记录</h2>
+      <p class="run-note">
+        以下数值由流水线在生成本期数据时自报，属于生成过程记录，不是页面的更新时间，
+        也不代表内容已通过外部审核。
+      </p>
+      <dl class="run-grid">
+        <div>
+          <dt>辩证层模型</dt>
+          <dd>{week.meta.modelVersions?.dialectical ?? '未记录'}</dd>
+        </div>
+        <div>
+          <dt>经验层模型</dt>
+          <dd>{week.meta.modelVersions?.empirical ?? '未记录'}</dd>
+        </div>
+        <div>
+          <dt>运行时长</dt>
+          <dd>{duration ?? '未记录'}</dd>
+        </div>
+        <div>
+          <dt>API 费用</dt>
+          <dd>{cost ?? '未记录'}</dd>
+        </div>
+        <div>
+          <dt>核验轮次</dt>
+          <dd>{week.meta.verificationPasses ?? '未记录'}</dd>
+        </div>
+        <div>
+          <dt>降级阶段</dt>
+          <dd>
+            {week.meta.empiricalDegradations.length > 0
+              ? week.meta.empiricalDegradations.join('、')
+              : '无'}
+          </dd>
+        </div>
+        <div>
+          <dt>运行编号</dt>
+          <dd>{week.meta.runId ?? '未记录'}</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+)}
+
+<style>
+  .phase {
+    border-top: 1px solid var(--dn-divider);
+  }
+  .phase-head {
+    padding: 1.5rem 0 1.75rem;
+  }
+  .phase-head h2 {
+    margin-top: 0.25rem;
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+  }
+  .phase-note {
+    margin-top: 0.5rem;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    max-width: 68ch;
+  }
+  .phase-flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+  }
+
+  .phase-body {
+    display: grid;
+    gap: 2rem;
+    padding: clamp(1.75rem, 4vw, 2.75rem) var(--site-gutter);
+  }
+
+  .ledger {
+    display: grid;
+    gap: 0.5rem;
+  }
+  @media (min-width: 860px) {
+    .ledger {
+      grid-template-columns: 12rem minmax(0, 1fr);
+      gap: 2rem;
+    }
+  }
+  .rail h3 {
+    font-family: var(--dn-font-display);
+    font-size: 1.0625rem;
+    font-weight: var(--dn-weight-display);
+  }
+  .rail-cyan { border-left: 4px solid var(--dn-cyan); padding-left: 0.75rem; }
+  .rail-violet { border-left: 4px solid var(--dn-violet); padding-left: 0.75rem; }
+  .rail-amber { border-left: 4px solid var(--dn-amber); padding-left: 0.75rem; }
+  .ledger-text {
+    font-size: 0.9875rem;
+    line-height: 1.85;
+    max-width: 76ch;
+  }
+
+  .tally {
+    display: grid;
+    gap: 1px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    background: var(--dn-divider);
+    border: 1px solid var(--dn-divider);
+  }
+  .tally-item {
+    background: var(--dn-surface);
+    padding: 1rem 1.25rem;
+  }
+  .tally-value {
+    font-family: var(--dn-font-display);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: var(--dn-weight-display);
+    line-height: 1;
+  }
+  .tally-label {
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--dn-text-secondary);
+  }
+
+  .sub {
+    border-top: 1px solid var(--dn-divider);
+    border-bottom: 1px solid var(--dn-divider);
+  }
+  .sub-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: var(--dn-target-min);
+    padding: 0.75rem 0;
+    cursor: pointer;
+    font-weight: 600;
+    list-style: none;
+  }
+  .sub-row::-webkit-details-marker {
+    display: none;
+  }
+  .sub[open] .sub-row {
+    border-bottom: 1px solid var(--dn-divider);
+  }
+  .sub-toggle {
+    font-size: 0.8125rem;
+    color: var(--dn-text-secondary);
+    white-space: nowrap;
+  }
+  .sub[open] > .sub-row .sub-toggle {
+    font-size: 0;
+  }
+  .sub[open] > .sub-row .sub-toggle::after {
+    content: '收起';
+    font-size: 0.8125rem;
+  }
+  .sub-inset {
+    border-top: 1px solid var(--dn-divider);
+  }
+
+  .excluded {
+    list-style: none;
+    margin: 0;
+    padding: 0.75rem 0 1.25rem;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .excluded li {
+    display: grid;
+    gap: 0.2rem;
+    padding-left: 1rem;
+    border-left: 3px solid var(--dn-divider);
+  }
+  .excluded-title {
+    font-weight: 600;
+  }
+  .excluded-reason {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--dn-text-secondary);
+    max-width: 76ch;
+  }
+
+  .sub-section {
+    display: grid;
+    gap: 1rem;
+  }
+  .sub-title {
+    font-size: 1.375rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--dn-divider);
+  }
+  .sub-note {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--dn-text-secondary);
+    max-width: 76ch;
+    margin-top: -0.5rem;
+  }
+
+  .dossier {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.25rem 0 0;
+    border-top: 2px solid var(--dn-text-primary);
+  }
+  .dossier-head {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .dossier-no {
+    font-size: 0.6875rem;
+    font-weight: var(--dn-weight-kicker);
+    letter-spacing: var(--dn-tracking-kicker);
+    color: var(--dn-text-secondary);
+  }
+  .dossier-head h4 {
+    font-family: var(--dn-font-display);
+    font-size: 1.25rem;
+    font-weight: var(--dn-weight-display);
+  }
+  .dossier-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .dossier-summary {
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    max-width: 78ch;
+  }
+
+  .claims,
+  .grades,
+  .gaps,
+  .matrix,
+  .hypotheses,
+  .signals,
+  .interests,
+  .pairs,
+  .analogies,
+  .archetypes {
+    list-style: none;
+    margin: 0;
+    padding: 0.75rem 0 0;
+    display: grid;
+    gap: 0;
+  }
+  .claims li,
+  .grades li,
+  .gaps li,
+  .matrix li,
+  .hypotheses li,
+  .signals li,
+  .interests li,
+  .pairs li,
+  .analogies li,
+  .archetypes li {
+    display: grid;
+    gap: 0.4rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--dn-divider);
+  }
+  .claims li p,
+  .grades li p,
+  .gaps li p,
+  .matrix li p,
+  .signals li p,
+  .pairs li p,
+  .analogies li p,
+  .archetypes li p {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    max-width: 78ch;
+  }
+  .claim-text {
+    font-weight: 600;
+  }
+  .claim-meta,
+  .matrix-meta,
+  .signal-meta,
+  .pair-route,
+  .archetype-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .claim-note,
+  .grade-impact,
+  .gap-sources,
+  .signal-note,
+  .pair-significance,
+  .theme-relevance,
+  .analogy-lesson,
+  .archetype-structure,
+  .interest-form,
+  .matrix-sources {
+    font-size: 0.875rem !important;
+    color: var(--dn-text-secondary);
+  }
+  .grade-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+  }
+  .gap-head {
+    display: flex;
+  }
+
+  .ach {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--dn-divider);
+  }
+  .ach-prop {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    max-width: 78ch;
+  }
+  .ach-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .ach-list li {
+    display: grid;
+    gap: 0.3rem;
+    padding-left: 1rem;
+    border-left: 3px solid var(--dn-violet);
+  }
+  .ach-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+  }
+  .ach-line {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--dn-text-secondary);
+    max-width: 78ch;
+  }
+
+  .statement {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .statement-text {
+    font-family: var(--dn-font-display);
+    font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+    line-height: 1.85;
+    max-width: 74ch;
+  }
+
+  .cards {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 760px) {
+    .cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .cards-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .class-card {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    padding: 1.25rem;
+    background: var(--dn-surface);
+    border-top: 4px solid var(--dn-violet);
+  }
+  .class-card h4 {
+    font-family: var(--dn-font-display);
+    font-size: 1.25rem;
+    font-weight: var(--dn-weight-display);
+  }
+  .class-card p {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+  }
+  .tension {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--dn-text-secondary);
+  }
+  .tension li {
+    padding-left: 0.9rem;
+    border-left: 2px solid var(--dn-crimson);
+  }
+
+  .interest-head,
+  .hyp-head,
+  .signal-head,
+  .score-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .interest-group,
+  .signal-name,
+  .hyp-id {
+    font-family: var(--dn-font-display);
+    font-size: 1.125rem;
+    font-weight: var(--dn-weight-display);
+  }
+  .interest-intensity {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: var(--dn-weight-kicker);
+    color: var(--dn-text-secondary);
+  }
+  .meter {
+    display: inline-flex;
+    gap: 2px;
+  }
+  .seg {
+    width: 14px;
+    height: 10px;
+    background: var(--dn-divider);
+  }
+  .seg-on {
+    background: var(--dn-violet);
+  }
+
+  .scores {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--dn-divider);
+  }
+  .score-card {
+    border-bottom: 1px solid var(--dn-divider);
+  }
+  .score-row {
+    min-height: var(--dn-target-min);
+    padding: 0.9rem 0;
+    cursor: pointer;
+    flex-wrap: nowrap;
+    list-style: none;
+  }
+  .score-row::-webkit-details-marker {
+    display: none;
+  }
+  .score-value {
+    font-family: var(--dn-font-display);
+    font-size: 1.75rem;
+    font-weight: var(--dn-weight-display);
+    line-height: 1;
+    min-width: 4rem;
+  }
+  .score-head {
+    display: grid;
+    gap: 0.35rem;
+    flex: 1;
+    min-width: 0;
+  }
+  .score-title {
+    font-weight: 600;
+  }
+  .score-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .score-body {
+    display: grid;
+    gap: 1rem;
+    padding: 0.5rem 0 1.5rem;
+  }
+  .score-summary {
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    max-width: 78ch;
+  }
+  .dims {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .dims li {
+    display: grid;
+    gap: 0.25rem;
+  }
+  .dim-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .dim-score {
+    color: var(--dn-text-secondary);
+  }
+  .dim-note {
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--dn-text-secondary);
+    max-width: 78ch;
+  }
+  .bar {
+    display: block;
+    height: 8px;
+    background: var(--dn-divider);
+  }
+  .bar-fill {
+    display: block;
+    height: 100%;
+    background: var(--dn-steel);
+  }
+  .bar-high .bar-fill { background: var(--dn-emerald); }
+  .bar-mid .bar-fill { background: var(--dn-amber); }
+  .bar-low .bar-fill { background: var(--dn-crimson); }
+
+  .hyp-prob {
+    font-weight: var(--dn-weight-kicker);
+  }
+  .hyp-desc {
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    max-width: 78ch;
+  }
+  .hyp-cols {
+    display: grid;
+    gap: 0.5rem;
+  }
+  @media (min-width: 760px) {
+    .hyp-cols {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+  }
+  .hyp-col {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+  }
+
+  .pair-name,
+  .analogy-name {
+    font-family: var(--dn-font-display);
+    font-size: 1.125rem;
+    font-weight: var(--dn-weight-display);
+  }
+  .pair-arrow {
+    color: var(--dn-text-secondary);
+  }
+  .analogy-period {
+    font-size: 0.8125rem;
+    color: var(--dn-text-secondary);
+  }
+  .analogy-cols {
+    display: grid;
+    gap: 0.5rem;
+  }
+  @media (min-width: 760px) {
+    .analogy-cols {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+  }
+  .analogy-col {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+  }
+
+  .scenario {
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    padding: 1.25rem;
+    background: var(--dn-surface);
+    border-top: 4px solid var(--dn-emerald);
+  }
+  .scenario-prob {
+    font-family: var(--dn-font-display);
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: var(--dn-weight-display);
+    line-height: 1;
+  }
+  .scenario-kind {
+    display: flex;
+  }
+  .scenario h4 {
+    font-family: var(--dn-font-display);
+    font-size: 1.125rem;
+    font-weight: var(--dn-weight-display);
+  }
+  .scenario p {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+  }
+  .scenario-block {
+    display: grid;
+    gap: 0.3rem;
+  }
+  .scenario-label {
+    font-size: 0.75rem;
+    font-weight: var(--dn-weight-kicker);
+    letter-spacing: 0.08em;
+    color: var(--dn-text-secondary);
+  }
+  .scenario-block ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+  .calib {
+    display: grid;
+    gap: 0.6rem;
+    padding: 1.25rem;
+    border-left: 6px solid var(--dn-emerald);
+    background: var(--dn-surface);
+  }
+  .calib p {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    max-width: 78ch;
+  }
+  .calib-score {
+    font-weight: 600;
+  }
+
+  .run {
+    padding: clamp(1.75rem, 4vw, 2.75rem) 0;
+    margin-top: clamp(2rem, 5vw, 3.5rem);
+  }
+  .run h2 {
+    margin-top: 0.25rem;
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+  }
+  .run-note {
+    margin-top: 0.6rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    max-width: 72ch;
+  }
+  .run-grid {
+    display: grid;
+    gap: 1px;
+    grid-template-columns: minmax(0, 1fr);
+    margin: 1.5rem 0 0;
+    background: rgba(16, 42, 39, 0.25);
+    border: 1px solid rgba(16, 42, 39, 0.25);
+  }
+  @media (min-width: 640px) {
+    .run-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1000px) {
+    .run-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  .run-grid > div {
+    padding: 0.9rem 1rem;
+    background: var(--dn-steel);
+  }
+  .run-grid dt {
+    font-size: 0.75rem;
+    font-weight: var(--dn-weight-kicker);
+    letter-spacing: 0.06em;
+  }
+  .run-grid dd {
+    margin: 0.2rem 0 0;
+    font-family: var(--dn-font-display);
+    font-size: 1.125rem;
+    font-weight: var(--dn-weight-display);
+  }
+</style>

@@ -1,0 +1,468 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { weeks, weekCount, eventCount } from '../../lib/weeks';
+
+const chain = ['现实事实', '理论解释', '竞争性假设', '经验检验', '判断修正', '新的现实事实'];
+
+const stages = [
+  {
+    id: 'phase1',
+    order: 'PHASE 1',
+    name: '现象把握',
+    tone: 'cyan',
+    body: '抓取候选热点，聚类为事件，筛掉没有物质利益冲突的条目，并把入选事件送回检索。筛选结果、排除理由、信源评级与断言核验一并记录。',
+  },
+  {
+    id: 'phase2',
+    order: 'PHASE 2',
+    name: '矛盾识别',
+    tone: 'violet',
+    body: '把事件还原成阶级位置与物质利益：谁占有生产资料、谁承担代价、对立在何处。允许结论是「主要矛盾尚不可确认」。',
+  },
+  {
+    id: 'phase3',
+    order: 'PHASE 3',
+    name: '辩证展开',
+    tone: 'teal',
+    body: '对单个事件应用对立统一、质量互变、否定之否定。数据中这一阶段不单独成节，而是记录在该事件的字段里，本站在事件详情中呈现。',
+  },
+  {
+    id: 'phase4',
+    order: 'PHASE 4',
+    name: '历史定位',
+    tone: 'amber',
+    body: '把事件放进更长的时间尺度：时代主题、跨领域隐藏联系、历史类比与系统原型。',
+  },
+  {
+    id: 'phase5',
+    order: 'PHASE 5',
+    name: '实践导向',
+    tone: 'emerald',
+    body: '把判断写成可检验的形式：情景及其概率、先行信号与阈值、上周预测与实际结果的校准。',
+  },
+];
+
+const verificationStates = [
+  { name: '完全验证', note: '多个相互独立的来源交叉印证。' },
+  { name: '部分验证', note: '核心事实成立，部分细节仅有单一来源。' },
+  { name: '单源依赖', note: '只有一条来源支持，未获交叉确认。' },
+  { name: '推断断言', note: '由已知事实延伸出的判断，没有直接来源。' },
+  { name: '无法验证', note: '当前公开材料不足以核实。' },
+];
+
+const weaknessTypes = [
+  '证据链最薄',
+  '证据与结论不对称',
+  '跳过关键推理步骤',
+  '利益关系被简化',
+  '相关性当作因果性',
+  '过度依赖理论框架',
+];
+
+const generations = [
+  {
+    name: 'v3 证据层',
+    tone: 'teal',
+    weeks: weeks.filter((w) => w.generation === 'v3').map((w) => w.label),
+    fields: ['phase1 / phase2 / phase4 / phase5', '事件级：辩证三规律、对抗审查、因果回路、数据校验', 'phase1 证据档案：断言核验、信源评级、信息缺口、ACH、交叉印证', 'phase5：情景概率、待观察信号、上周校准', '生成记录：模型版本、时长、费用、降级阶段'],
+  },
+  {
+    name: 'v2 五阶段',
+    tone: 'violet',
+    weeks: weeks.filter((w) => w.generation === 'v2').map((w) => w.label),
+    fields: ['events：影响分、信息增量分、阶级分析、辩证总结', '事件级：时间线、证据链、因果与矛盾关系', 'synthesis：跨事件主题、趋势、正在运动的矛盾', '总体估计与数据缺口', '无断言核验档案与生成记录'],
+  },
+];
+---
+
+<BaseLayout
+  title="方法论与证据层 — 格物 Dianalyze"
+  description="格物（Dianalyze）的五阶段分析方法、证据层规则与两代数据结构说明。"
+>
+  <section class="hero field field-amber" aria-labelledby="method-title">
+    <div class="shell hero-grid">
+      <div>
+        <p class="hero-back"><a href="/">← 期次索引</a></p>
+        <p class="kicker">METHOD · EVIDENCE LAYER</p>
+        <h1 class="display" id="method-title">先建证据，<br />再作判断</h1>
+      </div>
+      <p class="hero-note">
+        本站只呈现流水线真实写出的字段：判断、依据、分歧与未解决的问题同时保留。
+        没有数据的部分显示为「未记录」，不用推测填充。
+      </p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="loop-title">
+    <div class="shell">
+      <div class="section-head">
+        <p class="kicker">CLOSED LOOP</p>
+        <h2 id="loop-title">证据链闭环</h2>
+      </div>
+      <p class="lede loop-note">
+        格物不是一次性生成，而是一个闭环：检索先于分析，关键断言带类型与核验状态，
+        关于动机的推断只能以假设形式出现。
+      </p>
+      <ol class="chain">
+        {chain.map((step, i) => (
+          <li>
+            <span class="chain-step">{step}</span>
+            {i < chain.length - 1 && <span class="chain-arrow" aria-hidden="true">→</span>}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="stages-title">
+    <div class="shell">
+      <div class="section-head">
+        <p class="kicker">FIVE STAGES</p>
+        <h2 id="stages-title">五个阶段</h2>
+      </div>
+      <ol class="stages">
+        {stages.map((stage) => (
+          <li class={`stage stage-${stage.tone}`}>
+            <p class="stage-order">{stage.order}</p>
+            <h3>{stage.name}</h3>
+            <p>{stage.body}</p>
+          </li>
+        ))}
+      </ol>
+      <p class="table-note">
+        期次详情页的目录与本节阶段一一对应；数据中不存在的阶段不会被补写。
+      </p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="verify-title">
+    <div class="shell">
+      <div class="section-head">
+        <p class="kicker">VERIFICATION</p>
+        <h2 id="verify-title">核验、评级与审查</h2>
+      </div>
+      <div class="blocks">
+        <article class="block">
+          <h3>断言核验状态</h3>
+          <p class="block-note">
+            每条关键断言单独标注核验状态与置信度；只有来源文本与断言共享足够多内容时才算
+            支持，「推断没有来源」是正常结果而不是缺陷。
+          </p>
+          <dl class="defs">
+            {verificationStates.map((state) => (
+              <div>
+                <dt>{state.name}</dt>
+                <dd>{state.note}</dd>
+              </div>
+            ))}
+          </dl>
+        </article>
+
+        <article class="block">
+          <h3>信源评级与独立性</h3>
+          <p class="block-note">
+            正文近似（字符 shingle Jaccard ≥ 0.7）的来源会被标记为转载：
+            五家媒体转发同一份通稿，只算一个证据来源。
+          </p>
+          <dl class="defs">
+            <div>
+              <dt>reliability</dt>
+              <dd>本仓库数据中出现的取值为 B、C、F；未评估的来源不伪装成已评估。</dd>
+            </div>
+            <div>
+              <dt>credibility</dt>
+              <dd>本仓库数据中出现的取值为 2、3、4、6，数值越大表示可信度越低。</dd>
+            </div>
+            <div>
+              <dt>信息缺口</dt>
+              <dd>缺口按 CRITICAL / HIGH / MEDIUM 分级，并给出可补齐的来源方向。</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="block">
+          <h3>对抗审查</h3>
+          <p class="block-note">
+            每条入选事件的结论会被逐条挑战，挑战给出脆弱类型、要求的修正，
+            以及原判断在什么条件下仍然成立 —— 修正以加限定语为主，而不是删掉整段。
+          </p>
+          <p class="chips">
+            {weaknessTypes.map((type) => (
+              <span class="chip chip-orange">{type}</span>
+            ))}
+          </p>
+        </article>
+
+        <article class="block">
+          <h3>实践导向</h3>
+          <p class="block-note">
+            情景分为 baseline（基准）、alternative（替代）、wildcard（黑马）三类并给出概率；
+            待观察信号带阈值与当前值；上周校准记录预测与实际结果的对照。
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="data-title">
+    <div class="shell">
+      <div class="section-head">
+        <p class="kicker">DATA</p>
+        <h2 id="data-title">两代数据结构</h2>
+      </div>
+      <p class="lede loop-note">
+        仓库中同时存在两代结构，这不是风格差异，而是流水线演进的真实结果。
+        本站按各自结构完整呈现，不把 v2 期次改写成 v3 的样子，也不为空缺字段编造内容。
+      </p>
+      <div class="gens">
+        {generations.map((gen) => (
+          <article class={`gen gen-${gen.tone}`}>
+            <h3>{gen.name}</h3>
+            <p class="gen-weeks">{gen.weeks.join(' · ')}</p>
+            <ul>
+              {gen.fields.map((field) => (
+                <li>{field}</li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+      <p class="table-note">
+        当前共 {weekCount} 期、{eventCount} 个分析事件。完整的字段定义见
+        <a href="https://github.com/dreamnight16/weekly-hotspot/blob/main/docs/dianalyze-v3-evidence-layer.md" target="_blank" rel="noopener">dianalyze-v3-evidence-layer.md ↗</a>。
+      </p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="site-title">
+    <div class="shell">
+      <div class="section-head">
+        <p class="kicker">THIS SITE</p>
+        <h2 id="site-title">本站的取舍</h2>
+      </div>
+      <ul class="notes">
+        <li>静态构建：没有实时接口、轮询、轮播、跟踪脚本或第三方 CDN。</li>
+        <li>页面上出现的每一个数字、日期与状态都来自仓库中的数据文件。</li>
+        <li>数据里没有的字段（例如 v2 期次的运行记录）显示「未记录」，不补默认值。</li>
+        <li>颜色用于区分信息层次，状态同时有文字标签，不单靠颜色表达。</li>
+        <li>支持键盘操作、可见焦点、Esc 关闭展开项；开启减少动态效果时不发生位移与缩放。</li>
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: clamp(1.5rem, 4vw, 2.5rem) 0 clamp(2rem, 5vw, 3.5rem);
+  }
+  .hero-grid {
+    display: grid;
+    gap: clamp(1.25rem, 4vw, 3rem);
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 900px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      align-items: end;
+    }
+  }
+  .hero-back a {
+    font-size: 0.9rem;
+  }
+  .hero h1 {
+    margin-top: 0.5rem;
+  }
+  .hero-note {
+    font-size: 1rem;
+    line-height: 1.8;
+    max-width: 46ch;
+    padding-top: 1rem;
+    border-top: 4px solid var(--dn-text-on-color);
+  }
+
+  .loop-note {
+    padding: 0.9rem 0 1.5rem;
+  }
+  .chain {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+  }
+  .chain li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .chain-step {
+    display: inline-block;
+    padding: 0.5rem 0.9rem;
+    background: var(--dn-canvas);
+    border: 1px solid var(--dn-control-border);
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+  .chain-arrow {
+    color: var(--dn-text-secondary);
+  }
+
+  .stages {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--dn-divider);
+  }
+  .stage {
+    display: grid;
+    gap: 0.4rem;
+    padding: 1.25rem 0 1.25rem 1.25rem;
+    border-bottom: 1px solid var(--dn-divider);
+    border-left: 6px solid var(--dn-steel);
+  }
+  .stage-cyan { border-left-color: var(--dn-cyan); }
+  .stage-violet { border-left-color: var(--dn-violet); }
+  .stage-teal { border-left-color: var(--dn-teal); }
+  .stage-amber { border-left-color: var(--dn-amber); }
+  .stage-emerald { border-left-color: var(--dn-emerald); }
+  .stage-order {
+    font-size: 0.6875rem;
+    font-weight: var(--dn-weight-kicker);
+    letter-spacing: var(--dn-tracking-kicker);
+    color: var(--dn-text-secondary);
+  }
+  .stage h3 {
+    font-family: var(--dn-font-display);
+    font-size: 1.375rem;
+    font-weight: var(--dn-weight-display);
+  }
+  .stage p {
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    color: var(--dn-text-secondary);
+    max-width: 76ch;
+  }
+
+  .blocks {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 900px) {
+    .blocks {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2rem 3rem;
+    }
+  }
+  .block {
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+  }
+  .block h3 {
+    font-family: var(--dn-font-display);
+    font-size: 1.25rem;
+    font-weight: var(--dn-weight-display);
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--dn-text-primary);
+  }
+  .block-note {
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    color: var(--dn-text-secondary);
+    max-width: 60ch;
+  }
+  .defs {
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .defs > div {
+    display: grid;
+    gap: 0.2rem;
+    padding-left: 0.9rem;
+    border-left: 3px solid var(--dn-divider);
+  }
+  .defs dt {
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+  .defs dd {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--dn-text-secondary);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .gens {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 860px) {
+    .gens {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .gen {
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    padding: 1.25rem;
+    background: var(--dn-surface);
+    border-top: 4px solid var(--dn-steel);
+  }
+  .gen-teal { border-top-color: var(--dn-teal); }
+  .gen-violet { border-top-color: var(--dn-violet); }
+  .gen h3 {
+    font-family: var(--dn-font-display);
+    font-size: 1.375rem;
+    font-weight: var(--dn-weight-display);
+  }
+  .gen-weeks {
+    font-size: 0.8125rem;
+    font-weight: var(--dn-weight-kicker);
+    letter-spacing: 0.04em;
+    color: var(--dn-text-secondary);
+  }
+  .gen ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+  }
+
+  .notes {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .notes li {
+    padding-left: 1rem;
+    border-left: 3px solid var(--dn-teal);
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    max-width: 78ch;
+  }
+
+  .table-note {
+    margin-top: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--dn-text-secondary);
+    max-width: 78ch;
+  }
+</style>

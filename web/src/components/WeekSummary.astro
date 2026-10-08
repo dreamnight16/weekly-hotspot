@@ -1,0 +1,102 @@
+---
+import type { Week } from '../lib/weeks';
+import { summaryBlocks } from '../lib/weeks';
+
+interface Props {
+  week: Week;
+}
+
+const { week } = Astro.props;
+const blocks = summaryBlocks(week);
+---
+
+<section class="section summary" id="summary" aria-labelledby="summary-title">
+  <div class="section-head">
+    <p class="kicker">SYNTHESIS</p>
+    <h2 id="summary-title">本期综合</h2>
+  </div>
+
+  {blocks.length > 0 ? (
+    <>
+      <p class="summary-note">
+        以下文字直接取自本周分析输出，未经二次改写；判断中的不确定之处保留在
+        {week.generation === 'v3' ? (
+          <>
+            <a href="#events">事件详情</a>与<a href="#phase1">证据核验</a>中。
+          </>
+        ) : (
+          <>
+            <a href="#events">事件详情</a>与<a href="#synthesis">跨事件综合</a>中。
+          </>
+        )}
+      </p>
+      <div class="summary-blocks">
+        {blocks.map((block) => (
+          <article class="summary-block">
+            <div class="summary-rail">
+              <h3>{block.label}</h3>
+              <p class="summary-source">{block.source}</p>
+            </div>
+            <p class="summary-text">{block.text}</p>
+          </article>
+        ))}
+      </div>
+    </>
+  ) : (
+    <p class="summary-empty">
+      本期数据中没有跨事件综合字段（synthesis）。这是早期数据的真实状态，
+      页面不会用推测补齐；本期事件分析仍完整保留在
+      <a href="#events">分析事件</a>一节。
+    </p>
+  )}
+</section>
+
+<style>
+  .summary-note {
+    padding: 0.9rem 0;
+    font-size: 0.875rem;
+    color: var(--dn-text-secondary);
+    max-width: 76ch;
+  }
+  .summary-empty {
+    margin-top: 1.25rem;
+    font-size: 0.9375rem;
+    line-height: 1.8;
+    color: var(--dn-text-secondary);
+    max-width: 76ch;
+  }
+  .summary-blocks {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--dn-divider);
+  }
+  .summary-block {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--dn-divider);
+  }
+  @media (min-width: 860px) {
+    .summary-block {
+      grid-template-columns: 12rem minmax(0, 1fr);
+      gap: 2rem;
+    }
+  }
+  .summary-rail h3 {
+    font-size: 1.25rem;
+  }
+  .summary-source {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dn-text-secondary);
+  }
+  .summary-text {
+    font-family: var(--dn-font-display);
+    font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+    font-weight: var(--dn-weight-body);
+    line-height: 1.85;
+    max-width: 72ch;
+  }
+</style>

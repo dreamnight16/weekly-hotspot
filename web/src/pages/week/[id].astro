@@ -1,0 +1,315 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EventCard from '../../components/EventCard.astro';
+import WeekSummary from '../../components/WeekSummary.astro';
+import WeekV3 from '../../components/WeekV3.astro';
+import WeekV2 from '../../components/WeekV2.astro';
+import { weeks, neighbours, blogPostUrl, type Week } from '../../lib/weeks';
+
+export function getStaticPaths() {
+  return weeks.map((week) => ({
+    params: { id: week.id.toLowerCase() },
+    props: { week },
+  }));
+}
+
+interface Props {
+  week: Week;
+}
+
+const { week } = Astro.props;
+const { prev, next } = neighbours(week.id);
+
+const generationLabel = week.generation === 'v3' ? 'v3 证据层' : 'v2 五阶段';
+
+// 目录只列出本期真实存在的区块，避免指向空锚点。
+const nav = [
+  { href: '#summary', label: '本期综合', show: true },
+  { href: '#events', label: '分析事件', show: true },
+  ...(week.generation === 'v3'
+    ? [
+        { href: '#phase1', label: '现象把握', show: Boolean(week.phase1) },
+        { href: '#phase2', label: '矛盾识别', show: Boolean(week.phase2) },
+        { href: '#phase4', label: '历史定位', show: Boolean(week.phase4) },
+        { href: '#phase5', label: '实践导向', show: Boolean(week.phase5) },
+        { href: '#run', label: '生成记录', show: Boolean(week.meta) },
+      ]
+    : [{ href: '#synthesis', label: '跨事件综合', show: true }]),
+].filter((item) => item.show);
+---
+
+<BaseLayout
+  title={`格物 ${week.id} — 每周热点辩证分析`}
+  description={`格物 Dianalyze ${week.id}（${week.start} 至 ${week.end}）：${week.events.length} 个事件的现象把握、矛盾识别与辩证展开。`}
+>
+  <section class="hero field field-teal" aria-labelledby="week-title">
+    <div class="shell hero-grid">
+      <div class="hero-main">
+        <p class="hero-back">
+          <a href="/">← 期次索引</a>
+        </p>
+        <p class="kicker">DIANALYZE · WEEKLY</p>
+        <h1 class="hero-id" id="week-title">
+          <span class="hero-label">{week.label}</span>
+          <span class="hero-year">{week.year}</span>
+        </h1>
+        <p class="hero-range">{week.start} → {week.end}</p>
+      </div>
+
+      <aside class="hero-facts" aria-label="本期数据概要">
+        <ul>
+          <li><strong>{week.events.length}</strong> 个分析事件</li>
+          {week.excluded.length > 0 && <li><strong>{week.excluded.length}</strong> 条候选热点被排除</li>}
+          <li>{generationLabel}</li>
+          {week.generation === 'v2' && <li>无断言核验档案（v2 结构）</li>}
+        </ul>
+        <p class="hero-links">
+          <a class="hero-cta" href={blogPostUrl(week.id)} target="_blank" rel="noopener">
+            阅读博客文章 ↗
+          </a>
+          <a href="#events">跳到事件 ↧</a>
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <nav class="phase-nav" aria-label="本期目录">
+    <div class="shell phase-nav-inner">
+      {nav.map((item) => (
+        <a href={item.href}>{item.label}</a>
+      ))}
+    </div>
+  </nav>
+
+  <div class="page-body">
+    <div class="shell-inner">
+      <WeekSummary week={week} />
+    </div>
+
+    <section class="events-section" id="events" aria-labelledby="events-title">
+      <div class="shell">
+        <div class="section-head">
+          <p class="kicker">EVENTS</p>
+          <h2 id="events-title">分析事件</h2>
+        </div>
+        <p class="events-note">
+          逐条展开可看到该事件的物质内容、辩证展开、证据与未解决的问题。
+          展开不会离开本页；键盘可操作，Esc 关闭当前展开项并将焦点交回标题行。
+        </p>
+        <div class="events">
+          {week.events.map((event, i) => (
+            <EventCard event={event} week={week} index={i} />
+          ))}
+        </div>
+        {week.events.length === 0 && <p class="empty">本期无入选事件。</p>}
+      </div>
+    </section>
+
+    {week.generation === 'v3' ? <WeekV3 week={week} /> : <WeekV2 week={week} />}
+  </div>
+
+  <nav class="period-nav" aria-label="期次导航">
+    <div class="shell period-nav-inner">
+      {prev ? (
+        <a class="period-link" href={`/week/${prev.id.toLowerCase()}/`}>
+          <span class="period-dir">← 上一期</span>
+          <span class="period-id">{prev.id}</span>
+        </a>
+      ) : (
+        <span class="period-empty">已是最早一期</span>
+      )}
+      <a class="period-index" href="/">全部期次</a>
+      {next ? (
+        <a class="period-link period-next" href={`/week/${next.id.toLowerCase()}/`}>
+          <span class="period-dir">下一期 →</span>
+          <span class="period-id">{next.id}</span>
+        </a>
+      ) : (
+        <span class="period-empty">已是最新一期</span>
+      )}
+    </div>
+  </nav>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: clamp(1.5rem, 4vw, 2.5rem) 0 clamp(1.75rem, 4vw, 3rem);
+  }
+  .hero-grid {
+    display: grid;
+    gap: clamp(1.25rem, 4vw, 3rem);
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 900px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 1.2fr);
+      align-items: end;
+    }
+  }
+  .hero-main {
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+  }
+  .hero-back a {
+    font-size: 0.9rem;
+  }
+  .hero-id {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin: 0.25rem 0 0;
+  }
+  .hero-label {
+    font-family: var(--dn-font-display);
+    font-size: var(--dn-size-display);
+    font-weight: var(--dn-weight-display);
+    line-height: var(--dn-leading-display);
+  }
+  .hero-year {
+    font-family: var(--dn-font-display);
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: var(--dn-weight-display);
+  }
+  .hero-range {
+    font-weight: var(--dn-weight-kicker);
+    font-size: 1rem;
+  }
+
+  .hero-facts {
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+    padding-top: 1rem;
+    border-top: 4px solid var(--dn-text-on-color);
+  }
+  .hero-facts ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.9375rem;
+  }
+  .hero-facts strong {
+    font-weight: 600;
+  }
+  .hero-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+    font-size: 0.9375rem;
+  }
+  .hero-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--dn-target-min);
+  }
+  .hero-cta {
+    font-weight: var(--dn-weight-kicker);
+  }
+
+  .phase-nav {
+    border-top: 1px solid var(--dn-divider);
+    border-bottom: 1px solid var(--dn-divider);
+    background: var(--dn-surface);
+  }
+  .phase-nav-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+  }
+  .phase-nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--dn-target-min);
+    font-size: 0.875rem;
+    color: var(--dn-text-secondary);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+  }
+  .phase-nav a:hover {
+    color: var(--dn-text-primary);
+    border-bottom-color: var(--dn-teal);
+  }
+
+  .page-body {
+    display: grid;
+    gap: 0;
+  }
+  .shell-inner {
+    width: 100%;
+    max-width: var(--site-max);
+    margin: 0 auto;
+    padding: 0 var(--site-gutter);
+  }
+
+  .events-section {
+    padding: clamp(2rem, 5vw, 3.5rem) 0 clamp(1rem, 3vw, 2rem);
+  }
+  .events-note {
+    padding: 0.9rem 0 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--dn-text-secondary);
+    max-width: 76ch;
+  }
+  .events {
+    display: grid;
+    gap: 0;
+    border-top: 2px solid var(--dn-text-primary);
+  }
+
+  .period-nav {
+    border-top: 1px solid var(--dn-divider);
+    margin-top: clamp(2rem, 5vw, 3.5rem);
+  }
+  .period-nav-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+  .period-link {
+    display: grid;
+    gap: 0.15rem;
+    min-height: var(--dn-target-min);
+    align-content: center;
+    text-decoration: none;
+  }
+  .period-next {
+    text-align: right;
+  }
+  .period-dir {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dn-text-secondary);
+  }
+  .period-id {
+    font-family: var(--dn-font-display);
+    font-size: 1.25rem;
+    font-weight: var(--dn-weight-display);
+  }
+  .period-index {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--dn-target-min);
+    padding: 0 0.5rem;
+    font-size: 0.9rem;
+    color: var(--dn-text-secondary);
+  }
+  .period-empty {
+    font-size: 0.875rem;
+    color: var(--dn-text-secondary);
+  }
+
+  .empty {
+    padding: 2rem 0;
+    color: var(--dn-text-secondary);
+  }
+</style>

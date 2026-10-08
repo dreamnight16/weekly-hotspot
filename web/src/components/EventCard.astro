@@ -1,0 +1,855 @@
+---
+import type { Week, WeekEvent } from '../lib/weeks';
+
+interface Props {
+  event: WeekEvent;
+  week: Week;
+  index: number;
+}
+
+const { event, week, index } = Astro.props;
+
+const pad = (n: number) => String(n).padStart(2, '0');
+
+const confLabel: Record<string, { text: string; tone: string }> = {
+  HIGH: { text: '判断置信度 高', tone: 'chip-emerald' },
+  MEDIUM: { text: '判断置信度 中', tone: 'chip-amber' },
+  LOW: { text: '判断置信度 低', tone: 'chip-crimson' },
+};
+const confidence = event.dialecticalConfidence
+  ? confLabel[event.dialecticalConfidence.toUpperCase()] ?? {
+      text: `判断置信度 ${event.dialecticalConfidence}`,
+      tone: 'chip-steel',
+    }
+  : undefined;
+
+const timelineTitles = new Map((event.timeline ?? []).map((t) => [t.id, t.title]));
+const evidenceById = new Map((event.evidence ?? []).map((e) => [e.id, e]));
+
+const authenticityTone: Record<string, string> = {
+  真实: 'chip-emerald',
+  存疑: 'chip-amber',
+  待验证: 'chip-steel',
+  不实: 'chip-crimson',
+};
+
+const lawLabel = (value: unknown) => (typeof value === 'string' && value.trim() ? value : null);
+const hasLaws = Boolean(
+  event.unityOfOpposites?.identity ||
+    event.unityOfOpposites?.struggle ||
+    event.quantityQuality?.currentPhase ||
+    event.negationOfNegation?.direction,
+);
+---
+
+<details
+  class="ev dn-enter-rise"
+  id={`evt-${event.id}`}
+  style={`--dn-enter-index:${Math.min(index, 8)}`}
+>
+  <summary class="ev-row">
+    <span class="ev-no" aria-hidden="true">{pad(index + 1)}</span>
+    <span class="ev-headline">
+      <span class="ev-title">{event.title}</span>
+      <span class="ev-meta">
+        {event.impactScore !== undefined && (
+          <span class="chip chip-violet">影响 {event.impactScore}</span>
+        )}
+        {event.infoGainScore !== undefined && (
+          <span class="chip chip-cyan">信息增量 {event.infoGainScore}</span>
+        )}
+        {event.isDirectExpression !== undefined && (
+          <span class="chip chip-steel">
+            {event.isDirectExpression ? '当事方直接表述' : '第三方转述'}
+          </span>
+        )}
+        {event.sourceGrade?.reliability && (
+          <span class="chip chip-ghost">
+            来源等级 {event.sourceGrade.reliability}/{event.sourceGrade.credibility}
+          </span>
+        )}
+        {(event.evidence?.length ?? 0) > 0 && (
+          <span class="chip chip-ghost">证据 {event.evidence!.length} 条</span>
+        )}
+        {(event.timeline?.length ?? 0) > 0 && (
+          <span class="chip chip-ghost">时间线 {event.timeline!.length} 段</span>
+        )}
+        {confidence && <span class={`chip ${confidence.tone}`}>{confidence.text}</span>}
+      </span>
+    </span>
+    <span class="ev-toggle" aria-hidden="true">
+      <span class="when-closed">展开分析</span>
+      <span class="when-open">收起</span>
+    </span>
+  </summary>
+
+  <div class="ev-panel" data-dn-panel>
+    <div class="panel-bar">
+      <button type="button" class="zoom" data-dn-zoom>专注阅读 ⤢</button>
+      {event.sourceUrl && (
+        <a class="panel-source" href={event.sourceUrl} target="_blank" rel="noopener">
+          原始素材 ↗
+        </a>
+      )}
+      <span class="panel-id">EVENT {event.id}</span>
+    </div>
+
+    <p class="ev-summary">{event.summary}</p>
+
+    {event.materialContent && (
+      <div class="ledger">
+        <div class="ledger-rail rail-teal">
+          <p class="rail-label">物质内容</p>
+        </div>
+        <div class="ledger-body">
+          <p>{event.materialContent}</p>
+        </div>
+      </div>
+    )}
+
+    {event.sourceGrade?.rationale && (
+      <div class="ledger">
+        <div class="ledger-rail rail-steel">
+          <p class="rail-label">来源评级理由</p>
+        </div>
+        <div class="ledger-body">
+          <p>{event.sourceGrade.rationale}</p>
+        </div>
+      </div>
+    )}
+
+    {event.classAnalysis && (
+      <section class="law-group" aria-labelledby={`law-class-${event.id}`}>
+        <h3 class="group-title" id={`law-class-${event.id}`}>阶级分析</h3>
+        {lawLabel(event.classAnalysis.classNature) && (
+          <div class="ledger">
+            <div class="ledger-rail rail-violet"><p class="rail-label">阶级本质</p></div>
+            <div class="ledger-body"><p>{event.classAnalysis.classNature}</p></div>
+          </div>
+        )}
+        {lawLabel(event.classAnalysis.contradiction) && (
+          <div class="ledger">
+            <div class="ledger-rail rail-violet"><p class="rail-label">主要矛盾</p></div>
+            <div class="ledger-body"><p>{event.classAnalysis.contradiction}</p></div>
+          </div>
+        )}
+        {lawLabel(event.classAnalysis.historicalContext) && (
+          <div class="ledger">
+            <div class="ledger-rail rail-amber"><p class="rail-label">历史脉络</p></div>
+            <div class="ledger-body"><p>{event.classAnalysis.historicalContext}</p></div>
+          </div>
+        )}
+      </section>
+    )}
+
+    {event.dialecticalSummary && (
+      <div class="ledger">
+        <div class="ledger-rail rail-teal"><p class="rail-label">辩证总结</p></div>
+        <div class="ledger-body"><p class="emphasis">{event.dialecticalSummary}</p></div>
+      </div>
+    )}
+
+    {hasLaws && (
+      <section class="law-group" aria-labelledby={`law-3-${event.id}`}>
+        <h3 class="group-title" id={`law-3-${event.id}`}>辩证展开 · 三大规律</h3>
+
+        {event.unityOfOpposites &&
+          (lawLabel(event.unityOfOpposites.identity) ||
+            lawLabel(event.unityOfOpposites.struggle) ||
+            lawLabel(event.unityOfOpposites.particularity) ||
+            lawLabel(event.unityOfOpposites.universality)) && (
+            <div class="law">
+              <p class="law-name">对立统一</p>
+              <div class="law-body">
+                {lawLabel(event.unityOfOpposites.identity) && (
+                  <p><strong>同一性　</strong>{event.unityOfOpposites.identity}</p>
+                )}
+                {lawLabel(event.unityOfOpposites.struggle) && (
+                  <p><strong>斗争性　</strong>{event.unityOfOpposites.struggle}</p>
+                )}
+                {lawLabel(event.unityOfOpposites.particularity) && (
+                  <p><strong>特殊性　</strong>{event.unityOfOpposites.particularity}</p>
+                )}
+                {lawLabel(event.unityOfOpposites.universality) && (
+                  <p><strong>普遍性　</strong>{event.unityOfOpposites.universality}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+        {event.quantityQuality && (
+          <div class="law">
+            <p class="law-name">质量互变</p>
+            <div class="law-body">
+              <p>
+                <strong>当前阶段　</strong>
+                <span class="chip chip-violet">{event.quantityQuality.currentPhase ?? '未标注'}</span>
+              </p>
+              {lawLabel(event.quantityQuality.oldQualityNegated) && (
+                <p><strong>被否定的旧质　</strong>{event.quantityQuality.oldQualityNegated}</p>
+              )}
+              {lawLabel(event.quantityQuality.quantitativeDirection) && (
+                <p><strong>量变方向　</strong>{event.quantityQuality.quantitativeDirection}</p>
+              )}
+              {lawLabel(event.quantityQuality.measure) && (
+                <p><strong>质变临界　</strong>{event.quantityQuality.measure}</p>
+              )}
+              {lawLabel(event.quantityQuality.newQuality) && (
+                <p><strong>可能出现的新质　</strong>{event.quantityQuality.newQuality}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {event.negationOfNegation && (
+          <div class="law">
+            <p class="law-name">否定之否定</p>
+            <div class="law-body">
+              <p>
+                <strong>运动方向　</strong>
+                <span class="chip chip-amber">{event.negationOfNegation.direction ?? '未标注'}</span>
+              </p>
+              {lawLabel(event.negationOfNegation.oldThing) && (
+                <p><strong>旧事物　</strong>{event.negationOfNegation.oldThing}</p>
+              )}
+              {lawLabel(event.negationOfNegation.firstNegation) && (
+                <p><strong>第一次否定　</strong>{event.negationOfNegation.firstNegation}</p>
+              )}
+              {lawLabel(event.negationOfNegation.internalNegation) && (
+                <p><strong>内部否定　</strong>{event.negationOfNegation.internalNegation}</p>
+              )}
+              {lawLabel(event.negationOfNegation.stageCharacteristics) && (
+                <p><strong>阶段特征　</strong>{event.negationOfNegation.stageCharacteristics}</p>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+    )}
+
+    {event.phaseSummary && (
+      <div class="ledger">
+        <div class="ledger-rail rail-teal"><p class="rail-label">本事件阶段小结</p></div>
+        <div class="ledger-body"><p>{event.phaseSummary}</p></div>
+      </div>
+    )}
+
+    {event.timeline && event.timeline.length > 0 && (
+      <section class="law-group" aria-labelledby={`tl-${event.id}`}>
+        <h3 class="group-title" id={`tl-${event.id}`}>时间线</h3>
+        <ol class="timeline">
+          {event.timeline.map((item) => (
+            <li>
+              <p class="tl-time">{item.time}</p>
+              <div class="tl-body">
+                <p class="tl-title">{item.title}</p>
+                <p>{item.description}</p>
+                {item.evidenceRefs && item.evidenceRefs.length > 0 && (
+                  <p class="tl-refs">
+                    依据：
+                    {item.evidenceRefs.map((ref) =>
+                      evidenceById.has(ref) ? (
+                        <a href={`#evid-${event.id}-${ref}`}>
+                          {evidenceById.get(ref)!.sourceName}
+                        </a>
+                      ) : (
+                        <span class="tl-ref-missing">{ref}（本期证据链中无此条目）</span>
+                      ),
+                    )}
+                  </p>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+
+    {event.edges && event.edges.length > 0 && (
+      <section class="law-group" aria-labelledby={`edges-${event.id}`}>
+        <h3 class="group-title" id={`edges-${event.id}`}>事件内部的因果与矛盾关系</h3>
+        <ul class="edges">
+          {event.edges.map((edge) => (
+            <li>
+              <p class="edge-route">
+                <span>{timelineTitles.get(edge.from) ?? edge.from}</span>
+                <span class="edge-arrow" aria-hidden="true">→</span>
+                <span>{timelineTitles.get(edge.to) ?? edge.to}</span>
+                <span class="chip chip-amber">{edge.type}</span>
+              </p>
+              <p>{edge.description}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {event.evidence && event.evidence.length > 0 && (
+      <section class="law-group" aria-labelledby={`evid-${event.id}`}>
+        <h3 class="group-title" id={`evid-${event.id}`}>证据链</h3>
+        <ul class="evidence">
+          {event.evidence.map((item) => (
+            <li id={`evid-${event.id}-${item.id}`}>
+              <div class="evidence-head">
+                <span class="chip chip-cyan">{item.sourceType}</span>
+                <span class="chip chip-ghost">{item.classBias ?? '立场未标注'}</span>
+                <span class={`chip ${authenticityTone[item.authenticity] ?? 'chip-steel'}`}>
+                  核实结论 {item.authenticity}
+                </span>
+              </div>
+              <p class="evidence-source">
+                {item.sourceUrl ? (
+                  <a href={item.sourceUrl} target="_blank" rel="noopener">{item.sourceName} ↗</a>
+                ) : (
+                  item.sourceName
+                )}
+              </p>
+              <p>{item.content}</p>
+              {item.aiReason && <p class="evidence-note">评级理由：{item.aiReason}</p>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {event.adversarialReview &&
+      ((event.adversarialReview.challenges?.length ?? 0) > 0 ||
+        event.adversarialReview.noWeakClaimsFound ||
+        event.adversarialReview.adversarySummary) && (
+        <section class="review" aria-labelledby={`adv-${event.id}`}>
+          <div class="review-rail">
+            <h3 class="group-title" id={`adv-${event.id}`}>对抗审查</h3>
+            {event.adversarialReview.noWeakClaimsFound ? (
+              <p class="chip chip-emerald">本轮未发现薄弱断言</p>
+            ) : (
+              <p class="chip chip-orange">发现 {(event.adversarialReview.challenges ?? []).length} 处薄弱断言</p>
+            )}
+          </div>
+          <div class="review-body">
+            {event.adversarialReview.adversarySummary && <p>{event.adversarialReview.adversarySummary}</p>}
+            {(event.adversarialReview.challenges ?? []).map((challenge) => (
+              <article class="challenge">
+                <p class="challenge-label">被挑战的断言</p>
+                <p class="challenge-claim">{challenge.targetClaim}</p>
+                <p class="challenge-meta">
+                  {challenge.weaknessType && <span class="chip chip-orange">{challenge.weaknessType}</span>}
+                  {challenge.claimLocation && <span class="chip chip-ghost">位于 {challenge.claimLocation}</span>}
+                  {challenge.resilienceAssessment?.resilience && (
+                    <span class="chip chip-steel">韧性 {challenge.resilienceAssessment.resilience}</span>
+                  )}
+                </p>
+                {challenge.weaknessExplanation && <p>{challenge.weaknessExplanation}</p>}
+                {challenge.resilienceAssessment?.requiredCorrection && (
+                  <p class="challenge-fix">
+                    <strong>要求的修正　</strong>
+                    {challenge.resilienceAssessment.requiredCorrection}
+                  </p>
+                )}
+                {challenge.resilienceAssessment?.conditionsForOriginalToStand && (
+                  <p class="challenge-note">
+                    原判断成立的条件：{challenge.resilienceAssessment.conditionsForOriginalToStand}
+                  </p>
+                )}
+              </article>
+            ))}
+            {event.adversarialReview.noWeakClaimsRationale && (
+              <p class="challenge-note">{event.adversarialReview.noWeakClaimsRationale}</p>
+            )}
+          </div>
+        </section>
+      )}
+
+    {event.causalLoopDiagram && (
+      <section class="law-group" aria-labelledby={`cld-${event.id}`}>
+        <h3 class="group-title" id={`cld-${event.id}`}>因果回路</h3>
+        {event.causalLoopDiagram.description && <p>{event.causalLoopDiagram.description}</p>}
+        {(event.causalLoopDiagram.nodes ?? []).length > 0 && (
+          <p class="nodes">
+            {(event.causalLoopDiagram.nodes ?? []).map((node) => (
+              <span class="chip chip-amber">{node}</span>
+            ))}
+          </p>
+        )}
+        <div class="loops">
+          {(event.causalLoopDiagram.positiveFeedbackLoops ?? []).map((loop) => (
+            <div class="loop">
+              <p class="loop-kind"><span class="chip chip-orange">增强回路</span></p>
+              <p>{loop}</p>
+            </div>
+          ))}
+          {(event.causalLoopDiagram.negativeFeedbackLoops ?? []).map((loop) => (
+            <div class="loop">
+              <p class="loop-kind"><span class="chip chip-emerald">调节回路</span></p>
+              <p>{loop}</p>
+            </div>
+          ))}
+        </div>
+        {(event.causalLoopDiagram.keyLeveragePoints ?? []).length > 0 && (
+          <div class="ledger">
+            <div class="ledger-rail rail-amber"><p class="rail-label">杠杆点</p></div>
+            <div class="ledger-body">
+              <ul class="leverage">
+                {(event.causalLoopDiagram.keyLeveragePoints ?? []).map((point) => (
+                  <li>{point}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </section>
+    )}
+
+    {event.dataValidation && (
+      <section class="law-group" aria-labelledby={`dv-${event.id}`}>
+        <h3 class="group-title" id={`dv-${event.id}`}>数据校验</h3>
+        <div class="ledger">
+          <div class="ledger-rail rail-cyan">
+            <p class="rail-label">结论</p>
+            {event.dataValidation.confidence && (
+              <p class="rail-chip chip chip-cyan">置信度 {event.dataValidation.confidence}</p>
+            )}
+          </div>
+          <div class="ledger-body">
+            {event.dataValidation.validationCheck && (
+              <p><strong>核验问题　</strong>{event.dataValidation.validationCheck}</p>
+            )}
+            {event.dataValidation.dataSource && (
+              <p><strong>数据来源　</strong>{event.dataValidation.dataSource}</p>
+            )}
+            {event.dataValidation.result && (
+              <p><strong>核验结果　</strong>{event.dataValidation.result}</p>
+            )}
+            {(event.dataValidation.issues ?? []).length > 0 && (
+              <div class="issues">
+                <p><strong>未解决的问题　</strong></p>
+                <ul>
+                  {(event.dataValidation.issues ?? []).map((issue) => (
+                    <li>{issue}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    )}
+  </div>
+</details>
+
+<style>
+  .ev {
+    background: var(--dn-surface);
+    border-bottom: 1px solid var(--dn-divider);
+  }
+  .ev[open] {
+    border-top: 3px solid var(--dn-teal);
+  }
+
+  .ev-row {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.75rem;
+    min-height: var(--dn-target-min);
+    padding: 1rem 0.75rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .ev-row::-webkit-details-marker {
+    display: none;
+  }
+  .ev-row:hover {
+    background: var(--dn-canvas);
+  }
+
+  .ev-no {
+    font-family: var(--dn-font-display);
+    font-size: 1.5rem;
+    font-weight: var(--dn-weight-display);
+    line-height: 1.1;
+    color: var(--dn-text-secondary);
+  }
+  .ev-headline {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .ev-title {
+    font-family: var(--dn-font-display);
+    font-size: clamp(1.0625rem, 1.6vw, 1.375rem);
+    font-weight: 500;
+    line-height: 1.35;
+  }
+  .ev-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .ev-toggle {
+    align-self: center;
+    font-size: 0.85rem;
+    color: var(--dn-text-secondary);
+    white-space: nowrap;
+  }
+  .when-open,
+  .ev[open] .when-closed {
+    display: none;
+  }
+  .ev[open] .when-open {
+    display: inline;
+  }
+
+  .ev-panel {
+    padding: 0.5rem 0.75rem clamp(1.5rem, 3vw, 2.5rem);
+    display: grid;
+    gap: 1.5rem;
+  }
+  .panel-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--dn-divider);
+  }
+  .panel-id {
+    margin-left: auto;
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--dn-text-secondary);
+  }
+  .zoom,
+  .panel-source {
+    display: none;
+    align-items: center;
+    min-height: var(--dn-target-min);
+    padding: 0 1rem;
+    border: 1px solid var(--dn-control-border);
+    border-radius: var(--dn-radius);
+    background: var(--dn-surface);
+    color: var(--dn-text-primary);
+    font: inherit;
+    font-size: 0.875rem;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  :global(html[data-dn-js='on']) .zoom,
+  :global(html[data-dn-js='on']) .panel-source {
+    display: inline-flex;
+  }
+  .panel-source {
+    border-color: var(--dn-divider);
+  }
+
+  .ev-summary {
+    font-size: clamp(1rem, 1.3vw, 1.125rem);
+    line-height: 1.75;
+    max-width: 78ch;
+  }
+
+  .law-group {
+    display: grid;
+    gap: 1rem;
+  }
+  .group-title {
+    font-family: var(--dn-font-display);
+    font-weight: var(--dn-weight-display);
+    font-size: 1.375rem;
+  }
+
+  .ledger {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--dn-divider);
+  }
+  @media (min-width: 720px) {
+    .ledger {
+      grid-template-columns: 11rem minmax(0, 1fr);
+    }
+  }
+  .ledger-rail {
+    padding: 0.75rem 1rem 0.75rem 0;
+  }
+  .ledger-rail .rail-label {
+    font-size: 0.8125rem;
+    font-weight: var(--dn-weight-kicker);
+    letter-spacing: 0.06em;
+    line-height: 1.6;
+  }
+  .ledger-body {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0.75rem 0;
+    border-left: 1px solid var(--dn-divider);
+    padding-left: 1rem;
+  }
+  @media (max-width: 719px) {
+    .ledger-body {
+      border-left: 0;
+      border-top: 1px solid var(--dn-divider);
+      padding-left: 0;
+    }
+  }
+  .ledger-body p {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    max-width: 74ch;
+  }
+  .rail-chip {
+    margin-top: 0.5rem;
+  }
+
+  .emphasis {
+    font-size: 1rem !important;
+  }
+  .ledger-body strong,
+  .law-body strong,
+  .issues strong {
+    font-weight: 600;
+  }
+
+  .law {
+    display: grid;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--dn-divider);
+  }
+  @media (min-width: 720px) {
+    .law {
+      grid-template-columns: 11rem minmax(0, 1fr);
+    }
+  }
+  .law-name {
+    font-family: var(--dn-font-display);
+    font-size: 1.125rem;
+    font-weight: var(--dn-weight-display);
+    color: var(--dn-text-primary);
+  }
+  .law-body {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .law-body p {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    max-width: 74ch;
+  }
+
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+  .timeline li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--dn-divider);
+  }
+  @media (min-width: 720px) {
+    .timeline li {
+      grid-template-columns: 11rem minmax(0, 1fr);
+    }
+  }
+  .tl-time {
+    font-weight: var(--dn-weight-kicker);
+    font-size: 0.875rem;
+    color: var(--dn-text-secondary);
+  }
+  .tl-body {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .tl-title {
+    font-weight: 600;
+  }
+  .tl-body p {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    max-width: 74ch;
+  }
+  .tl-refs {
+    font-size: 0.8125rem;
+    color: var(--dn-text-secondary);
+  }
+  .tl-refs a {
+    color: var(--dn-text-secondary);
+    margin-right: 0.75rem;
+  }
+
+  .edges {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+  .edges li {
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--dn-divider);
+    display: grid;
+    gap: 0.4rem;
+  }
+  .edges p {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    max-width: 78ch;
+  }
+  .edge-route {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+  }
+  .edge-arrow {
+    color: var(--dn-text-secondary);
+  }
+
+  .evidence {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+  .evidence li {
+    padding: 1rem 0;
+    border-top: 1px solid var(--dn-divider);
+    display: grid;
+    gap: 0.45rem;
+  }
+  .evidence-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .evidence-source {
+    font-weight: 600;
+  }
+  .evidence li p {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    max-width: 78ch;
+  }
+  .evidence-note {
+    color: var(--dn-text-secondary);
+    font-size: 0.875rem !important;
+  }
+
+  .review {
+    display: grid;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--dn-canvas);
+    border-left: 6px solid var(--dn-orange);
+  }
+  @media (min-width: 720px) {
+    .review {
+      grid-template-columns: 11rem minmax(0, 1fr);
+    }
+  }
+  .review-rail {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+  }
+  .review-body {
+    display: grid;
+    gap: 1rem;
+  }
+  .review-body p {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    max-width: 74ch;
+  }
+  .challenge {
+    display: grid;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--dn-divider);
+  }
+  .challenge-label {
+    font-size: 0.6875rem;
+    font-weight: var(--dn-weight-kicker);
+    letter-spacing: var(--dn-tracking-kicker);
+    color: var(--dn-text-secondary);
+  }
+  .challenge-claim {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .tl-ref-missing {
+    margin-right: 0.75rem;
+    color: var(--dn-text-secondary);
+  }
+  .challenge-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .challenge-fix {
+    border-left: 3px solid var(--dn-orange);
+    padding-left: 0.75rem;
+  }
+  .challenge-note {
+    color: var(--dn-text-secondary);
+    font-size: 0.875rem !important;
+  }
+
+  .nodes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .loops {
+    display: grid;
+    gap: 0.75rem;
+  }
+  @media (min-width: 900px) {
+    .loops {
+      grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    }
+  }
+  .loop {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.9rem;
+    background: var(--dn-canvas);
+    border-top: 3px solid var(--dn-amber);
+  }
+  .loop p {
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  .loop-kind {
+    display: flex;
+  }
+  .leverage {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+  .issues ul {
+    margin: 0.35rem 0 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  .rail-teal { border-left: 4px solid var(--dn-teal); padding-left: 0.75rem; }
+  .rail-cyan { border-left: 4px solid var(--dn-cyan); padding-left: 0.75rem; }
+  .rail-violet { border-left: 4px solid var(--dn-violet); padding-left: 0.75rem; }
+  .rail-amber { border-left: 4px solid var(--dn-amber); padding-left: 0.75rem; }
+  .rail-steel { border-left: 4px solid var(--dn-steel); padding-left: 0.75rem; }
+</style>

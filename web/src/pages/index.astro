@@ -1,260 +1,558 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import {
+  weeks,
+  weekCount,
+  eventCount,
+  generationCount,
+  latest,
+  firstStart,
+  lastEnd,
+  daysBetween,
+  blogPostUrl,
+  type Week,
+} from '../lib/weeks';
 
-const files = import.meta.glob('../data/weekly/*.json', { eager: true });
+const span = daysBetween(firstStart, lastEnd);
+const v3Weeks = weeks.filter((w) => w.generation === 'v3');
+const v2Weeks = weeks.filter((w) => w.generation === 'v2');
+const candidateCount = weeks.reduce((n, w) => n + w.excluded.length, 0);
 
-interface EvidenceItem {
-  type: string;
-  content: string;
-  source: string;
-}
-interface WeeklyEvent {
-  id: string;
-  title: string;
-  impactScore: number;
-  infoGainScore: number;
-  summary: string;
-  classAnalysis?: { classNature: string; contradiction: string; historicalContext: string };
-  dialecticalSummary?: string;
-  evidence?: EvidenceItem[];
-}
-interface WeeklyData {
-  id: string;
-  weekStart: string;
-  weekEnd: string;
-  events: WeeklyEvent[];
-}
+const [feature, ...rest] = weeks;
 
-const weeks: { id: string; data: WeeklyData }[] = [];
-for (const [path, mod] of Object.entries(files)) {
-  const id = path.split('/').pop()?.replace('.json', '') || '';
-  const data = ((mod as any).default || mod) as WeeklyData;
-  weeks.push({ id, data });
-}
-weeks.sort((a, b) => b.id.localeCompare(a.id));
+const generationLabel: Record<Week['generation'], string> = {
+  v3: 'v3 证据层',
+  v2: 'v2 五阶段',
+};
+const generationTone: Record<Week['generation'], string> = {
+  v3: 'block-teal',
+  v2: 'block-violet',
+};
 
-const totalEvents = weeks.reduce((n, w) => n + (w.data.events?.length ?? 0), 0);
-const blogPostUrl = (id: string) => `https://blog.dreamnight.net.cn/posts/${id.toLowerCase()}/`;
+const phases = [
+  { name: '现象把握', en: 'PHASE 1', tone: 'cyan', note: '从抓取到的候选热点中筛选、评级，记录被排除的理由与验证结果。' },
+  { name: '矛盾识别', en: 'PHASE 2', tone: 'violet', note: '阶级位置、物质利益结构、九维评分与竞争性假设。' },
+  { name: '辩证展开', en: 'PHASE 3', tone: 'teal', note: '对立统一、质量互变、否定之否定；记录在单个事件上。' },
+  { name: '历史定位', en: 'PHASE 4', tone: 'amber', note: '时代主题、隐藏联系、历史类比与系统原型。' },
+  { name: '实践导向', en: 'PHASE 5', tone: 'emerald', note: '情景推演、待观察信号与上周校准。' },
+];
 ---
 
 <BaseLayout title="格物 Dianalyze — 每周热点辩证分析">
-  <section class="hero" aria-labelledby="hero-title">
-    <p class="kicker">DIANALYZE · 格物</p>
-    <h1 id="hero-title">每周热点 · 辩证分析</h1>
-    <p class="stats">
-      共 <strong>{weeks.length}</strong> 期 · <strong>{totalEvents}</strong> 个事件 · 每周一自动生成；
-      每期文章同步发表于博客。
-    </p>
+  <section class="hero field field-teal" aria-labelledby="hero-title">
+    <div class="shell hero-grid">
+      <div class="hero-main">
+        <p class="kicker">DIANALYZE · 格物 · WEEKLY</p>
+        <h1 class="display" id="hero-title">每周热点<br />辩证分析</h1>
+        <p class="hero-lede">
+          把一周内抓取到的热点视为感性材料，逐条追问：谁在行动、谁得利、谁承担代价，
+          矛盾在什么条件下会走向反面。分析由机器生成，证据、分歧与未解决的问题一并保留。
+        </p>
+        <p class="hero-stats">
+          {weekCount} 期 · {eventCount} 个分析事件 · {firstStart} 至 {lastEnd}
+        </p>
+      </div>
+
+      <aside class="hero-latest" aria-labelledby="latest-title">
+        <p class="kicker" id="latest-title">最新一期</p>
+        <p class="latest-id">{feature.id}</p>
+        <p class="latest-range">{feature.start} → {feature.end}</p>
+        <ul class="latest-facts">
+          <li><strong>{feature.events.length}</strong> 个事件</li>
+          {feature.excluded.length > 0 && <li>另有 {feature.excluded.length} 条候选被排除</li>}
+          <li>{generationLabel[feature.generation]}</li>
+        </ul>
+        <p class="latest-links">
+          <a class="latest-cta" href={`/week/${feature.id.toLowerCase()}/`}>阅读本期 →</a>
+          <a href={blogPostUrl(feature.id)} target="_blank" rel="noopener">博客文章 ↗</a>
+        </p>
+      </aside>
+    </div>
   </section>
 
-  {weeks.map((w) => (
-    <section class="week" id={w.id.toLowerCase()} aria-label={w.id}>
-      <header class="week-head">
-        <h2 class="week-id">{w.id}</h2>
-        <span class="range">{w.data.weekStart} ~ {w.data.weekEnd}</span>
-        <a class="post-link dn-focus" href={blogPostUrl(w.id)} target="_blank" rel="noopener">阅读文章 ↗</a>
-      </header>
-      {w.data.events && w.data.events.length > 0 ? (
-        <div class="events">
-          {w.data.events.map((e) => (
-            <details class="ev">
-              <summary>
-                <span class="scores">
-                  <span class="chip chip-impact">影响 {e.impactScore}</span>
-                  <span class="chip chip-gain">增量 {e.infoGainScore}</span>
-                </span>
-                <span class="ev-title">{e.title}</span>
-                <span class="chev" aria-hidden="true">▾</span>
-              </summary>
-              <div class="ev-body">
-                <p class="summary">{e.summary}</p>
-                {e.dialecticalSummary && (
-                  <div class="block">
-                    <h4>辩证总结</h4>
-                    <p>{e.dialecticalSummary}</p>
-                  </div>
-                )}
-                {e.classAnalysis && (
-                  <div class="block">
-                    <h4>阶级分析</h4>
-                    <p><strong>阶级本质：</strong>{e.classAnalysis.classNature}</p>
-                    <p><strong>主要矛盾：</strong>{e.classAnalysis.contradiction}</p>
-                    <p><strong>历史脉络：</strong>{e.classAnalysis.historicalContext}</p>
-                  </div>
-                )}
-                {e.evidence && e.evidence.length > 0 && (
-                  <div class="block">
-                    <h4>证据链</h4>
-                    <ul class="evidence">
-                      {e.evidence.map((ev) => (
-                        <li>
-                          <span class="ev-type">{ev.type}</span>
-                          <span>{ev.content}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </details>
-          ))}
-        </div>
-      ) : (
-        <p class="empty">本期暂无事件数据。</p>
-      )}
-    </section>
-  ))}
+  <section class="metrics" aria-label="站点数据规模">
+    <div class="metric field field-cyan">
+      <p class="metric-value">{weekCount}</p>
+      <p class="metric-label">期周报</p>
+      <p class="metric-note">{v3Weeks.length} 期 v3 证据层 · {v2Weeks.length} 期 v2 五阶段</p>
+    </div>
+    <div class="metric field field-violet">
+      <p class="metric-value">{eventCount}</p>
+      <p class="metric-label">个分析事件</p>
+      <p class="metric-note">每期保留 2–8 个入选事件</p>
+    </div>
+    <div class="metric field field-emerald">
+      <p class="metric-value">{span}</p>
+      <p class="metric-label">天跨度</p>
+      <p class="metric-note">{firstStart} 至 {lastEnd}（仅含已产出的周次）</p>
+    </div>
+    <div class="metric field field-steel">
+      <p class="metric-value">{candidateCount}</p>
+      <p class="metric-label">条候选热点被排除</p>
+      <p class="metric-note">仅 v3 期次记录排除理由，共 {v3Weeks.length} 期</p>
+    </div>
+  </section>
 
-  {weeks.length === 0 && <p class="empty">暂无周报数据。</p>}
+  <section class="section" aria-labelledby="method-title">
+    <div class="shell method-grid">
+      <div class="method-lead">
+        <p class="kicker">METHOD</p>
+        <h2 class="method-statement" id="method-title">
+          先建立证据，再作判断。
+        </h2>
+        <p class="lede">
+          每期分析沿五个阶段推进，并附一条证据链：来源独立性与等级、断言类型与核验状态、
+          对抗审查提出的薄弱点，以及尚未解决的问题。判断可以错，但不能不留痕迹。
+        </p>
+        <p><a class="method-link" href="/method/">方法论与证据层规则 →</a></p>
+      </div>
+      <ol class="phase-list">
+        {phases.map((phase) => (
+          <li class={`phase phase-${phase.tone}`}>
+            <p class="phase-en">{phase.en}</p>
+            <p class="phase-name">{phase.name}</p>
+            <p class="phase-note">{phase.note}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section archive" aria-labelledby="archive-title">
+    <div class="shell">
+      <div class="section-head">
+        <p class="kicker">ARCHIVE</p>
+        <h2 id="archive-title">期次索引</h2>
+      </div>
+
+      <p class="archive-legend">
+        <span class="legend-item"><span class="legend-swatch block-teal" aria-hidden="true"></span>v3 证据层：phase1–5、断言核验、候选筛选记录</span>
+        <span class="legend-item"><span class="legend-swatch block-violet" aria-hidden="true"></span>v2 五阶段：事件分析 + 跨事件综合</span>
+        <span class="legend-note">两种结构并存是流水线演进的真实结果，页面按各自结构完整呈现，不作统一改写。</span>
+      </p>
+
+      <article class="feature-row" id={feature.id.toLowerCase()}>
+        <div class={`feature-block ${generationTone[feature.generation]}`}>
+          <p class="kicker">最近一期</p>
+          <p class="feature-id">{feature.label}</p>
+          <p class="feature-year">{feature.year}</p>
+          <p class="feature-range">{feature.start} → {feature.end}</p>
+        </div>
+        <div class="feature-body">
+          <p class="feature-meta">
+            <span class="chip chip-ghost">{generationLabel[feature.generation]}</span>
+            <span class="chip chip-ghost">{feature.events.length} 个分析事件</span>
+            {feature.excluded.length > 0 && (
+              <span class="chip chip-ghost">{feature.excluded.length} 条候选被排除</span>
+            )}
+          </p>
+          <p class="feature-lead">{feature.lead}</p>
+          <p class="feature-actions">
+            <a class="row-cta" href={`/week/${feature.id.toLowerCase()}/`}>阅读本期 →</a>
+            <a href={blogPostUrl(feature.id)} target="_blank" rel="noopener">博客文章 ↗</a>
+          </p>
+        </div>
+      </article>
+
+      <ul class="week-list">
+        {rest.map((week, i) => (
+          <li class="week-row dn-enter-rise" id={week.id.toLowerCase()} style={`--dn-enter-index:${i}`}>
+            <a class="week-link" href={`/week/${week.id.toLowerCase()}/`}>
+              <span class={`week-block ${generationTone[week.generation]}`}>
+                <span class="week-label">{week.label}</span>
+                <span class="week-year">{week.year}</span>
+              </span>
+              <span class="week-body">
+                <span class="week-range">{week.start} → {week.end}</span>
+                <span class="week-facts">
+                  <span class="chip chip-ghost">{generationLabel[week.generation]}</span>
+                  <span class="chip chip-ghost">{week.events.length} 个分析事件</span>
+                  {week.excluded.length > 0 && (
+                    <span class="chip chip-ghost">{week.excluded.length} 条候选被排除</span>
+                  )}
+                </span>
+                <span class="week-lead">{week.lead}</span>
+              </span>
+              <span class="week-cta" aria-hidden="true">阅读 →</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      {weeks.length === 0 && <p class="empty">暂无周报数据。</p>}
+    </div>
+  </section>
 </BaseLayout>
 
 <style>
   .hero {
-    padding: clamp(2rem, 7vw, 4.5rem) 0 clamp(1.5rem, 4vw, 2.5rem);
+    padding: clamp(2.5rem, 7vw, 6rem) 0 clamp(2rem, 5vw, 4rem);
   }
-  .stats {
-    margin: 1.25rem 0 0;
-    color: var(--dn-text-secondary);
+  .hero-grid {
+    display: grid;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    grid-template-columns: minmax(0, 1fr);
   }
-  .stats strong {
-    color: var(--dn-text-primary);
+  @media (min-width: 960px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 1.1fr);
+      align-items: end;
+    }
+  }
+  .hero-main {
+    display: grid;
+    gap: 1.25rem;
+    align-content: start;
+  }
+  .hero-main .display {
+    margin: 0.25rem 0 0;
+  }
+  .hero-lede {
+    font-size: clamp(1rem, 1.35vw, 1.1875rem);
+    line-height: 1.7;
+    max-width: 46ch;
+  }
+  .hero-stats {
+    font-size: 0.9375rem;
+    font-weight: var(--dn-weight-kicker);
+    padding-top: 1rem;
+    border-top: 1px solid rgba(16, 42, 39, 0.35);
+    max-width: 46ch;
+  }
+
+  .hero-latest {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    padding-top: 1.25rem;
+    border-top: 4px solid var(--dn-text-on-color);
+  }
+  .latest-id {
+    font-family: var(--dn-font-display);
+    font-size: clamp(2.5rem, 5vw, 3.75rem);
+    font-weight: var(--dn-weight-display);
+    line-height: 1;
+  }
+  .latest-range {
+    font-weight: var(--dn-weight-kicker);
+    font-size: 0.9375rem;
+  }
+  .latest-facts {
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.9375rem;
+  }
+  .latest-facts strong {
     font-weight: 600;
   }
-  .week {
-    margin-bottom: 3rem;
-  }
-  .week-head {
+  .latest-links {
     display: flex;
-    align-items: baseline;
-    gap: 1rem;
     flex-wrap: wrap;
-    padding: 0.5rem 0;
-    border-bottom: 2px solid var(--dn-text-primary);
+    gap: 0 1.5rem;
+    margin-top: 0.25rem;
+    font-size: 0.9375rem;
   }
-  .week-id {
-    font-size: var(--dn-size-h2);
+  .latest-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--dn-target-min);
   }
-  .range {
-    color: var(--dn-text-secondary);
-    font-size: 0.9rem;
+  .latest-cta {
+    font-weight: var(--dn-weight-kicker);
   }
-  .post-link {
-    margin-left: auto;
-    color: var(--dn-text-secondary);
-    font-size: 0.9rem;
-    text-decoration: none;
+
+  .metrics {
+    display: grid;
+    gap: 4px;
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 0;
   }
-  .post-link:hover {
+  @media (min-width: 720px) {
+    .metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1040px) {
+    .metrics {
+      grid-template-columns: 1.25fr 1fr 1fr 1.1fr;
+    }
+  }
+  .metric {
+    padding: clamp(1.5rem, 3vw, 2.25rem) var(--site-gutter);
+    display: grid;
+    gap: 0.35rem;
+    align-content: start;
+  }
+  .metric-value {
+    font-family: var(--dn-font-display);
+    font-size: clamp(3rem, 6vw, 4.5rem);
+    font-weight: var(--dn-weight-display);
+    line-height: 0.95;
+  }
+  .metric-label {
+    font-size: 1rem;
+    font-weight: var(--dn-weight-kicker);
+  }
+  .metric-note {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    margin-top: 0.25rem;
+  }
+
+  .method-grid {
+    display: grid;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 960px) {
+    .method-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    }
+  }
+  .method-lead {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+  }
+  .method-statement {
+    font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+    line-height: 1.15;
+  }
+  .method-link {
+    font-weight: var(--dn-weight-kicker);
     color: var(--dn-text-primary);
     text-decoration: underline;
     text-underline-offset: 4px;
   }
-  .ev {
-    border-bottom: 1px solid var(--dn-divider);
-  }
-  .ev summary {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 0.9rem 0.5rem;
-    cursor: pointer;
-    list-style: none;
-  }
-  .ev summary::-webkit-details-marker {
-    display: none;
-  }
-  .ev summary:hover {
-    background: var(--dn-surface);
-  }
-  .scores {
-    display: flex;
-    gap: 0.35rem;
-    flex-shrink: 0;
-    padding-top: 0.1rem;
-  }
-  .chip {
-    display: inline-block;
-    padding: 0 0.45rem;
-    font-size: 0.75rem;
-    line-height: 1.6;
-    font-weight: 600;
-    color: var(--dn-text-on-color);
-  }
-  .chip-impact {
-    background: var(--dn-violet);
-  }
-  .chip-gain {
-    background: var(--dn-cyan);
-  }
-  .ev-title {
-    flex: 1;
-    font-weight: 600;
-  }
-  .chev {
-    flex-shrink: 0;
-    color: var(--dn-text-secondary);
-    transition: transform var(--dn-duration-hover) var(--dn-ease-in);
-  }
-  .ev[open] .chev {
-    transform: rotate(180deg);
-  }
-  .ev-body {
-    padding: 0 0.5rem 1.25rem 0.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .summary {
-    margin: 0;
-    color: var(--dn-text-secondary);
-  }
-  .block h4 {
-    margin: 0 0 0.35rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--dn-text-primary);
-  }
-  .block p {
-    margin: 0 0 0.5rem;
-    color: var(--dn-text-secondary);
-    font-size: 0.95rem;
-  }
-  .block p:last-child {
-    margin-bottom: 0;
-  }
-  .block strong {
-    color: var(--dn-text-primary);
-    font-weight: 600;
-  }
-  .evidence {
-    list-style: none;
+
+  .phase-list {
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
+    list-style: none;
+    display: grid;
+    gap: 0;
   }
-  .evidence li {
-    display: flex;
-    gap: 0.5rem;
-    font-size: 0.95rem;
+  .phase {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1rem 0 1rem 1rem;
+    border-left: 6px solid var(--dn-steel);
+    border-bottom: 1px solid var(--dn-divider);
+  }
+  .phase-cyan { border-left-color: var(--dn-cyan); }
+  .phase-violet { border-left-color: var(--dn-violet); }
+  .phase-teal { border-left-color: var(--dn-teal); }
+  .phase-amber { border-left-color: var(--dn-amber); }
+  .phase-emerald { border-left-color: var(--dn-emerald); }
+  .phase-en {
+    font-size: 0.6875rem;
+    font-weight: var(--dn-weight-kicker);
+    letter-spacing: var(--dn-tracking-kicker);
     color: var(--dn-text-secondary);
   }
-  .ev-type {
-    flex-shrink: 0;
-    padding: 0 0.4rem;
-    border: 1px solid var(--dn-divider);
-    font-size: 0.75rem;
-    line-height: 1.6;
+  .phase-name {
+    font-family: var(--dn-font-display);
+    font-size: 1.25rem;
+    font-weight: var(--dn-weight-display);
+  }
+  .phase-note {
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--dn-text-secondary);
+    max-width: 52ch;
+  }
+
+  .archive-legend {
+    display: grid;
+    gap: 0.5rem 2rem;
+    padding: 1.25rem 0;
+    font-size: 0.875rem;
     color: var(--dn-text-secondary);
   }
-  .empty {
-    color: var(--dn-text-secondary);
-    padding: 2rem 0;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .chev {
-      transition: none;
+  @media (min-width: 860px) {
+    .archive-legend {
+      grid-template-columns: auto auto minmax(0, 1fr);
+      align-items: center;
     }
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .legend-swatch {
+    width: 1.25rem;
+    height: 0.75rem;
+    display: inline-block;
+  }
+  .legend-note {
+    max-width: 62ch;
+  }
+
+  .block-teal { background: var(--dn-teal); color: var(--dn-text-on-color); }
+  .block-violet { background: var(--dn-violet); color: var(--dn-text-on-color); }
+
+  .feature-row {
+    display: grid;
+    gap: 0;
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+  }
+  @media (min-width: 760px) {
+    .feature-row {
+      grid-template-columns: 16rem minmax(0, 1fr);
+    }
+  }
+  .feature-block {
+    padding: 1.5rem;
+    display: grid;
+    gap: 0.35rem;
+    align-content: start;
+  }
+  .feature-block .kicker {
+    color: var(--dn-text-on-color);
+  }
+  .feature-id {
+    font-family: var(--dn-font-display);
+    font-size: clamp(3.5rem, 7vw, 5.5rem);
+    font-weight: var(--dn-weight-display);
+    line-height: 0.92;
+  }
+  .feature-year {
+    font-size: 1.125rem;
+    font-weight: var(--dn-weight-kicker);
+  }
+  .feature-range {
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+  }
+  .feature-body {
+    display: grid;
+    gap: 0.85rem;
+    align-content: start;
+    padding: 1.5rem 0 0;
+    border-top: 3px solid var(--dn-text-primary);
+  }
+  @media (min-width: 760px) {
+    .feature-body {
+      padding: 1.5rem 0 0 1.75rem;
+      border-top: 0;
+      border-left: 1px solid var(--dn-divider);
+    }
+  }
+  .feature-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .feature-lead {
+    font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+    line-height: 1.7;
+    max-width: 68ch;
+  }
+  .feature-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+    font-size: 0.9375rem;
+  }
+  .feature-actions a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--dn-target-min);
+  }
+  .row-cta {
+    font-weight: var(--dn-weight-kicker);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .week-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 2px solid var(--dn-text-primary);
+  }
+  .week-row {
+    border-bottom: 1px solid var(--dn-divider);
+  }
+  .week-link {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    padding: 0.75rem 0.5rem 0.75rem 0;
+    text-decoration: none;
+  }
+  @media (min-width: 760px) {
+    .week-link {
+      grid-template-columns: 6.5rem minmax(0, 1fr) auto;
+      gap: 1.5rem;
+      align-items: center;
+    }
+  }
+  .week-link:hover {
+    background: var(--dn-surface);
+    text-decoration: none;
+  }
+  .week-link:hover .week-cta {
+    text-decoration: underline;
+  }
+  .week-block {
+    display: grid;
+    gap: 0.1rem;
+    justify-items: center;
+    padding: 0.75rem 0.5rem;
+    width: 100%;
+  }
+  .week-label {
+    font-family: var(--dn-font-display);
+    font-size: 1.75rem;
+    font-weight: var(--dn-weight-display);
+    line-height: 1;
+  }
+  .week-year {
+    font-size: 0.75rem;
+    font-weight: var(--dn-weight-kicker);
+    letter-spacing: 0.1em;
+  }
+  .week-body {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+  .week-range {
+    font-weight: var(--dn-weight-kicker);
+    font-size: 0.8125rem;
+    color: var(--dn-text-secondary);
+  }
+  .week-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .week-lead {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--dn-text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 84ch;
+  }
+  .week-cta {
+    font-size: 0.875rem;
+    font-weight: var(--dn-weight-kicker);
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  .empty {
+    padding: 2rem 0;
+    color: var(--dn-text-secondary);
   }
 </style>
