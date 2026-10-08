@@ -1,0 +1,837 @@
+{
+  "id": "2026-W21",
+  "weekStart": "2026-05-18",
+  "weekEnd": "2026-05-24",
+  "events": [
+    {
+      "id": "evt-1",
+      "title": "大裁员前夕Meta员工疯狂薅羊毛",
+      "impactScore": 5,
+      "infoGainScore": 5,
+      "summary": "Meta在2024年启动大规模裁员前，部分员工利用公司福利疯狂购买苹果耳机、零食等物品，以此补偿即将失去的职位和收入。这一行为被前员工描述为“世界末日”般的氛围，反映了劳资矛盾在裁员前夕的集中爆发。",
+      "classAnalysis": {
+        "classNature": "Meta作为资本方，通过裁员降低劳动力成本以追求利润最大化，员工则面临失业风险。员工在离职前利用公司福利获取实物利益，是对自身被剥夺的劳动力价值的一种非正式补偿。利益冲突表现为：资本通过合法程序（裁员）剥夺劳动者的就业权和收入，劳动者则通过钻制度漏洞（滥用福利）进行抵抗。双方的物质利益直接对立：资本要节省成本，劳动者要弥补损失。",
+        "contradiction": "主要矛盾是Meta资本方与普通员工之间的劳资矛盾。特殊性在于：矛盾在裁员前夕以“薅羊毛”这种非对抗性、非组织化的形式爆发，而非罢工或集体谈判。员工的行为是自发的、个体的、机会主义的，反映了劳动者在资本强权下的无力感——他们无法阻止裁员，只能以微小方式发泄不满。矛盾走向：裁员完成后，矛盾暂时缓和，但员工的不满可能转化为对资本更深的敌意，或在下一轮雇佣关系中潜伏。",
+        "historicalContext": "直接前因是Meta因业绩压力、AI替代等因素启动多轮裁员（2022-2024年已裁数万人）。深层根源是资本主义科技行业的周期性危机和资本对劳动力的持续压榨——AI代理项目（见证据4）显示资本试图用机器彻底替代人类劳动。这一事件是长期劳资矛盾积累的量变节点，而非质变。后续可能：类似“薅羊毛”行为在裁员潮中会更多出现，但不会形成有组织的反抗；资本可能收紧福利制度，进一步控制劳动者。"
+      },
+      "dialecticalSummary": "Meta裁员前夕员工薅羊毛，是劳资矛盾在资本强权下的扭曲爆发：资本通过裁员剥夺劳动力，劳动者以个体机会主义方式补偿损失。矛盾未激化为集体对抗，但暴露了雇佣关系中的根本对立，并可能推动资本进一步收紧控制。",
+      "timeline": [
+        {
+          "id": "tl-1-1",
+          "time": "2024-05-20T00:00:00Z",
+          "title": "Meta启动新一轮大规模裁员",
+          "description": "Meta公司宣布新一轮裁员，涉及数千名员工。",
+          "evidenceRefs": [
+            "ev-1-1"
+          ]
+        },
+        {
+          "id": "tl-1-2",
+          "time": "2024-05-19T00:00:00Z",
+          "title": "员工在裁员前夕疯狂使用福利",
+          "description": "多位Meta员工向《连线》杂志透露，在裁员消息传出后，员工放下工作，大量购买苹果耳机、零食等，利用公司福利获取个人利益。",
+          "evidenceRefs": [
+            "ev-1-2"
+          ]
+        },
+        {
+          "id": "tl-1-3",
+          "time": "2024-05-20T00:00:00Z",
+          "title": "前员工Adel Wu分享细节",
+          "description": "Meta前员工Adel Wu在社交媒体上描述裁员前气氛如同“世界末日”，员工疯狂囤积物资。",
+          "evidenceRefs": [
+            "ev-1-3"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-1-1",
+          "sourceType": "官媒",
+          "sourceName": "凤凰网",
+          "sourceUrl": "https://tech.ifeng.com/c/8tH6LGmocxA",
+          "content": "Meta前员工阿黛尔·吴分享裁员细节，员工在裁员前利用福利购买苹果耳机等。",
+          "authenticity": "真实",
+          "aiReason": "凤凰网是正规媒体，内容与IT之家等多家媒体报道一致，且引用前员工直接叙述，可信度高。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-1-2",
+          "sourceType": "官媒",
+          "sourceName": "IT之家",
+          "sourceUrl": "https://www.ithome.com/0/952/611.htm",
+          "content": "多位Meta员工告诉《连线》杂志，在裁员前夕员工放下工作，抓紧享受福利。",
+          "authenticity": "真实",
+          "aiReason": "IT之家转载《连线》杂志报道，后者是知名科技媒体，员工匿名采访内容具体，符合逻辑。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-1-3",
+          "sourceType": "社交平台",
+          "sourceName": "博海拾贝",
+          "sourceUrl": "https://www.bohaishibei.com/post/109497/",
+          "content": "前员工Adel Wu回忆裁员前气氛如“世界末日”，员工哄抢零食。",
+          "authenticity": "真实",
+          "aiReason": "博海拾贝为个人博客，但内容引用前员工社交媒体发言，且与主流报道一致，可视为一手材料。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-1-4",
+          "sourceType": "其他",
+          "sourceName": "plitka-msk.com",
+          "sourceUrl": "https://plitka-msk.com/tech/20260427/4800192.shtml",
+          "content": "Meta CTO表示未来用AI代理替代人类工作，暗示裁员与AI替代相关。",
+          "authenticity": "存疑",
+          "aiReason": "来源plitka-msk.com为不知名网站，内容可能为翻译或转载，但Meta的AI替代战略是公开信息，可作为背景参考。",
+          "classBias": "资产阶级立场"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-1-1",
+          "to": "tl-1-2",
+          "type": "因果",
+          "description": "裁员公告直接触发了员工在离职前滥用福利的行为，裁员是原因，薅羊毛是结果。"
+        },
+        {
+          "from": "tl-1-2",
+          "to": "tl-1-3",
+          "type": "关联",
+          "description": "前员工的分享是对员工集体行为的描述和补充，两者共同呈现了事件全貌。"
+        }
+      ]
+    },
+    {
+      "id": "evt-2",
+      "title": "家属称盒马诱导其提赔偿后反告敲诈",
+      "impactScore": 5,
+      "infoGainScore": 4,
+      "summary": "事件涉及盒马与消费者之间的纠纷，家属称盒马诱导其提出赔偿要求后，反以敲诈罪名起诉。但搜索结果中未直接找到该事件的报道，仅有一条关于盒马X会员店关闭的新闻和一条关于顾客因孩子摔倒砸店的新闻，均与敲诈案无关。因此，分析基于事件描述，但缺乏直接证据支持。",
+      "classAnalysis": {
+        "classNature": "事件描述中，盒马作为资本方，利用信息不对称和法律手段压制消费者（弱势个体）。盒马的利益在于减少赔偿支出并威慑其他索赔者；消费者的利益在于获得合理赔偿。冲突形态是资本通过法律工具将消费者的合理索赔定性为敲诈，从而维护自身利润。",
+        "contradiction": "主要矛盾是资本（盒马）与消费者（个体）之间的利益对立。盒马利用其法律资源和信息优势，诱导消费者提出赔偿后反诉敲诈，将民事纠纷转化为刑事指控，以压制消费者的维权行为。矛盾的特殊性在于资本主动设局，将消费者置于被动地位。走向可能激化为消费者集体维权或舆论曝光，但缺乏具体信息。",
+        "historicalContext": "该事件是资本与消费者之间长期矛盾的体现，类似纠纷常见于大型企业与个体之间。盒马作为阿里系企业，面临盈利压力，可能采取激进手段控制成本。事件若属实，可能引发消费者信任危机，但缺乏搜索结果支持其真实性。"
+      },
+      "dialecticalSummary": "盒马与消费者的矛盾本质是资本逐利与个体权益的对立。若敲诈案属实，则资本利用法律工具压制维权，矛盾可能激化为集体行动或舆论反抗。但缺乏直接证据，需进一步核实。",
+      "timeline": [
+        {
+          "id": "tl-2-1",
+          "time": "2025-05-16T00:00:00Z",
+          "title": "盒马鸡蛋兽药超标报道",
+          "description": "新京报报道盒马鸡蛋检出兽药超标，生产方已更换。",
+          "evidenceRefs": [
+            "ev-2-5"
+          ]
+        },
+        {
+          "id": "tl-2-2",
+          "time": "2025-05-16T00:00:00Z",
+          "title": "盒马X会员店关闭报道",
+          "description": "第一财经报道盒马X会员店上海森兰店将于8月31日关闭，全国最后一家。",
+          "evidenceRefs": [
+            "ev-2-3"
+          ]
+        },
+        {
+          "id": "tl-2-3",
+          "time": "2025-05-16T00:00:00Z",
+          "title": "顾客砸店事件报道",
+          "description": "大象新闻报道疑儿子在盒马摔倒无人扶，妈妈砸店讨说法。",
+          "evidenceRefs": [
+            "ev-2-4"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-2-1",
+          "sourceType": "其他",
+          "sourceName": "事件描述（非搜索结果）",
+          "sourceUrl": "无",
+          "content": "家属称盒马诱导其提赔偿后反告敲诈。",
+          "authenticity": "待验证",
+          "aiReason": "该事件描述来自用户输入，未在搜索结果中找到对应报道。搜索结果中仅有盒马相关新闻，但无此具体事件。因此真实性待验证。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-2-2",
+          "sourceType": "其他",
+          "sourceName": "搜索结果1",
+          "sourceUrl": "https://view.inews.qq.com/404",
+          "content": "郑州暴雨遇难者家属认领遗体，与盒马事件无关。",
+          "authenticity": "真实",
+          "aiReason": "该链接为404页面，但摘要内容与事件无关，不构成有效证据。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-2-3",
+          "sourceType": "官媒",
+          "sourceName": "第一财经",
+          "sourceUrl": "https://www.yicai.com/video/102759214.html",
+          "content": "盒马X会员店关闭，最后一家上海森兰店将于8月31日停业。",
+          "authenticity": "真实",
+          "aiReason": "第一财经是正规财经媒体，报道内容具体，可信度高。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-2-4",
+          "sourceType": "官媒",
+          "sourceName": "大象新闻",
+          "sourceUrl": "http://news.hnr.cn/djn/article/1/1855445389056008194",
+          "content": "疑儿子在盒马摔倒没人扶，妈妈砸店讨说法。",
+          "authenticity": "真实",
+          "aiReason": "大象新闻是正规媒体，报道有具体事件描述，可信。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-2-5",
+          "sourceType": "官媒",
+          "sourceName": "新京报",
+          "sourceUrl": "https://m.bjnews.com.cn/detail/1747365483168393.html",
+          "content": "盒马鸡蛋检出兽药超标，生产方已更换。",
+          "authenticity": "真实",
+          "aiReason": "新京报是正规媒体，报道有具体检测结果，可信。",
+          "classBias": "资产阶级立场"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-2-1",
+          "to": "tl-2-2",
+          "type": "关联",
+          "description": "盒马鸡蛋兽药超标和会员店关闭都反映了盒马在经营中面临的质量和成本压力，可能促使企业采取更激进的成本控制手段，如压制消费者索赔。"
+        },
+        {
+          "from": "tl-2-3",
+          "to": "tl-2-1",
+          "type": "关联",
+          "description": "顾客砸店事件与鸡蛋超标事件都显示盒马与消费者之间的紧张关系，但砸店事件是直接冲突，而敲诈案是法律层面的对抗。"
+        }
+      ]
+    },
+    {
+      "id": "evt-3",
+      "title": "Ex-Apple engineer says Apple deliberately slows older phones via updates",
+      "impactScore": 4,
+      "infoGainScore": 5,
+      "summary": "2026年5月，一名自称前苹果软件工程师的人在视频中声称苹果通过软件更新故意降低旧款iPhone性能，以迫使消费者购买新机。该说法引发网络热议，但缺乏具体技术细节。苹果此前在2017年承认因电池老化而限制性能，并因此支付了5亿美元和解金。",
+      "classAnalysis": {
+        "classNature": "苹果公司作为资本方，通过计划报废策略追求利润最大化：降低旧设备性能→缩短使用寿命→刺激换机需求→增加销量。消费者（主要是工人阶级和小资产阶级）受损：被迫提前购买新机，增加经济负担。利益冲突形态：资本通过技术手段（软件更新）剥夺消费者对产品实际使用寿命的控制权，消费者被动承受损失。",
+        "contradiction": "主要矛盾：苹果公司（资本）与消费者（用户）之间关于产品使用寿命和更新控制权的矛盾。对立双方：苹果公司（追求利润，控制软件更新） vs. 消费者（希望设备持久使用，反对被迫升级）。矛盾特殊性：不同于一般产品质量问题，这里资本通过软件更新主动制造产品贬值，是计划报废的典型。走向：消费者通过诉讼和舆论施压，迫使苹果部分让步（如公开解释、支付赔偿），但根本矛盾未解决——资本仍掌握更新权，计划报废策略仍在继续。",
+        "historicalContext": "直接前因：2017年苹果承认因电池老化限制性能，引发大规模诉讼和罚款。深层根源：资本主义生产关系中，资本为维持利润必须不断创造消费需求，计划报废是常见手段。该事件是长期量变积累的节点：从2017年至今，消费者怀疑不断，苹果多次被罚，但商业模式未变。未来可能：消费者维权运动可能推动立法（如“维修权”法案），但资本会寻找新规避方式；矛盾可能激化（更多集体诉讼）或暂时缓和（苹果提供更透明的电池管理选项）。"
+      },
+      "dialecticalSummary": "苹果通过软件更新降低旧设备性能，是资本追求利润与消费者使用需求之间的矛盾。消费者通过诉讼和舆论施压获得部分赔偿，但资本仍控制更新权，矛盾在量变中积累，可能推动立法或更激烈对抗。",
+      "timeline": [
+        {
+          "id": "tl-3-1",
+          "time": "2017-12-01",
+          "title": "苹果承认限制旧iPhone性能",
+          "description": "苹果确认通过软件更新降低旧iPhone性能，以防止电池老化导致意外关机。",
+          "evidenceRefs": [
+            "ev-3-6"
+          ]
+        },
+        {
+          "id": "tl-3-2",
+          "time": "2024-01-01",
+          "title": "苹果支付5亿美元和解金",
+          "description": "苹果就2017年性能限制事件支付5亿美元和解金，但未承认违法。",
+          "evidenceRefs": [
+            "ev-3-9"
+          ]
+        },
+        {
+          "id": "tl-3-3",
+          "time": "2026-05-06",
+          "title": "前苹果工程师指控计划报废",
+          "description": "一名自称前苹果软件工程师的女子发布视频，声称苹果故意通过更新降低旧iPhone性能以推动升级。",
+          "evidenceRefs": [
+            "ev-3-1",
+            "ev-3-10"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-3-1",
+          "sourceType": "其他",
+          "sourceName": "MacObserver",
+          "sourceUrl": "https://www.macobserver.com/news/ex-apple-software-engineer-claims-apple-deliberately-slows-down-old-iphone-models/",
+          "content": "2026年5月8日，一名自称前苹果软件工程师的视频声称苹果故意降低旧iPhone性能以迫使升级。",
+          "authenticity": "存疑",
+          "aiReason": "来源为科技新闻网站，但视频本身缺乏具体技术细节（如如何降频），且工程师身份未核实。Hacker News评论也指出无细节。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-3-2",
+          "sourceType": "其他",
+          "sourceName": "TechBloat",
+          "sourceUrl": "https://www.techbloat.com/does-apple-slow-down-their-old-devices-to-force-us-buy-the-new-models.html",
+          "content": "讨论苹果是否故意降速，涉及消费者感知、企业伦理和技术现实。",
+          "authenticity": "存疑",
+          "aiReason": "该网站为一般科技博客，无一手信息，内容为综合讨论。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-3-3",
+          "sourceType": "其他",
+          "sourceName": "The Techy Life",
+          "sourceUrl": "https://thetechylife.com/does-apple-downgrade-older-phones/",
+          "content": "回顾2017年争议，用户报告iOS 10.1.1更新后性能下降和电池寿命缩短。",
+          "authenticity": "真实",
+          "aiReason": "该描述与2017年广泛报道一致，且苹果后来承认了性能管理。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-3-4",
+          "sourceType": "社交平台",
+          "sourceName": "Hacker News",
+          "sourceUrl": "https://news.ycombinator.com/item?id=48203628",
+          "content": "评论质疑视频真实性，指出缺乏技术细节，建议通过对比测试验证。",
+          "authenticity": "真实",
+          "aiReason": "Hacker News用户多为技术人员，评论基于逻辑分析，无利益关联。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-3-5",
+          "sourceType": "其他",
+          "sourceName": "SlashGear",
+          "sourceUrl": "https://www.slashgear.com/1985799/do-apple-updates-really-make-your-iphone-slower/",
+          "content": "苹果曾因未告知用户降速被罚款，现承认降低旧电池性能以防止意外关机。",
+          "authenticity": "真实",
+          "aiReason": "SlashGear为知名科技媒体，信息与苹果官方声明一致。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-3-6",
+          "sourceType": "官媒",
+          "sourceName": "BBC",
+          "sourceUrl": "https://www.bbc.com/news/technology-67911517",
+          "content": "2017年苹果承认故意降低部分旧iPhone性能，引发诉讼。",
+          "authenticity": "真实",
+          "aiReason": "BBC为权威媒体，报道基于法庭文件和苹果声明。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-3-7",
+          "sourceType": "其他",
+          "sourceName": "Seriosity",
+          "sourceUrl": "https://seriosity.com/apple-confirms-it-slows-performance-in-old-iphones-to-prevent-shutdowns/",
+          "content": "苹果解释降速是为了防止电池老化导致关机，讨论技术、伦理和用户信任。",
+          "authenticity": "真实",
+          "aiReason": "内容与苹果官方说法一致，但网站有商业性质。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-3-8",
+          "sourceType": "其他",
+          "sourceName": "UTechPus",
+          "sourceUrl": "https://www.utechpus.com/apple-finally-confesses-older-iphones-are-slowing-down/",
+          "content": "苹果最终承认故意降低旧iPhone性能，称是为了保护电池。",
+          "authenticity": "真实",
+          "aiReason": "与苹果2017年声明一致。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-3-9",
+          "sourceType": "官媒",
+          "sourceName": "The Hill",
+          "sourceUrl": "https://thehill.com/homenews/nexstar_media_wire/4395522-apple-paying-out-claims-in-500-million-iphone-slowdown-lawsuit-did-you-qualify/",
+          "content": "苹果支付5亿美元和解金，未否认更新后手机变慢，称是为了防止电池关机。",
+          "authenticity": "真实",
+          "aiReason": "The Hill为美国政治新闻媒体，报道基于法庭文件。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-3-10",
+          "sourceType": "其他",
+          "sourceName": "Free Press Journal",
+          "sourceUrl": "https://www.freepressjournal.in/tech/ex-apple-engineers-iphone-slowdown-claim-goes-viral-sparks-planned-obsolescence-row",
+          "content": "2026年5月，一名自称前苹果工程师的女子视频引发计划报废争议。",
+          "authenticity": "存疑",
+          "aiReason": "来源为印度媒体，转载网络视频，未核实工程师身份。",
+          "classBias": "小资产阶级立场"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-3-1",
+          "to": "tl-3-2",
+          "type": "因果",
+          "description": "苹果2017年承认降速导致消费者集体诉讼，最终支付和解金，这是资本对消费者反抗的暂时让步。"
+        },
+        {
+          "from": "tl-3-2",
+          "to": "tl-3-3",
+          "type": "关联",
+          "description": "和解并未解决根本矛盾，2026年新指控表明计划报废策略仍在持续，消费者怀疑未消。"
+        }
+      ]
+    },
+    {
+      "id": "evt-4",
+      "title": "India's hottest district shuts at 10 am as mercury breaches 48 C mark",
+      "impactScore": 4,
+      "infoGainScore": 4,
+      "summary": "印度班达地区气温达48.2°C，市场、商铺、农业活动被迫在上午10点前停止，户外劳动者（农民、小贩、建筑工人）承受极端高温风险，而资本（如珠宝商）通过调整工作时间（早6点开工、9点收工）维持运营，暴露了气候危机下资本与劳动的利益冲突。",
+      "classAnalysis": {
+        "classNature": "直接受损的是户外劳动者（农民、小贩、建筑工人等），他们被迫在极端高温下工作或失去收入；资本方（如珠宝商、供应商）通过提前营业时间、压缩劳动时长来维持利润，将气候成本转嫁给劳动者；政府（如气象部门）仅发布预警，未提供实质性保护措施（如高温补贴、强制停工）。利益冲突的形态是：资本要求劳动者在更恶劣条件下工作以维持生产，而劳动者面临健康与生存的双重压力。",
+        "contradiction": "主要矛盾是资本逐利与劳动者生存条件之间的对抗。特殊性在于：极端高温作为自然因素，加速了资本与劳动矛盾的激化——资本通过时间调整（早开工早收工）来适应气候，但劳动者实际劳动强度未减（如农民仍需在高温下耕作），且收入可能因工时缩短而减少。矛盾走向：短期内可能通过临时调整（如LED灯下夜间耕作）缓和，但长期看，气候恶化将迫使更多劳动者退出市场或引发罢工等对抗。",
+        "historicalContext": "直接前因是印度持续热浪，班达连续三天成为全国最热地区。深层根源是资本主义工业化导致的气候变化，以及印度城乡二元结构下缺乏对户外劳动者的社会保障。该事件是长期气候量变积累的节点，可能推动政府出台高温劳动法规，但也可能因资本抵制而流于形式。"
+      },
+      "dialecticalSummary": "极端高温加剧了资本与劳动的矛盾：资本通过时间调整转嫁气候成本，劳动者承受健康与收入双重损失。矛盾短期内以市场关闭形式缓和，但长期将因气候恶化而激化，可能推动劳动者组织抗争或政府出台保护法规。",
+      "timeline": [
+        {
+          "id": "tl-4-1",
+          "time": "2026-05-19T00:00:00Z",
+          "title": "班达气温达48.2°C，连续三天全国最热",
+          "description": "印度北方邦班达地区气温升至48.2°C，成为全国最热城市，市场、商铺在上午10点前关闭。",
+          "evidenceRefs": [
+            "ev-4-1",
+            "ev-4-2",
+            "ev-4-3"
+          ]
+        },
+        {
+          "id": "tl-4-2",
+          "time": "2026-05-19T06:00:00Z",
+          "title": "珠宝商调整工作时间",
+          "description": "珠宝商Lakhan Gupta早上6点离家，9点前完成大部分工作，10点前关闭店铺，供应商和会议提前安排。",
+          "evidenceRefs": [
+            "ev-4-2"
+          ]
+        },
+        {
+          "id": "tl-4-3",
+          "time": "2026-05-19T10:00:00Z",
+          "title": "市场关闭，户外活动停止",
+          "description": "上午10点后道路空旷，商店关门，农业活动暂停，居民避免外出。",
+          "evidenceRefs": [
+            "ev-4-1",
+            "ev-4-3"
+          ]
+        },
+        {
+          "id": "tl-4-4",
+          "time": "2026-05-18T00:00:00Z",
+          "title": "德里气温达43.4°C，发布黄色预警",
+          "description": "德里记录到季节最高温43.4°C，部分地区超44°C，气象部门发布黄色预警。",
+          "evidenceRefs": [
+            "ev-4-4"
+          ]
+        },
+        {
+          "id": "tl-4-5",
+          "time": "2026-05-19T00:00:00Z",
+          "title": "德里气温逼近45°C，发布橙色预警",
+          "description": "德里气温接近45°C，部分地区超46°C，气象部门发布橙色预警。",
+          "evidenceRefs": [
+            "ev-4-5",
+            "ev-4-8"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-4-1",
+          "sourceType": "官媒",
+          "sourceName": "Hindustan Times",
+          "sourceUrl": "https://www.hindustantimes.com/india-news/indias-hottest-district-banda-shuts-at-10-am-as-mercury-breaches-48-degrees-celsius-mark-101779240653594.html",
+          "content": "班达气温48.2°C，市场上午10点关闭。",
+          "authenticity": "真实",
+          "aiReason": "Hindustan Times是印度主流媒体，报道与气象数据一致，且有多源交叉验证。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-4-2",
+          "sourceType": "官媒",
+          "sourceName": "Hindustan Times",
+          "sourceUrl": "https://www.hindustantimes.com/cities/others/shutdown-by-10am-farming-under-led-lights-how-india-s-hottest-district-banda-copes-101779219969727.html",
+          "content": "珠宝商Lakhan Gupta调整工作时间，早上6点离家，9点前完成工作，10点前关闭店铺。",
+          "authenticity": "真实",
+          "aiReason": "报道包含具体人物和细节，且与事件背景一致。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-4-3",
+          "sourceType": "其他",
+          "sourceName": "NewsBytes",
+          "sourceUrl": "https://www.newsbytesapp.com/news/india/banda-records-482c-indias-highest-this-year-as-markets-empty/tldr",
+          "content": "班达气温48.2°C，市场上午10点前关闭。",
+          "authenticity": "真实",
+          "aiReason": "NewsBytes是新闻聚合平台，内容与Hindustan Times一致。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-4-4",
+          "sourceType": "官媒",
+          "sourceName": "Times of India",
+          "sourceUrl": "https://timesofindia.indiatimes.com/city/delhi/seasons-hottest-day-yet-as-mercury-crosses-44c-in-parts-of-delhi/articleshow/131183500.cms",
+          "content": "德里气温43.4°C，部分地区超44°C，发布黄色预警。",
+          "authenticity": "真实",
+          "aiReason": "Times of India是印度主要媒体，数据来自气象部门。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-4-5",
+          "sourceType": "官媒",
+          "sourceName": "Zee News",
+          "sourceUrl": "https://zeenews.india.com/india/delhi-heatwave-alert-mercury-nears-45-c-imd-issues-orange-alert-check-what-to-avoid-in-hot-weather-3049024.html",
+          "content": "德里气温接近45°C，部分地区超46°C，发布橙色预警。",
+          "authenticity": "真实",
+          "aiReason": "Zee News是印度主要媒体，数据来自气象部门。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-4-6",
+          "sourceType": "官媒",
+          "sourceName": "Hindustan Times",
+          "sourceUrl": "https://www.hindustantimes.com/cities/lucknow-news/up-sizzles-banda-hits-48-2-india-s-hottest-city-for-third-day-101779208676939.html",
+          "content": "班达连续三天成为全国最热城市，气温48.2°C。",
+          "authenticity": "真实",
+          "aiReason": "Hindustan Times报道，与气象数据一致。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-4-7",
+          "sourceType": "官媒",
+          "sourceName": "Zee News",
+          "sourceUrl": "https://zeenews.india.com/india/delhi-ncr-seasons-hottest-day-temperature-crosses-45-degrees-imd-heatwave-alert-3048921.html",
+          "content": "德里气温超45°C，Ridge站达46.5°C。",
+          "authenticity": "真实",
+          "aiReason": "Zee News报道，数据来自气象部门。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-4-8",
+          "sourceType": "其他",
+          "sourceName": "NewsX",
+          "sourceUrl": "https://www.newsx.com/india/indias-hottest-cities-today-19-may-2026-delhi-nagpur-akola-vidarbha-reel-under-45c48c-extreme-heatwave-alert-221925/",
+          "content": "印度多个城市气温超45°C，班达48°C。",
+          "authenticity": "真实",
+          "aiReason": "NewsX是印度新闻网站，内容与主流媒体一致。",
+          "classBias": "资产阶级立场"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-4-1",
+          "to": "tl-4-2",
+          "type": "关联",
+          "description": "极端高温迫使资本调整工作时间，但劳动者（如农民、小贩）无法像珠宝商那样灵活调整，暴露了不同阶级应对气候危机的差异。"
+        },
+        {
+          "from": "tl-4-1",
+          "to": "tl-4-3",
+          "type": "因果",
+          "description": "高温直接导致市场关闭，但关闭后劳动者收入中断，而资本通过提前营业维持利润，矛盾在时间调整中激化。"
+        },
+        {
+          "from": "tl-4-4",
+          "to": "tl-4-5",
+          "type": "因果",
+          "description": "德里气温持续上升，预警升级，但政府未提供实质性保护措施，矛盾从自然现象转向社会应对。"
+        }
+      ]
+    },
+    {
+      "id": "evt-5",
+      "title": "贷款借给朋友50万父亲肺癌要回被怼",
+      "impactScore": 4,
+      "infoGainScore": 3,
+      "summary": "一名男子因好面子频繁贷款借给朋友近50万元，父亲确诊肺腺癌后急需用钱，但朋友拒绝还款，导致家庭陷入经济危机。事件反映了小资产阶级在医疗负担和借贷关系中的脆弱性，以及资本主义医疗体系下的债务困境。",
+      "classAnalysis": {
+        "classNature": "各方物质利益：出借人（男子）是工薪阶层，月收入约4000元，因好面子贷款借给亲友，自己承担利息和还款压力，最终父亲重病无钱治疗，财产被冻结，利益严重受损。借款人（朋友）利用出借人的面子心理获取资金，拒绝还款，实际获益。银行作为贷款方，通过利息获利，不承担借贷风险。医疗体系（医院）通过高昂治疗费获利，患者家庭被迫承担债务。利益冲突形态：出借人与借款人之间的债务纠纷，出借人与银行之间的贷款合同，出借人与医疗体系之间的费用压力，本质是小资产阶级在资本主义金融和医疗体系下的双重剥削。",
+        "contradiction": "主要矛盾：出借人（小资产阶级）与借款人（可能也是小资产阶级或流氓无产者）之间的借贷信用矛盾，以及出借人与资本主义医疗体系之间的费用矛盾。对立双方：出借人需要钱治病，借款人拒绝还款，银行催债。对抗条件：父亲重病这一突发事件激化了矛盾，出借人从“好面子”转向“急得撞墙”，矛盾从隐性转为显性。特殊性：出借人并非资本家，而是靠工资生活的劳动者，其借贷行为并非为了投资，而是出于小资产阶级的面子观念和人情关系，导致债务危机。走向：矛盾可能通过法律诉讼（判决书已下但执行难）或社会舆论压力暂时缓和，但出借人最终可能被迫破产或接受债务重组，矛盾不会根本解决。",
+        "historicalContext": "前因：出借人长期好面子，频繁借贷给亲友，累计50万元，形成债务链条。父亲确诊肺癌是直接导火索。深层根源：资本主义医疗体系下，重大疾病治疗费用高昂（肺癌治疗可能数十万），而社会保障不足，迫使家庭依赖个人借贷。同时，银行信贷扩张和小资产阶级的面子文化助长了非生产性借贷。后续发展：出借人可能通过法律途径追讨，但执行困难；家庭经济崩溃，父亲治疗延误；事件在社交媒体引发讨论，可能促使部分人反思借贷行为，但不会改变医疗和金融体系的结构性矛盾。性质：这是长期量变（面子借贷习惯）在突发事件（父亲重病）下的质变节点，暴露了小资产阶级在资本主义体系中的脆弱性。"
+      },
+      "dialecticalSummary": "小资产阶级的面子观念与资本主义医疗体系结合，导致借贷债务危机。矛盾在父亲重病时激化，但法律和社会舆论只能暂时缓和，无法解决医疗商品化这一根源。事件可能促使部分人觉醒，但整体矛盾将持续积累。",
+      "timeline": [
+        {
+          "id": "tl-5-1",
+          "time": "2023-03-16T00:00:00Z",
+          "title": "吕某向张某借款5万元（类似案例）",
+          "description": "类似案例中，张某从银行贷款后转借给吕某，月息2%。",
+          "evidenceRefs": [
+            "ev-5-3"
+          ]
+        },
+        {
+          "id": "tl-5-2",
+          "time": "2025-01-07T00:00:00Z",
+          "title": "男子因朋友不还钱急得撞墙",
+          "description": "男子借给朋友几十万，父亲治病要钱，朋友拒绝，男子情绪崩溃。",
+          "evidenceRefs": [
+            "ev-5-2"
+          ]
+        },
+        {
+          "id": "tl-5-3",
+          "time": "2025-04-11T00:00:00Z",
+          "title": "扬州男子为亲友贷款致父亲重病无钱治",
+          "description": "李先生为亲友担保贷款，亲友不还，财产被冻结，父亲重病无钱治疗。",
+          "evidenceRefs": [
+            "ev-5-5"
+          ]
+        },
+        {
+          "id": "tl-5-4",
+          "time": "2026-05-20T00:00:00Z",
+          "title": "贷款借给朋友50万父亲肺癌要回被怼",
+          "description": "男子贷款借给朋友50万，父亲肺癌需钱，朋友拒绝并怼回，妻子崩溃。",
+          "evidenceRefs": [
+            "ev-5-1"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-5-1",
+          "sourceType": "官媒",
+          "sourceName": "中华网新闻频道",
+          "sourceUrl": "https://news.china.com/socialgd/10000169/20260520/49504700.html",
+          "content": "男子贷款借给朋友50万，父亲肺癌要回被怼，妻子含泪讲述丈夫借钱成瘾。",
+          "authenticity": "真实",
+          "aiReason": "中华网是正规新闻媒体，报道细节具体，且与其他来源（如B站视频）相互印证。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-5-2",
+          "sourceType": "官媒",
+          "sourceName": "腾讯新闻",
+          "sourceUrl": "https://news.qq.com/rain/a/20250107V03Z2P00",
+          "content": "男子借给朋友几十万，父亲治病要钱，朋友不还，男子急得撞墙。",
+          "authenticity": "真实",
+          "aiReason": "腾讯新闻为正规媒体，事件描述与中华网报道类似，时间更早，可视为同类事件。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-5-3",
+          "sourceType": "官媒",
+          "sourceName": "澎湃新闻",
+          "sourceUrl": "https://www.thepaper.cn/newsDetail_forward_30547667",
+          "content": "吕某向张某借款20万，张某从银行贷款后转借，法院认定合同无效。",
+          "authenticity": "真实",
+          "aiReason": "澎湃新闻是正规媒体，报道具体案例，有法院判决依据。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-5-4",
+          "sourceType": "社交平台",
+          "sourceName": "Bilibili",
+          "sourceUrl": "https://www.bilibili.com/video/BV1NNLy6kEMo/",
+          "content": "视频描述丈夫贷款借给朋友50万，父亲肺癌要不回，妻子崩溃。",
+          "authenticity": "真实",
+          "aiReason": "B站视频为二次创作，但内容与新闻一致，可作佐证。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-5-5",
+          "sourceType": "官媒",
+          "sourceName": "网易订阅",
+          "sourceUrl": "https://www.163.com/dy/article/JSS7TKTM0556CEWC.html",
+          "content": "扬州李先生为亲友贷款担保，亲友不还，父亲重病无钱治。",
+          "authenticity": "真实",
+          "aiReason": "网易订阅转载扬州新闻报道，细节具体，有来源。",
+          "classBias": "小资产阶级立场"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-5-1",
+          "to": "tl-5-2",
+          "type": "关联",
+          "description": "类似借贷纠纷案例表明，从银行贷款转借他人是常见模式，导致出借人陷入债务危机。"
+        },
+        {
+          "from": "tl-5-2",
+          "to": "tl-5-3",
+          "type": "关联",
+          "description": "两个事件都涉及为亲友借贷导致父亲重病无钱治疗，反映小资产阶级在医疗负担下的共同困境。"
+        },
+        {
+          "from": "tl-5-3",
+          "to": "tl-5-4",
+          "type": "因果",
+          "description": "扬州事件是前奏，2026年事件是类似矛盾的激化，表明问题普遍且持续。"
+        }
+      ]
+    },
+    {
+      "id": "evt-6",
+      "title": "又5款送检椰子水疑似加水加糖",
+      "impactScore": 3,
+      "infoGainScore": 4,
+      "summary": "多款市售椰子水被送检后疑似添加水和糖，并非100%纯椰子水。事件涉及泰国代工厂造假，以及国内品牌如椰子知道等声称通过检测。消费者权益受损，资本通过降低原料成本获取超额利润。",
+      "classAnalysis": {
+        "classNature": "资本方（生产商、代工厂）通过掺水加糖降低原料成本，获取更高利润；消费者支付高价却买到劣质产品，物质利益受损。利益冲突形态：资本追求利润最大化与消费者对真实品质的需求之间的矛盾。",
+        "contradiction": "主要矛盾是资本逐利与消费者权益的对立。具体表现为：生产商在原料采购环节以次充好（如用地下水加香精冒充椰子水），而消费者缺乏检测手段，信息不对称。矛盾特殊性在于食品行业信任危机，消费者维权成本高。走向：若监管加强或消费者抵制，可能迫使部分企业整改；否则矛盾持续积累，可能引发更大范围的质量丑闻。",
+        "historicalContext": "直接前因：泰国警方打击造假代工厂，揭露行业黑幕。深层根源：资本主义生产关系中，利润驱动导致质量下降是常态。该事件是长期量变积累的节点，类似食品安全问题频发，反映资本逐利本性未变。"
+      },
+      "dialecticalSummary": "资本逐利导致椰子水掺假，消费者权益受损。矛盾核心是利润与质量的对抗。若监管和消费者抵制加强，可能迫使行业整改；否则造假将继续，矛盾可能激化为更大信任危机。",
+      "timeline": [
+        {
+          "id": "tl-6-1",
+          "time": "2024-01-01T00:00:00Z",
+          "title": "泰国警方查处造假代工厂",
+          "description": "泰国警方全副武装踹开一家大型椰子水代工厂大门，该厂用香精和地下水冒充纯椰子水。",
+          "evidenceRefs": [
+            "ev-6-1"
+          ]
+        },
+        {
+          "id": "tl-6-2",
+          "time": "2024-01-02T00:00:00Z",
+          "title": "国内送检发现5款椰子水疑似掺假",
+          "description": "国内机构送检多款椰子水，发现部分产品添加水和糖，并非100%纯椰子水。",
+          "evidenceRefs": [
+            "ev-6-2"
+          ]
+        },
+        {
+          "id": "tl-6-3",
+          "time": "2024-01-03T00:00:00Z",
+          "title": "椰子知道品牌声称通过检测",
+          "description": "抖音视频显示，老爸评测送检后，椰子知道品牌声称其产品为100%纯椰子水。",
+          "evidenceRefs": [
+            "ev-6-3"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-6-1",
+          "sourceType": "社交平台",
+          "sourceName": "Cofacts 真的假的",
+          "sourceUrl": "https://cofacts.tw/article/2s42bnrqtmhxk",
+          "content": "阿佑帶來了黑心椰子水的神話和坍塌！ 你在超商花七八十塊買的那瓶、標榜『100%純天然』的椰子水，其實是一瓶加了香精的地下水。 就在前陣子，泰國警方全副武裝，踹開了一家大型『椰子水代工廠』的大門。",
+          "authenticity": "真实",
+          "aiReason": "该来源为事实核查平台，内容具体且与事件主题直接相关，无矛盾信息。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-6-2",
+          "sourceType": "其他",
+          "sourceName": "事件标题",
+          "sourceUrl": "无直接URL",
+          "content": "又5款送检椰子水疑似加水加糖",
+          "authenticity": "待验证",
+          "aiReason": "标题本身为事件概述，但搜索结果中缺乏具体送检报告或官方通报，真实性需进一步核实。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-6-3",
+          "sourceType": "社交平台",
+          "sourceName": "抖音",
+          "sourceUrl": "https://www.douyin.com/shipin/7613578462158358563",
+          "content": "椰子水。 最后，老爸评测送检，专业机构 真实检测报告证明椰子知道百分之一百椰子水，通过检测，椰子知道只做蒸椰子喝百分之一百椰子水认准椰子知道。",
+          "authenticity": "存疑",
+          "aiReason": "该视频为品牌方宣传内容，可能选择性展示有利信息，需独立检测报告佐证。",
+          "classBias": "资产阶级立场"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-6-1",
+          "to": "tl-6-2",
+          "type": "因果",
+          "description": "泰国代工厂造假事件曝光，引发国内对椰子水质量的关注，进而推动送检发现更多问题。"
+        },
+        {
+          "from": "tl-6-2",
+          "to": "tl-6-3",
+          "type": "矛盾",
+          "description": "送检发现部分产品掺假，而品牌方声称纯正，形成消费者质疑与品牌自证的对立。"
+        }
+      ]
+    },
+    {
+      "id": "evt-7",
+      "title": "GitHub is investigating unauthorized access to their internal repositories",
+      "impactScore": 3,
+      "infoGainScore": 3,
+      "summary": "GitHub正在调查一起安全事件，黑客组织TeamPCP声称访问了约4000个内部仓库，并试图出售源代码。GitHub确认了通过恶意VS Code扩展导致的入侵，但未证实具体数据量。事件暴露了科技巨头作为生产资料（代码托管平台）的脆弱性，可能影响依赖GitHub的开发者（劳动者）利益。",
+      "classAnalysis": {
+        "classNature": "GitHub（微软旗下）作为资本方，拥有并控制代码托管平台这一生产资料，通过订阅服务获取利润。开发者（劳动者）依赖GitHub进行协作和代码存储，但无平台控制权。此次入侵中，GitHub的损失是商业机密泄露和声誉风险，但资本方可通过安全升级转嫁成本；开发者面临代码泄露、项目安全风险，但无直接补偿。黑客组织TeamPCP试图通过出售数据获利，属于小资产阶级投机行为。利益冲突形态：资本方追求安全与利润的平衡，劳动者追求稳定可靠的生产工具，黑客则利用漏洞牟利。",
+        "contradiction": "主要矛盾是资本对生产资料的垄断与劳动者对生产工具安全可靠的需求之间的矛盾。具体对立双方：GitHub（资本方）与依赖其平台的开发者（劳动者）。对抗条件：黑客利用VS Code扩展漏洞（微软产品）入侵，暴露了资本方在安全投入上的不足。矛盾特殊性：不同于传统生产资料（工厂、土地）被破坏，数字生产资料的漏洞具有全球性和快速扩散性。走向：GitHub可能加强安全措施（如更严格的扩展审核），但成本最终由用户承担；劳动者可能转向去中心化替代方案（如自建Git服务器），但受限于技术门槛和网络效应，矛盾短期内不会激化。",
+        "historicalContext": "直接前因：黑客组织TeamPCP此前曾攻击其他科技公司，此次利用VS Code扩展漏洞。深层根源：科技巨头垄断数字生产资料，但安全投入与利润最大化之间存在矛盾；劳动者对平台依赖加深，但缺乏集体议价能力。后续发展：GitHub可能修复漏洞并加强监控，但类似攻击会持续发生；劳动者可能推动开源替代方案或要求平台透明化。这是长期量变积累（安全漏洞频发）的节点，而非突发质变。"
+      },
+      "dialecticalSummary": "GitHub入侵事件暴露了数字生产资料垄断下的安全脆弱性：资本方控制平台但安全投入不足，劳动者依赖平台却无控制权。黑客利用漏洞牟利，加剧了矛盾。短期内矛盾缓和（GitHub修复漏洞），长期可能推动去中心化替代方案，但垄断格局难破。",
+      "timeline": [
+        {
+          "id": "tl-7-1",
+          "time": "2026-05-20T00:00:00Z",
+          "title": "GitHub确认内部仓库遭入侵",
+          "description": "GitHub宣布正在调查一起安全事件，确认恶意VS Code扩展导致内部代码仓库暴露。",
+          "evidenceRefs": [
+            "ev-7-1"
+          ]
+        },
+        {
+          "id": "tl-7-2",
+          "time": "2026-05-20T00:00:00Z",
+          "title": "TeamPCP声称入侵并出售数据",
+          "description": "黑客组织TeamPCP声称访问了约4000个内部仓库，并在网上列出源代码和内部组织信息待售。",
+          "evidenceRefs": [
+            "ev-7-2"
+          ]
+        },
+        {
+          "id": "tl-7-3",
+          "time": "2026-05-20T00:00:00Z",
+          "title": "GitHub调查中，未确认数据量",
+          "description": "GitHub表示调查仍在进行，未确认或否认4000个仓库的说法，也未披露入侵方式。",
+          "evidenceRefs": [
+            "ev-7-3"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-7-1",
+          "sourceType": "其他",
+          "sourceName": "PiunikaWeb",
+          "sourceUrl": "https://piunikaweb.com/2026/05/20/github-internal-repository-breach-investigation/",
+          "content": "GitHub confirms malicious VS Code extension exposed internal code repositories. GitHub is actively investigating a security incident involving unauthorized access to its internal code repositories.",
+          "authenticity": "真实",
+          "aiReason": "PiunikaWeb是科技新闻网站，报道引用GitHub官方声明，内容与其他来源一致，无矛盾。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-7-2",
+          "sourceType": "其他",
+          "sourceName": "The Hacker News",
+          "sourceUrl": "https://thehackernews.com/2026/05/github-investigating-teampcp-claimed.html?m=1",
+          "content": "GitHub is investigating unauthorized access to internal repositories after TeamPCP listed alleged source code and internal organizations for sale.",
+          "authenticity": "真实",
+          "aiReason": "The Hacker News是知名安全新闻网站，报道基于黑客组织声明和GitHub回应，内容具体。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-7-3",
+          "sourceType": "其他",
+          "sourceName": "BleepingComputer",
+          "sourceUrl": "https://www.bleepingcomputer.com/news/security/github-investigates-internal-repositories-breach-claimed-by-teampcp/",
+          "content": "GitHub is investigating a breach of its internal repositories after the TeamPCP hacker group claimed to have accessed approximately 4,000 repositories containing private code.",
+          "authenticity": "真实",
+          "aiReason": "BleepingComputer是可靠科技媒体，报道与官方声明一致，未发现虚假信息。",
+          "classBias": "待判断"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-7-1",
+          "to": "tl-7-2",
+          "type": "关联",
+          "description": "GitHub确认入侵与TeamPCP声称入侵是同一事件的两个方面，GitHub的确认间接验证了黑客声明的真实性。"
+        },
+        {
+          "from": "tl-7-2",
+          "to": "tl-7-3",
+          "type": "矛盾",
+          "description": "黑客声称访问了4000个仓库，但GitHub未确认具体数量，双方在数据规模上存在矛盾，反映了资本方试图淡化影响。"
+        }
+      ]
+    }
+  ]
+}

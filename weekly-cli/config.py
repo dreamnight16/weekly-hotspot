@@ -29,6 +29,10 @@ if "BLOG_CONTENT_DIR" in os.environ:
         print(f"错误: BLOG_CONTENT_DIR 必须在用户目录下: {resolved}", file=sys.stderr)
         sys.exit(1)
 
+# 独立站（格物）的数据输出目录；缺省与 BLOG_CONTENT_DIR 相同以保持向后兼容。
+# 文章仍写入 BLOG_CONTENT_DIR 同级的 posts/ 下，保持"文章在博客、数据在格物"。
+WEB_DATA_DIR = Path(os.environ.get("WEB_DATA_DIR", str(BLOG_CONTENT_DIR)))
+
 RUN_ID = uuid.uuid4().hex[:12]
 
 

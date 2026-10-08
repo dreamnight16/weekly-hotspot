@@ -5,6 +5,9 @@ name: Weekly Hotspot Analysis
     - cron: "37 0 * * 1"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
@@ -31,7 +34,21 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           BLOG_CONTENT_DIR: ${{ github.workspace }}/blog/src/content/weekly
+          WEB_DATA_DIR: ${{ github.workspace }}/web/src/data/weekly
         run: uv run python weekly-cli/main.py
+
+      - name: Commit web data (格物独立站)
+        run: |
+          git config user.name "weekly-bot"
+          git config user.email "bot@dreamnight.net.cn"
+          git add web/src/data/weekly/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            WEEK=$(date +%Y-W%V)
+            git commit -m "chore: update weekly data for web $WEEK"
+            git push
+          fi
 
       - name: Push to Blog-mizuki
         working-directory: blog

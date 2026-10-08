@@ -1,0 +1,919 @@
+{
+  "id": "2026-W22",
+  "weekStart": "2026-05-25",
+  "weekEnd": "2026-05-31",
+  "events": [
+    {
+      "id": "evt-1",
+      "title": "山西煤矿爆炸瞬间监控曝光",
+      "impactScore": 5,
+      "infoGainScore": 5,
+      "summary": "2026年5月22日，山西通洲集团留神峪煤矿发生瓦斯爆炸，造成82人死亡、2人失联、128人受伤。监控曝光显示爆炸瞬间，井下存在未标注的隐藏巷道，企业被认定存在重大违法行为。",
+      "classAnalysis": {
+        "classNature": "煤矿企业（通洲集团）为追求利润，压缩安全投入（如未标注的隐藏巷道、监控设备失效），导致矿工生命安全受损。矿工出卖劳动力换取工资，但劳动条件恶劣，生命安全无保障。事故发生后，企业实际控制人被控制，但损失已由矿工及其家庭承担。利益冲突表现为：企业追求利润最大化与矿工生命安全之间的直接对抗。",
+        "contradiction": "主要矛盾是资本逐利与矿工生命安全之间的对抗。企业通过隐瞒巷道、减少安全投入来降低成本，导致瓦斯积聚爆炸。矛盾的特殊性在于：监控曝光揭示了企业系统性违规（隐藏巷道、监控定格），且事故规模为2009年以来最大。矛盾走向：目前表现为对抗激化（82人死亡），后续可能通过政府调查、追责、安全整改而暂时缓和，但深层矛盾（资本逐利与安全投入的矛盾）不会根本解决。",
+        "historicalContext": "直接前因：企业长期安全投入不足，井下存在未标注的隐藏巷道，监控设备未实时传输。深层根源：在资本主义生产关系中，煤矿企业为降低成本、提高利润，必然压缩安全投入，矿工生命安全被置于利润之后。事故是长期量变积累（安全违规、监管失效）的质变节点。后续发展：国务院调查组介入，企业负责人被控制，可能推动短期安全整治，但类似事故在资本逐利逻辑下仍会重演。"
+      },
+      "dialecticalSummary": "资本逐利与矿工生命安全的矛盾在留神峪煤矿爆炸中激化，企业通过隐藏巷道、减少安全投入追求利润，导致82名矿工死亡。监控曝光揭示了系统性违规，但矛盾根源未变，后续可能暂时缓和，但类似事故在资本主义生产关系中必然重演。",
+      "timeline": [
+        {
+          "id": "tl-1-1",
+          "time": "2026-05-22T19:29:00",
+          "title": "瓦斯爆炸发生",
+          "description": "山西通洲集团留神峪煤矿井下发生瓦斯爆炸，当班作业人员247人。",
+          "evidenceRefs": [
+            "ev-1-1"
+          ]
+        },
+        {
+          "id": "tl-1-2",
+          "time": "2026-05-22T21:43:00",
+          "title": "一氧化碳传感器超限警报",
+          "description": "沁源县接报，井下一氧化碳传感器发出超限警报。",
+          "evidenceRefs": [
+            "ev-1-1"
+          ]
+        },
+        {
+          "id": "tl-1-3",
+          "time": "2026-05-23T03:33:00",
+          "title": "首批救援进展",
+          "description": "157人升井，4人死亡，井下仍有90人，其中16人危重。",
+          "evidenceRefs": [
+            "ev-1-1"
+          ]
+        },
+        {
+          "id": "tl-1-4",
+          "time": "2026-05-23T06:00:00",
+          "title": "官方通报",
+          "description": "沁源县应急管理局通报：247人中201人平安升井，8人死亡，38人正在搜救。",
+          "evidenceRefs": [
+            "ev-1-1"
+          ]
+        },
+        {
+          "id": "tl-1-5",
+          "time": "2026-05-25T11:08:54",
+          "title": "监控曝光与调查",
+          "description": "官方公布爆炸瞬间监控，确认企业存在重大违法行为，包括隐藏巷道。企业实际控制人及负责人被控制。",
+          "evidenceRefs": [
+            "ev-1-3",
+            "ev-1-4"
+          ]
+        },
+        {
+          "id": "tl-1-6",
+          "time": "2026-05-25T22:45:40",
+          "title": "最终伤亡统计",
+          "description": "新闻发布会通报：82人死亡，2人失联，128人受伤。",
+          "evidenceRefs": [
+            "ev-1-2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-1-1",
+          "sourceType": "官媒",
+          "sourceName": "维基百科",
+          "sourceUrl": "https://zh.wikipedia.org/wiki/2026年山西留神峪煤矿爆炸事故",
+          "content": "2026年5月22日19时29分，山西通洲集团留神峪煤矿发生瓦斯爆炸，当班247人。21时43分接报一氧化碳超限警报。23日3时33分157人升井，4死，90人被困。6时通报201人升井，8死，38人搜救。",
+          "authenticity": "真实",
+          "aiReason": "维基百科条目引用新华社等官方来源，信息与其他报道一致，且为事件早期记录，无利益冲突。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-1-2",
+          "sourceType": "官媒",
+          "sourceName": "中华网",
+          "sourceUrl": "https://news.china.com/socialgd/10000169/20260525/49512247.html",
+          "content": "新闻发布会通报：82人死亡，2人失联，128人受伤。",
+          "authenticity": "真实",
+          "aiReason": "中华网为国内新闻门户，转载官方发布会信息，与其他来源一致。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-1-3",
+          "sourceType": "官媒",
+          "sourceName": "中华网",
+          "sourceUrl": "https://news.china.com/socialgd/10000169/20260525/49512364_all.html",
+          "content": "5月22日19时29分爆炸，救援755人，企业实际控制人及负责人被控制。",
+          "authenticity": "真实",
+          "aiReason": "中华网报道，信息具体，与其他来源吻合。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-1-4",
+          "sourceType": "官媒",
+          "sourceName": "网易订阅",
+          "sourceUrl": "https://www.163.com/dy/article/KTP5KPO7055040N3.html",
+          "content": "井下存在图纸上没有标注的隐藏巷道，监控画面定格在事故发生时。",
+          "authenticity": "真实",
+          "aiReason": "网易订阅转载官方信息，隐藏巷道细节与新华社报道一致。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-1-5",
+          "sourceType": "官媒",
+          "sourceName": "BBC News 中文",
+          "sourceUrl": "https://www.bbc.com/zhongwen/articles/c332jgrkypeo/simp",
+          "content": "82人死亡，2人失联，128人受伤，为2009年以来最严重矿难。",
+          "authenticity": "真实",
+          "aiReason": "BBC引用官方发布会数据，与其他来源一致。",
+          "classBias": "帝国主义话语"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-1-1",
+          "to": "tl-1-5",
+          "type": "因果",
+          "description": "爆炸直接导致监控曝光和调查，暴露企业违法行为。"
+        },
+        {
+          "from": "tl-1-1",
+          "to": "tl-1-6",
+          "type": "因果",
+          "description": "爆炸造成最终伤亡统计中的82人死亡、128人受伤。"
+        },
+        {
+          "from": "tl-1-5",
+          "to": "tl-1-6",
+          "type": "关联",
+          "description": "监控曝光和调查确认企业违法，与最终伤亡数字共同反映事故严重性。"
+        }
+      ]
+    },
+    {
+      "id": "evt-2",
+      "title": "留神峪煤矿办公区摆着数十本安全规章",
+      "impactScore": 4,
+      "infoGainScore": 5,
+      "summary": "山西通洲集团留神峪煤矿2026年5月22日发生瓦斯爆炸，造成至少82人死亡、128人受伤。该矿此前被列为B类煤矿，存在图纸造假、收走工人定位卡等违法行为。企业实际控制人为亿万富豪煤老板。办公区摆放大量安全规章，但实际生产中以多出煤为首要目标，安全措施形同虚设。",
+      "classAnalysis": {
+        "classNature": "煤矿实际控制人（煤老板）通过压低安全投入、伪造图纸、收走定位卡等手段，最大化煤炭产量以获取利润。工人生命安全被牺牲，成为利润的代价。政府监管部门（如山西安委办）虽将其列为B类煤矿，但未有效制止违法行为，存在监管失职。工人群体是直接受害者，但缺乏组织力量反抗，只能通过媒体间接发声。",
+        "contradiction": "主要矛盾是资产阶级（矿主）追求利润最大化与无产阶级（矿工）生命安全之间的对抗。矿主通过形式主义安全规章掩盖实质上的安全缺失，当利润与安全冲突时，利润优先。该矛盾的特殊性在于：矿主利用工人对工作的依赖（工人需要养家糊口）和监管漏洞，将安全成本外部化。矛盾走向是激化——爆炸导致重大伤亡，国务院调查组介入，但根本的利润驱动机制未变，类似事故仍可能重演。",
+        "historicalContext": "直接前因：该矿2024年被列入灾害严重煤矿名单，但未停产整改；工人定位卡被收走，图纸造假，表明长期漠视安全。深层根源：中国煤炭行业在资本驱动下，安全投入与产量追求的矛盾长期存在。此次事故是量变积累的节点——此前多次小事故未引起根本改变，此次重大伤亡迫使国务院层面介入，但能否推动制度性变革取决于后续斗争。"
+      },
+      "dialecticalSummary": "矿主追求利润与矿工生命安全的矛盾在形式主义安全规章掩盖下激化，爆炸是量变到质变的节点。国务院调查是矛盾暂时缓和，但资本逐利本质未变，类似事故可能重演。",
+      "timeline": [
+        {
+          "id": "tl-2-1",
+          "time": "2024-01-01T00:00:00Z",
+          "title": "留神峪煤矿被列入灾害严重煤矿名单",
+          "description": "中国国家矿山安全监察局将留神峪煤矿列入1128处灾害严重煤矿名单。",
+          "evidenceRefs": [
+            "ev-2-3"
+          ]
+        },
+        {
+          "id": "tl-2-2",
+          "time": "2026-01-01T00:00:00Z",
+          "title": "留神峪煤矿被列为B类煤矿",
+          "description": "山西省安全生产委员会办公室将山西通洲集团留神峪煤业有限公司列为B类煤矿（安全保障程度一般）。",
+          "evidenceRefs": [
+            "ev-2-1"
+          ]
+        },
+        {
+          "id": "tl-2-3",
+          "time": "2026-05-22T19:29:00Z",
+          "title": "留神峪煤矿发生瓦斯爆炸",
+          "description": "山西长治市沁源县山西通洲集团留神峪煤业有限公司井下发生瓦斯爆炸事故，当班作业人员247人。",
+          "evidenceRefs": [
+            "ev-2-2",
+            "ev-2-8"
+          ]
+        },
+        {
+          "id": "tl-2-4",
+          "time": "2026-05-23T00:00:00Z",
+          "title": "救援开始，发现图纸造假",
+          "description": "央视新闻报道，因留神峪煤矿提供的图纸与实际情况不符，救援人员只能逐条巷道搜救。工人反映曾被收走定位卡。",
+          "evidenceRefs": [
+            "ev-2-5"
+          ]
+        },
+        {
+          "id": "tl-2-5",
+          "time": "2026-05-24T00:00:00Z",
+          "title": "死亡人数上升至82人",
+          "description": "官方新闻发布会称事故已导致82人死亡、2人失联、128人受伤。",
+          "evidenceRefs": [
+            "ev-2-2"
+          ]
+        },
+        {
+          "id": "tl-2-6",
+          "time": "2026-05-25T00:00:00Z",
+          "title": "国务院调查组成立",
+          "description": "国务院事故调查组将较真碰硬开展事故调查，查清查透事故原因和责任。",
+          "evidenceRefs": [
+            "ev-2-6"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-2-1",
+          "sourceType": "官媒",
+          "sourceName": "东方财富网",
+          "sourceUrl": "https://wap.eastmoney.com/a/202605243747405825.html",
+          "content": "山西通洲集团留神峪煤业有限公司被列为B类煤矿。",
+          "authenticity": "真实",
+          "aiReason": "东方财富网转载官方信息，且与后续事故报道一致。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-2-2",
+          "sourceType": "官媒",
+          "sourceName": "BBC News 中文",
+          "sourceUrl": "https://www.bbc.com/zhongwen/articles/c332jgrkypeo/simp",
+          "content": "瓦斯爆炸导致82人死亡、2人失联、128人受伤。",
+          "authenticity": "真实",
+          "aiReason": "BBC引用官方新闻发布会数据，与其他来源一致。",
+          "classBias": "帝国主义话语"
+        },
+        {
+          "id": "ev-2-3",
+          "sourceType": "官媒",
+          "sourceName": "纽约时报中文网",
+          "sourceUrl": "https://cn.nytimes.com/china/20260525/xi-coal-mine-explosion-rescue/",
+          "content": "该矿2024年被列入灾害严重煤矿名单；市长称涉事企业有重大违法行为。",
+          "authenticity": "真实",
+          "aiReason": "纽约时报引用新华社报道和官方发布会，信息可交叉验证。",
+          "classBias": "帝国主义话语"
+        },
+        {
+          "id": "ev-2-4",
+          "sourceType": "官媒",
+          "sourceName": "新华网",
+          "sourceUrl": "https://www.news.cn/politics/20260523/cdde63c552fc4638b90f609df15aabbe/c.html",
+          "content": "留神峪煤矿瓦斯爆炸事故仍有9名被困人员。",
+          "authenticity": "真实",
+          "aiReason": "新华网是官方通讯社，现场报道。",
+          "classBias": "无产阶级立场"
+        },
+        {
+          "id": "ev-2-5",
+          "sourceType": "官媒",
+          "sourceName": "界面新闻",
+          "sourceUrl": "https://m.jiemian.com/article/14475007.html",
+          "content": "工人反映弟弟被收走定位卡；煤矿负责人承认图纸造假是为了多出煤。",
+          "authenticity": "真实",
+          "aiReason": "界面新闻采访工人和负责人，内容具体且与其他报道一致。",
+          "classBias": "无产阶级立场"
+        },
+        {
+          "id": "ev-2-6",
+          "sourceType": "官媒",
+          "sourceName": "21经济网",
+          "sourceUrl": "https://www.21jingji.com/article/20260523/herald/676028928e5e9e358b73579153f32bdb.html",
+          "content": "国务院事故调查组将较真碰硬开展事故调查。",
+          "authenticity": "真实",
+          "aiReason": "21经济网报道官方消息。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-2-7",
+          "sourceType": "官媒",
+          "sourceName": "北京时间",
+          "sourceUrl": "https://item.btime.com/f2eqrnk60at9ctr154cuth6rhgh",
+          "content": "5月24日救援重点是对井下反复搜救。",
+          "authenticity": "真实",
+          "aiReason": "北京时间转载央视消息。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-2-8",
+          "sourceType": "社交平台",
+          "sourceName": "Telegram",
+          "sourceUrl": "https://t.me/linux_do_channel/393144",
+          "content": "死亡人数增至90人；企业实际控制人、负责人已被控制。",
+          "authenticity": "存疑",
+          "aiReason": "Telegram消息未获官方确认，死亡人数与官方82人有出入，但控制负责人信息与其他报道一致。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-2-9",
+          "sourceType": "官媒",
+          "sourceName": "凤凰网",
+          "sourceUrl": "https://news.ifeng.com/c/8tMrV6YYcD2",
+          "content": "留神峪煤矿实际控制人是著名煤老板、亿万富豪。",
+          "authenticity": "真实",
+          "aiReason": "凤凰网报道，信息具体。",
+          "classBias": "资产阶级立场"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-2-1",
+          "to": "tl-2-2",
+          "type": "关联",
+          "description": "被列为灾害严重煤矿后，仅被列为B类煤矿，未实质停产整改，说明监管与资本利益存在妥协。"
+        },
+        {
+          "from": "tl-2-2",
+          "to": "tl-2-3",
+          "type": "因果",
+          "description": "B类煤矿的宽松监管未能阻止违法行为（图纸造假、收定位卡），直接导致爆炸发生。"
+        },
+        {
+          "from": "tl-2-3",
+          "to": "tl-2-4",
+          "type": "因果",
+          "description": "爆炸发生后，图纸造假被揭露，暴露了资本为利润牺牲安全的本质。"
+        },
+        {
+          "from": "tl-2-4",
+          "to": "tl-2-5",
+          "type": "因果",
+          "description": "救援过程中发现更多遇难者，死亡人数上升。"
+        },
+        {
+          "from": "tl-2-5",
+          "to": "tl-2-6",
+          "type": "因果",
+          "description": "重大伤亡迫使国务院层面介入调查，但调查能否改变利润驱动机制仍是未知。"
+        }
+      ]
+    },
+    {
+      "id": "evt-3",
+      "title": "王健林又背上超30亿债务",
+      "impactScore": 4,
+      "infoGainScore": 4,
+      "summary": "王健林因担保债务被法院强制执行，涉及金额超30亿元，反映房地产资本家在金融化过程中的债务危机，以及债务向工人转嫁的阶级内容。",
+      "classAnalysis": {
+        "classNature": "王健林作为房地产资本家，其债务危机直接损害了债权人（如永辉超市等商业资本家）的利益，但债务最终通过裁员、降薪、拖欠工程款等方式转嫁给工人和中小供应商。银行等金融机构通过强制执行保全自身利益，而工人则承受失业和收入下降的后果。利益冲突形态是资本家之间争夺剩余价值的竞争，以及资本家阶级与工人阶级之间的剥削关系。",
+        "contradiction": "主要矛盾是房地产资本积累与金融化之间的矛盾，具体表现为王健林等资本家因过度负债而面临流动性危机，与债权人（如永辉超市）要求偿债之间的对抗。矛盾的特殊性在于，债务危机发生在房地产下行周期，资本家之间通过担保链条相互牵连，导致风险扩散。走向是债务纠纷通过法律强制执行暂时缓和，但工人被转嫁的损失无法挽回，矛盾可能进一步激化。",
+        "historicalContext": "直接前因是王健林此前为孙喜双等提供担保，因对方违约而承担连带责任。深层根源是房地产行业在金融化过程中过度依赖债务扩张，当市场下行时资金链断裂。该事件是长期债务积累的量变节点，可能引发更多资产变卖和工人失业，但尚未达到质变（如大规模破产或社会动荡）。"
+      },
+      "dialecticalSummary": "王健林债务危机是房地产资本积累与金融化矛盾的具体表现，资本家之间通过担保链条相互牵连，但危机最终通过裁员降薪转嫁给工人。矛盾在司法层面暂时缓和，但工人受害无法弥补，可能引发劳资冲突。",
+      "timeline": [
+        {
+          "id": "tl-3-1",
+          "time": "2024-06-30",
+          "title": "补充协议第三期付款完成",
+          "description": "王健林等按补充协议支付第三期款项，但后续款项未付，导致仲裁和强制执行。",
+          "evidenceRefs": [
+            "ev-3-3"
+          ]
+        },
+        {
+          "id": "tl-3-2",
+          "time": "2025-05-22",
+          "title": "永辉超市仲裁案进入强制执行",
+          "description": "永辉超市因王健林等未支付剩余38.6亿元债务，申请仲裁并获支持，法院启动强制执行。",
+          "evidenceRefs": [
+            "ev-3-4"
+          ]
+        },
+        {
+          "id": "tl-3-3",
+          "time": "2025-05-21",
+          "title": "涉案金额逾36.39亿元报道",
+          "description": "东方财富网报道王健林等需支付36.39亿元，包括本金和利息。",
+          "evidenceRefs": [
+            "ev-3-5"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-3-1",
+          "sourceType": "其他",
+          "sourceName": "新浪网",
+          "sourceUrl": "https://k.sina.com.cn/article_1651428902_m626ece2603301fyf6.html",
+          "content": "王健林因两年前担保背上超30亿元债务，名下贷款公司股权遭法院变卖。",
+          "authenticity": "真实",
+          "aiReason": "新浪网是正规新闻媒体，报道内容与其他来源一致，且涉及具体司法程序，可信度高。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-3-2",
+          "sourceType": "其他",
+          "sourceName": "陀螺科技",
+          "sourceUrl": "https://www.tuoluo.cn/article/detail-10128941.html",
+          "content": "王健林等签订补充协议，将38.39亿元债务分八期支付，第三期已于2024年6月30日前支付。",
+          "authenticity": "真实",
+          "aiReason": "内容具体，与后续仲裁报道吻合，来源为行业媒体，可信。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-3-3",
+          "sourceType": "其他",
+          "sourceName": "21经济网",
+          "sourceUrl": "https://www.21jingji.com/article/20260522/herald/0f9c3cc0677032d32b3de551cb7f4930.html",
+          "content": "永辉超市仲裁案进入强制执行，王健林等需支付38.6亿元，包括律师费、保全费等。",
+          "authenticity": "真实",
+          "aiReason": "21经济网是正规财经媒体，报道详细，涉及仲裁裁决，可信。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-3-4",
+          "sourceType": "其他",
+          "sourceName": "东方财富网",
+          "sourceUrl": "https://finance.eastmoney.com/a/202605213745433988.html",
+          "content": "涉案金额逾36.39亿元，王健林等提供担保，约定2024年9月30日付款3亿元。",
+          "authenticity": "真实",
+          "aiReason": "东方财富网是知名财经网站，内容具体，与其他来源一致。",
+          "classBias": "资产阶级立场"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-3-1",
+          "to": "tl-3-2",
+          "type": "因果",
+          "description": "第三期付款后未能继续支付，导致后续仲裁和强制执行，体现债务违约的连锁反应。"
+        },
+        {
+          "from": "tl-3-2",
+          "to": "tl-3-3",
+          "type": "关联",
+          "description": "两篇报道时间相近，金额略有差异但本质相同，反映同一事件的不同报道角度。"
+        }
+      ]
+    },
+    {
+      "id": "evt-5",
+      "title": "985博士被间谍策反偷拍航天机密",
+      "impactScore": 3,
+      "infoGainScore": 5,
+      "summary": "一名985高校博士、航天科研人员朱某，被境外间谍组织策反，长期偷拍涉密文件资料，获利59万余元，被判15年。类似案例还有赵学军等航天骨干被策反，反映出涉密人员因金钱诱惑出卖国家机密的现象。",
+      "classAnalysis": {
+        "classNature": "各方物质利益：朱某个人获得59万元现金，满足个人消费需求；境外间谍组织获得中国航天核心技术情报，服务于其国家资本利益（如军事竞争、技术封锁）；中国国家利益受损，航天安全受威胁，科研单位声誉和保密体系受冲击。利益冲突形态：个人短期经济利益与国家长期安全利益、科研单位集体利益的对立；境外资本（间谍组织背后的国家资本）通过金钱收买，将中国高级劳动力（博士）的商品化推向极端——劳动力不仅出卖劳动，还出卖劳动成果（机密）。",
+        "contradiction": "主要矛盾：中国国家安全与境外间谍情报机构渗透破坏之间的矛盾。对立双方：中国国家安全机关、航天科研单位 vs 境外间谍组织及其代理人（包括被策反的朱某等）。对抗条件：境外间谍组织利用金钱诱惑，瞄准涉密人员的人性弱点（贪财、侥幸心理）；朱某在明知对方是间谍的情况下仍主动配合。矛盾特殊性：不同于一般经济犯罪，此案涉及国家核心机密，且策反对象是高学历、高岗位的“精英”技术人员，反映出科技竞争中国家与资本利益的交织——境外资本试图通过窃取技术来削弱中国科技实力。矛盾走向：目前通过法律制裁（判刑）暂时缓和，但根源（境外渗透、个人贪欲）未消除，类似案件仍可能发生，矛盾将持续存在。",
+        "historicalContext": "前因：改革开放后，中国航天等高科技领域快速发展，成为境外间谍重点目标；同时，市场经济下个人物质欲望膨胀，部分知识分子缺乏阶级忠诚，易被金钱收买。直接前因：朱某在留学或工作期间被间谍接触，逐步陷入。深层根源：资本主义全球化下，国家间科技竞争加剧，情报战常态化；劳动力商品化导致部分人将知识、机密视为可交易商品。后续影响：此案促使国家安全机关加强反间谍宣传和保密教育，可能推动更严格的人员审查和监管制度。这是长期量变（多起类似间谍案）积累后的一个典型节点，但非质变。"
+      },
+      "dialecticalSummary": "此案核心矛盾是国家安全与境外间谍渗透的对立，表现为个人贪欲与国家利益的冲突。通过法律制裁暂时压制矛盾，但根源未消，类似案件仍会反复。",
+      "timeline": [
+        {
+          "id": "tl-5-1",
+          "time": "2006-09-01",
+          "title": "朱某攻读博士学位",
+          "description": "朱某在985高校攻读博士学位，开始接触航天领域知识。",
+          "evidenceRefs": [
+            "ev-5-9"
+          ]
+        },
+        {
+          "id": "tl-5-2",
+          "time": "2018-06-01",
+          "title": "朱某被间谍策反",
+          "description": "朱某毕业后在航天科研院所工作期间，被某国间谍组织代理人找上并策反，开始提供涉密资料。",
+          "evidenceRefs": [
+            "ev-5-9"
+          ]
+        },
+        {
+          "id": "tl-5-3",
+          "time": "2026-05-25",
+          "title": "朱某被判刑",
+          "description": "朱某因间谍罪被判处有期徒刑15年，获利59万余元。",
+          "evidenceRefs": [
+            "ev-5-7",
+            "ev-5-8",
+            "ev-5-9"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-5-1",
+          "sourceType": "社交平台",
+          "sourceName": "YouTube",
+          "sourceUrl": "https://m.youtube.com/watch?v=jyYF_VRkZ8U",
+          "content": "985博士航天工程师偷拍军事机密，获利59万，被判15年。",
+          "authenticity": "真实",
+          "aiReason": "视频内容与多个官方媒体报道一致，且YouTube作为平台不直接生产内容，但该视频可能引用官方信息。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-5-2",
+          "sourceType": "其他",
+          "sourceName": "搜狐",
+          "sourceUrl": "https://www.sohu.com/a/993222618_121629689",
+          "content": "间谍案再破获，央媒曝光细节，航天骨干被策反。",
+          "authenticity": "真实",
+          "aiReason": "搜狐转载自央媒，内容与其他来源一致。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-5-3",
+          "sourceType": "官媒",
+          "sourceName": "腾讯新闻",
+          "sourceUrl": "https://news.qq.com/rain/a/20250904A027NT00",
+          "content": "专家赵某某出国被策反，出卖航天情报，收取数十万元，被判7年。",
+          "authenticity": "真实",
+          "aiReason": "腾讯新闻为正规媒体，内容具体，与其他报道吻合。",
+          "classBias": "无产阶级立场"
+        },
+        {
+          "id": "ev-5-4",
+          "sourceType": "其他",
+          "sourceName": "网易订阅",
+          "sourceUrl": "https://www.163.com/dy/article/KN1F9UCR0556AKU6.html",
+          "content": "航天骨干被策反，泄露核心机密10年。",
+          "authenticity": "真实",
+          "aiReason": "引用央视《法治在线》，内容详实。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-5-5",
+          "sourceType": "其他",
+          "sourceName": "今日头条",
+          "sourceUrl": "https://www.toutiao.com/w/1830528116883588/",
+          "content": "军工研究院高材生留学期间被策反，偷配领导钥匙窃密。",
+          "authenticity": "真实",
+          "aiReason": "内容与国安披露案例一致。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-5-6",
+          "sourceType": "官媒",
+          "sourceName": "百度百科",
+          "sourceUrl": "https://baike.baidu.com/item/赵学军/62890726",
+          "content": "赵学军，航天专家，被策反出卖情报。",
+          "authenticity": "真实",
+          "aiReason": "百度百科内容通常经过审核，且与其他来源一致。",
+          "classBias": "无产阶级立场"
+        },
+        {
+          "id": "ev-5-7",
+          "sourceType": "官媒",
+          "sourceName": "新浪财经",
+          "sourceUrl": "https://finance.sina.com.cn/wm/2026-05-25/doc-inhzafpt5238578.shtml",
+          "content": "985博士偷拍涉密资料，获利59万余元，被判15年。",
+          "authenticity": "真实",
+          "aiReason": "新浪财经为正规媒体，内容具体。",
+          "classBias": "无产阶级立场"
+        },
+        {
+          "id": "ev-5-8",
+          "sourceType": "官媒",
+          "sourceName": "观察者网",
+          "sourceUrl": "https://www.guancha.cn/politics/2026_05_25_818256.shtml",
+          "content": "985博士沦为间谍，偷拍涉密资料获利近60万，被判15年。",
+          "authenticity": "真实",
+          "aiReason": "观察者网为正规媒体，内容与其他来源一致。",
+          "classBias": "无产阶级立场"
+        },
+        {
+          "id": "ev-5-9",
+          "sourceType": "官媒",
+          "sourceName": "央视新闻",
+          "sourceUrl": "https://news.cctv.com/2026/05/25/ARTIqhZh7vRqz0G0LCXxjfQK260525.shtml",
+          "content": "朱某2006-2018年攻读博士并工作，被间谍策反，偷拍涉密资料，被判15年。",
+          "authenticity": "真实",
+          "aiReason": "央视新闻为官方权威媒体，内容详细可靠。",
+          "classBias": "无产阶级立场"
+        },
+        {
+          "id": "ev-5-10",
+          "sourceType": "官媒",
+          "sourceName": "中国传媒大学安全网",
+          "sourceUrl": "https://security.cuc.edu.cn/2025/0512/c2246a255485/page.htm",
+          "content": "近期间谍案盘点，包括卫某等案例。",
+          "authenticity": "真实",
+          "aiReason": "教育机构官网，内容引用国安部披露。",
+          "classBias": "无产阶级立场"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-5-1",
+          "to": "tl-5-2",
+          "type": "因果",
+          "description": "朱某攻读博士并进入航天科研院所，为其接触涉密资料创造了条件，是后续被策反的前提。"
+        },
+        {
+          "from": "tl-5-2",
+          "to": "tl-5-3",
+          "type": "因果",
+          "description": "朱某被策反后持续窃密，最终导致法律制裁。"
+        }
+      ]
+    },
+    {
+      "id": "evt-6",
+      "title": "长三角外贸交出亮眼成绩单",
+      "impactScore": 3,
+      "infoGainScore": 4,
+      "summary": "长三角地区外贸规模持续增长，2024年进出口总值16.01万亿元，占全国36.5%；2026年一季度进出口4.49万亿元，占全国37.9%，其中出口占全国41.1%。新能源汽车、锂电池、光伏产品等“新三样”出口崛起，成为增长引擎。",
+      "classAnalysis": {
+        "classNature": "外贸增长的主要获益者是出口企业主（资本所有者）和地方政府（税收、就业政绩），以及国际买家（获得低价商品）。工人阶级（产业工人）在出口导向型经济中承受高强度劳动和相对低工资，剩余价值被资本占有；同时，外贸增长带动就业，工人获得工资收入，但劳动条件改善有限。利益冲突表现为：资本追求更低成本（压低工资、延长工时）与工人要求提高待遇之间的矛盾；国内资本与国际资本在利润分配上的矛盾（中国工人创造的价值部分被国际资本通过低价采购攫取）。",
+        "contradiction": "主要矛盾是资本与劳动的矛盾，具体形态为：在出口产业链中，资本通过控制劳动力成本（如加班、低社保）维持国际竞争力，工人则面临劳动强度大、收入增长慢的困境。矛盾的特殊性在于：长三角外贸以“新三样”等高端制造为主，技术工人相对稀缺，工人议价能力有所提升，但整体仍处于弱势。矛盾的走向：短期内因就业压力而缓和，长期可能因劳动力成本上升和产业升级而激化，或向自动化替代转化。",
+        "historicalContext": "直接前因：2001年加入WTO后中国深度融入全球产业链，长三角成为世界工厂；2018年长三角一体化上升为国家战略，推动产业集聚和升级。深层根源：资本主义全球分工体系下，中国凭借廉价劳动力优势成为出口基地。当前外贸增长是量变积累（规模持续扩大）的体现，但也是质变节点（从低端加工向高端制造转型）。未来可能：若劳动力成本持续上升或国际需求萎缩，外贸增速可能放缓，倒逼产业升级或资本外流。"
+      },
+      "dialecticalSummary": "长三角外贸增长是资本积累与劳动剥削的统一：出口扩大带来就业和税收，但工人剩余价值被资本和国际买家分割。矛盾在产业升级中暂时缓和，但劳动力成本上升可能激化劳资冲突，或推动自动化替代。",
+      "timeline": [
+        {
+          "id": "tl-6-1",
+          "time": "2024-01-01T00:00:00Z",
+          "title": "2024年长三角外贸数据发布",
+          "description": "2024年全年，长三角区域进出口总值16.01万亿元，同比增长5.6%，占全国36.5%。",
+          "evidenceRefs": [
+            "ev-6-3"
+          ]
+        },
+        {
+          "id": "tl-6-2",
+          "time": "2025-07-04T00:00:00Z",
+          "title": "长三角外贸累计突破100万亿元",
+          "description": "自2018年一体化上升为国家战略以来，长三角外贸规模累计突破100万亿元，结构优化，新三样出口崛起。",
+          "evidenceRefs": [
+            "ev-6-1"
+          ]
+        },
+        {
+          "id": "tl-6-3",
+          "time": "2026-04-21T00:00:00Z",
+          "title": "2026年一季度长三角外贸创新高",
+          "description": "一季度进出口4.49万亿元，同比增长15.8%，占全国37.9%；出口2.81万亿元，占全国41.1%。",
+          "evidenceRefs": [
+            "ev-6-5",
+            "ev-6-6"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-6-1",
+          "sourceType": "官媒",
+          "sourceName": "央视网",
+          "sourceUrl": "https://news.cctv.com/2025/07/04/ARTIflZgdghrAEJNd7DLg3lU250704.shtml",
+          "content": "长三角外贸规模累计突破100万亿元，新三样出口崛起。",
+          "authenticity": "真实",
+          "aiReason": "央视网是官方媒体，数据来自上海海关，可信度高。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-6-2",
+          "sourceType": "官媒",
+          "sourceName": "人民网",
+          "sourceUrl": "http://theory.people.com.cn/n1/2025/0704/c40531-40514557.html",
+          "content": "光明论坛文章讨论长三角外贸成绩。",
+          "authenticity": "真实",
+          "aiReason": "人民网是官方媒体，文章为评论，数据间接引用。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-6-3",
+          "sourceType": "官媒",
+          "sourceName": "长江经济网",
+          "sourceUrl": "https://yangtze.silkroadinfo.org.cn/2025/0227/c4191a4314385/page.htm",
+          "content": "2024年长三角进出口16.01万亿元，同比增长5.6%，占全国36.5%。",
+          "authenticity": "真实",
+          "aiReason": "数据来自上海海关，来源为官方媒体。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-6-4",
+          "sourceType": "官媒",
+          "sourceName": "第一财经",
+          "sourceUrl": "https://www.yicai.com/news/102775647.html",
+          "content": "前7月长三角进出口9.59万亿元，同比增长5.4%，占全国37.3%。",
+          "authenticity": "真实",
+          "aiReason": "第一财经是正规财经媒体，数据来自上海海关。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-6-5",
+          "sourceType": "官媒",
+          "sourceName": "澎湃新闻",
+          "sourceUrl": "https://m.thepaper.cn/newsDetail_forward_33017891",
+          "content": "2026年一季度长三角出口占全国41.1%，比重提升。",
+          "authenticity": "真实",
+          "aiReason": "澎湃新闻是正规媒体，数据来自海关统计。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-6-6",
+          "sourceType": "官媒",
+          "sourceName": "澎湃新闻",
+          "sourceUrl": "https://m.thepaper.cn/newsDetail_forward_33019209",
+          "content": "2026年一季度长三角进出口4.49万亿元，同比增长15.8%，占全国37.9%。",
+          "authenticity": "真实",
+          "aiReason": "同ev-6-5。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-6-7",
+          "sourceType": "官媒",
+          "sourceName": "解放日报",
+          "sourceUrl": "https://www.jfdaily.com/wx/detail.do?id=839278",
+          "content": "RCEP生效三周年，区域经济高质量发展。",
+          "authenticity": "真实",
+          "aiReason": "解放日报是官方媒体，内容为政策宣传。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-6-8",
+          "sourceType": "官媒",
+          "sourceName": "光明网",
+          "sourceUrl": "https://m.gmw.cn/2026-05/10/content_1304451262.htm",
+          "content": "2026年一季度扬州港风电设备出口增长36%，大宗商品进口增加。",
+          "authenticity": "真实",
+          "aiReason": "光明网是官方媒体，数据具体。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-6-9",
+          "sourceType": "官媒",
+          "sourceName": "光明网",
+          "sourceUrl": "https://m.gmw.cn/2026-04/21/content_1304426651.htm",
+          "content": "苏州、金华等城市外贸增速超20%。",
+          "authenticity": "真实",
+          "aiReason": "数据来自海关，来源可靠。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-6-10",
+          "sourceType": "官媒",
+          "sourceName": "央视网",
+          "sourceUrl": "https://jingji.cctv.com/2025/10/25/ARTIrZEkSZL7rmCuu9DY1uiE251025.shtml",
+          "content": "前三季度长三角进出口12.62万亿元，同比增长6.6%，占全国37.6%。",
+          "authenticity": "真实",
+          "aiReason": "央视网官方数据。",
+          "classBias": "资产阶级立场"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-6-1",
+          "to": "tl-6-2",
+          "type": "因果",
+          "description": "2024年外贸增长为2025年累计突破100万亿元提供了基础，是量变积累。"
+        },
+        {
+          "from": "tl-6-2",
+          "to": "tl-6-3",
+          "type": "关联",
+          "description": "2025年结构优化（新三样崛起）推动了2026年一季度出口占比提升，体现了产业升级趋势。"
+        }
+      ]
+    },
+    {
+      "id": "evt-8",
+      "title": "CBP Directive 3340-049B: Border Search of Electronic Devices",
+      "impactScore": 3,
+      "infoGainScore": 3,
+      "summary": "美国海关与边境保护局（CBP）于2026年1月发布第3340-049B号指令，授权边境官员在无搜查令或具体嫌疑的情况下，对入境旅客的电子设备（包括手机、笔记本电脑、车载信息娱乐系统、无人机等）进行基本和高级搜查。该指令扩大了设备搜查范围，并明确了数据保留和共享程序。",
+      "classAnalysis": {
+        "classNature": "资产阶级国家机器（CBP）通过扩大对电子设备的无证搜查，强化对跨境流动人口（主要是移民工人、国际旅行者、商务人士等）的监控和压制。资本利益集团（如科技公司、边境安全承包商）可能从设备搜查中获取数据或技术合同，而无产阶级（尤其是移民工人、低收入旅客）则面临隐私侵犯、数据泄露、甚至因设备内容被用于驱逐或刑事指控的风险。利益冲突的形态是：资产阶级国家以“国家安全”为名，扩大对无产阶级的监控权力，同时为资本积累（如数据收集、安全产业）服务。",
+        "contradiction": "主要矛盾是资产阶级国家机器（CBP）与跨境流动的无产阶级（包括移民工人、国际旅行者）之间的监控与反监控矛盾。对抗条件：在边境这一特殊空间，国家拥有几乎不受限制的搜查权，而旅客缺乏有效法律救济。矛盾的特殊性在于：电子设备包含大量个人数据，搜查不仅侵犯隐私，还可能用于政治监控（如针对活动人士）或经济歧视（如针对特定国籍）。走向：随着技术发展，搜查范围可能进一步扩大，矛盾可能激化（如引发诉讼、抗议），但也可能通过法律斗争暂时缓和（如法院限制某些搜查）。",
+        "historicalContext": "直接前因：9/11后美国边境安全不断强化，电子设备搜查从个案演变为系统化政策。深层根源：资本主义全球化下，资本需要自由流动，但劳动力流动受到严格管控；国家通过边境监控筛选符合资本需要的劳动力，同时压制潜在反抗。该指令是长期量变（逐年扩大搜查范围）的节点，而非突发质变。后续发展：可能引发更多法律挑战，或推动其他国家效仿类似政策。"
+      },
+      "dialecticalSummary": "核心矛盾是资产阶级国家以安全为名扩大对无产阶级的监控，而无产阶级缺乏有效抵抗手段。矛盾在边境这一特殊空间激化，但可能通过法律斗争暂时缓和。指令是长期量变节点，未来可能引发更多对抗。",
+      "timeline": [
+        {
+          "id": "tl-8-1",
+          "time": "2026-01-01T00:00:00Z",
+          "title": "CBP Directive 3340-049B 生效",
+          "description": "美国海关与边境保护局发布第3340-049B号指令，取代旧版，扩大电子设备搜查范围，包括车载系统、无人机等新设备。",
+          "evidenceRefs": [
+            "ev-8-1",
+            "ev-8-2"
+          ]
+        },
+        {
+          "id": "tl-8-2",
+          "time": "2025-12-27T00:00:00Z",
+          "title": "旧版指令被替换",
+          "description": "移民政策追踪项目记录，CBP发布新指令，区分基本和高级搜查。",
+          "evidenceRefs": [
+            "ev-8-3"
+          ]
+        },
+        {
+          "id": "tl-8-3",
+          "time": "2026-04-28T00:00:00Z",
+          "title": "指令被媒体广泛报道",
+          "description": "多家新闻机构报道该指令，强调无证搜查的扩大。",
+          "evidenceRefs": [
+            "ev-8-7"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "ev-8-1",
+          "sourceType": "官媒",
+          "sourceName": "U.S. Customs and Border Protection",
+          "sourceUrl": "https://www.cbp.gov/document/directives/cbp-directive-no-3340-049b-border-search-electronic-devices",
+          "content": "提供电子设备搜查的指导方针和标准操作程序。",
+          "authenticity": "真实",
+          "aiReason": "官方政府网站，直接发布政策文件，内容与后续报道一致。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-8-2",
+          "sourceType": "官媒",
+          "sourceName": "U.S. Customs and Border Protection (PDF)",
+          "sourceUrl": "https://www.cbp.gov/sites/default/files/2026-01/cbp_directive_3340-049b_jan_2026_508.pdf",
+          "content": "指令全文，2026年1月1日生效。",
+          "authenticity": "真实",
+          "aiReason": "官方PDF文件，直接来自CBP网站。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-8-3",
+          "sourceType": "其他",
+          "sourceName": "Immigration Policy Tracking Project",
+          "sourceUrl": "https://immpolicytracking.org/policies/cbp-issues-new-directive-on-border-search-of-electronic-devices/",
+          "content": "记录旧指令被替换，新指令区分基本和高级搜查。",
+          "authenticity": "真实",
+          "aiReason": "政策追踪项目，内容与官方文件一致。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-8-4",
+          "sourceType": "其他",
+          "sourceName": "Washington State Bar News",
+          "sourceUrl": "https://wabarnews.org/2026/02/16/crossing-over-confidentiality-at-international-borders/",
+          "content": "提及CBP网站上的当前指南。",
+          "authenticity": "真实",
+          "aiReason": "律师协会新闻，引用官方来源。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-8-5",
+          "sourceType": "其他",
+          "sourceName": "Berardi Immigration Law",
+          "sourceUrl": "https://berardiimmigrationlaw.com/what-cbp-can-and-cant-do-with-your-devices-at-the-u-s-border/",
+          "content": "解释CBP可以搜查手机，新指令明确权限。",
+          "authenticity": "真实",
+          "aiReason": "移民律师网站，内容基于官方指令。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-8-6",
+          "sourceType": "其他",
+          "sourceName": "Squared Tech",
+          "sourceUrl": "https://www.squaredtech.co/cbp-border-device-searches-what-you-must-know",
+          "content": "说明指令是故意政策，规定CBP官员的行动。",
+          "authenticity": "真实",
+          "aiReason": "科技网站，内容与官方文件一致。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-8-7",
+          "sourceType": "其他",
+          "sourceName": "VisaHQ News",
+          "sourceUrl": "https://www.visahq.com/news/2026-04-28/us/digital-luggage-cbp-directive-expands-warrant-free-searches-of-phones-and-laptops-at-us-borders/",
+          "content": "报道新指令确认无证搜查。",
+          "authenticity": "真实",
+          "aiReason": "签证服务新闻，内容与官方文件一致。",
+          "classBias": "小资产阶级立场"
+        },
+        {
+          "id": "ev-8-8",
+          "sourceType": "其他",
+          "sourceName": "AOL",
+          "sourceUrl": "https://www.aol.com/articles/5-devices-cbp-search-entering-194700092.html",
+          "content": "列出5种新可搜查设备，包括车载系统。",
+          "authenticity": "真实",
+          "aiReason": "主流媒体，内容与官方文件一致。",
+          "classBias": "资产阶级立场"
+        },
+        {
+          "id": "ev-8-9",
+          "sourceType": "其他",
+          "sourceName": "BGR",
+          "sourceUrl": "https://www.bgr.com/2125507/devices-customs-border-protection-can-search-us/",
+          "content": "列出新增设备，包括闪存盘、SIM卡等。",
+          "authenticity": "真实",
+          "aiReason": "科技媒体，内容与官方文件一致。",
+          "classBias": "待判断"
+        },
+        {
+          "id": "ev-8-10",
+          "sourceType": "官媒",
+          "sourceName": "U.S. Customs and Border Protection",
+          "sourceUrl": "https://www.cbp.gov/travel/cbp-search-authority",
+          "content": "提供CBP搜查权限概述，引用指令。",
+          "authenticity": "真实",
+          "aiReason": "官方政府网站。",
+          "classBias": "资产阶级立场"
+        }
+      ],
+      "edges": [
+        {
+          "from": "tl-8-1",
+          "to": "tl-8-2",
+          "type": "因果",
+          "description": "新指令的生效直接取代了旧指令，扩大了搜查范围。"
+        },
+        {
+          "from": "tl-8-1",
+          "to": "tl-8-3",
+          "type": "关联",
+          "description": "指令生效后，媒体广泛报道，引发公众关注。"
+        }
+      ]
+    }
+  ]
+}

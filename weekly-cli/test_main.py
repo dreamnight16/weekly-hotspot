@@ -116,6 +116,7 @@ def test_main_writes_evidence_report_without_model(tmp_path, monkeypatch, missin
     output_dir = tmp_path / "weekly"
     monkeypatch.setattr(main_module, "DEEPSEEK_API_KEY", "test-key" if missing_sdk else "")
     monkeypatch.setattr(main_module, "BLOG_CONTENT_DIR", output_dir)
+    monkeypatch.setattr(main_module, "WEB_DATA_DIR", output_dir)
     events = [{
         "title": "测试素材",
         "summary": "公开来源摘要",
@@ -160,6 +161,7 @@ def test_evidence_report_keeps_cost_of_completed_model_calls(tmp_path, monkeypat
     import main as main_module
 
     monkeypatch.setattr(main_module, "BLOG_CONTENT_DIR", tmp_path / "weekly")
+    monkeypatch.setattr(main_module, "WEB_DATA_DIR", tmp_path / "weekly")
     main_module._write_evidence_report(
         [{"title": "测试素材"}], False, False, total_cost=0.25,
     )

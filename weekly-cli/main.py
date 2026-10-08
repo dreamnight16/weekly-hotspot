@@ -31,6 +31,7 @@ from config import (
     DEEPSEEK_MODEL_DIALECTICAL,
     DEEPSEEK_MODEL_EMPIRICAL,
     BLOG_CONTENT_DIR,
+    WEB_DATA_DIR,
     setup_logging,
     get_logger,
     RUN_ID,
@@ -382,8 +383,8 @@ def _write_outputs(
 ) -> None:
     """Write the JSON and Markdown forms of an issue."""
     phase_payloads = phase_payloads or {}
-    BLOG_CONTENT_DIR.mkdir(parents=True, exist_ok=True)
-    json_path = BLOG_CONTENT_DIR / f"{issue.id}.json"
+    WEB_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    json_path = WEB_DATA_DIR / f"{issue.id}.json"
     json_payload = {
         "id": issue.id,
         "weekStart": issue.weekStart,
