@@ -48,6 +48,7 @@ def _has_minimal_dialectical_content(unfolding_result: dict) -> bool:
 def adversarial_review(
     client: DeepSeekClient,
     unfolding_result: dict,
+    claims: list | None = None,
 ) -> dict | None:
     """Run Devil's Advocate review against the dialectical unfolding output.
 
@@ -73,6 +74,13 @@ def adversarial_review(
         return None
 
     dialectical_output = format_dialectical_output(unfolding_result)
+
+    # Challenges are bound to enumerated claims so their verdicts can be
+    # turned into concrete edits rather than remaining commentary.
+    if claims:
+        from evidence.claims import render_claims_for_review
+
+        dialectical_output = render_claims_for_review(claims) + "\n\n" + dialectical_output
 
     # Count events in the unfolding result
     events = unfolding_result.get("events", [])

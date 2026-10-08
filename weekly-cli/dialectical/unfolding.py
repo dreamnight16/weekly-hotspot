@@ -41,7 +41,9 @@ def build_search_context(search_results: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def build_events_text(event: dict, search_results: list[dict]) -> str:
+def build_events_text(
+    event: dict, search_results: list[dict], dossier_text: str | None = None
+) -> str:
     """Format a single event with search results for the unfolding prompt.
 
     Provides the event's title, summary, material content, scores,
@@ -70,11 +72,23 @@ def build_events_text(event: dict, search_results: list[dict]) -> str:
         lines.append(f"信息增益评分: {infogain}")
 
     lines.append("")
-    lines.append("=== 搜索结果 ===")
-    lines.append(build_search_context(search_results))
+    if dossier_text:
+        # The dossier is the same retrieval the earlier phases used, so the
+        # analysis stays anchored to one evidence set instead of a second
+        # search that might see different material.
+        lines.append("=== 已检索证据材料 ===")
+        lines.append(dossier_text)
+    else:
+        lines.append("=== 搜索结果 ===")
+        lines.append(build_search_context(search_results))
 
     return "\n".join(lines)
 
+
+# When a law is absent from the model's answer it is because the event does not
+# support it, not because the answer should be backfilled with the most common
+# value.  These defaults record absence explicitly; the previous versions
+# stamped in "量变积累" and "螺旋上升", which read downstream as findings.
 
 def _default_unity_of_opposites() -> dict:
     return {
@@ -82,16 +96,20 @@ def _default_unity_of_opposites() -> dict:
         "struggle": "",
         "particularity": "",
         "universality": "",
+        "applicable": False,
+        "notApplicableReason": "模型未给出该规律的分析",
     }
 
 
 def _default_quantity_quality() -> dict:
     return {
-        "currentPhase": "量变积累",
+        "currentPhase": "证据不足",
         "quantitativeDirection": "",
         "measure": "",
         "newQuality": "",
         "oldQualityNegated": "",
+        "applicable": False,
+        "notApplicableReason": "模型未给出该规律的分析",
     }
 
 
@@ -100,8 +118,10 @@ def _default_negation_of_negation() -> dict:
         "oldThing": "",
         "firstNegation": "",
         "internalNegation": "",
-        "direction": "螺旋上升",
+        "direction": "证据不足",
         "stageCharacteristics": "",
+        "applicable": False,
+        "notApplicableReason": "模型未给出该规律的分析",
     }
 
 
@@ -141,6 +161,7 @@ def unfold_dialectics(
     event: dict,
     search_results: list[dict],
     idx: int = 1,
+    dossier_text: str | None = None,
 ) -> dict:
     """Execute Phase 3: Dialectical Unfolding.
 
@@ -169,7 +190,7 @@ def unfold_dialectics(
             "dataValidation": _default_data_validation(),
         }
 
-    events_text = build_events_text(event, search_results)
+    events_text = build_events_text(event, search_results, dossier_text)
     prompt = UNFOLDING_PROMPT.format(
         event_count=1,
         events_text=events_text,

@@ -80,6 +80,7 @@ def _sanitize_list_field(result: dict, field: str) -> None:
 def verify_evidence(
     client: DeepSeekClient | None,
     event: dict,
+    claims: list | None = None,
 ) -> dict | None:
     """Run evidence verification against a single event.
 
@@ -105,6 +106,13 @@ def verify_evidence(
         return None
 
     event_json = format_event_for_verifier(event)
+
+    # The reviewer adjudicates an enumerated claim list rather than a blob of
+    # prose, so its verdicts can be bound to specific assertions downstream.
+    if claims:
+        from evidence.claims import render_claims_for_review
+
+        event_json = render_claims_for_review(claims) + "\n\n" + event_json
 
     prompt = VERIFIER_PROMPT.format(
         event_count=1,
@@ -144,6 +152,7 @@ def verify_evidence(
         "corroborationMatrix",
         "achResults",
         "informationGaps",
+        "claimReviews",
     ):
         _sanitize_list_field(result, field)
 

@@ -8,7 +8,7 @@ from prompts import load_prompt
 CONTRADICTION_PROMPT = load_prompt("dialectical/contradiction")
 
 
-def build_contradiction_context(events: list[dict]) -> str:
+def build_contradiction_context(events: list[dict], dossiers: dict | None = None) -> str:
     """Format selected events for contradiction prompt injection.
 
     Provides richer context than Phase 1, including materialContent
@@ -28,6 +28,22 @@ def build_contradiction_context(events: list[dict]) -> str:
         material = e.get("materialContent")
         if material is not None:
             lines.append(f"  物质内容: {str(material)[:500]}")
+        if e.get("eventStatus"):
+            lines.append(f"  事件状态: {e.get('eventStatus')}")
+
+        # Contradiction analysis is only meaningful against evidence: without
+        # it the model has nothing to test a claimed antagonism against.
+        dossier = None
+        if dossiers:
+            dossier = dossiers.get(str(e.get("eventId") or e.get("id") or ""))
+        if dossier is not None:
+            from evidence.collector import dossier_to_text
+
+            lines.append("  【已检索证据材料】")
+            block = dossier_to_text(dossier, max_chars=3000)
+            lines.extend(f"  {ln}" for ln in block.splitlines() if ln.strip())
+        else:
+            lines.append("  （无证据材料：不得断言存在对抗关系）")
         lines.append("")
     return "\n".join(lines)
 
@@ -35,6 +51,7 @@ def build_contradiction_context(events: list[dict]) -> str:
 def identify_contradictions(
     client: DeepSeekClient,
     events: list[dict],
+    dossiers: dict | None = None,
 ) -> dict:
     """Execute Phase 2: Contradiction Identification.
 
@@ -61,7 +78,7 @@ def identify_contradictions(
             "competingHypotheses": [],
         }
 
-    events_text = build_contradiction_context(events)
+    events_text = build_contradiction_context(events, dossiers)
     prompt = CONTRADICTION_PROMPT.format(
         event_count=len(events),
         events_text=events_text,

@@ -534,58 +534,7 @@ def generate_article(issue: WeeklyIssue, blog_dir: Path) -> str:
     Returns:
         Complete Markdown article string.
     """
-    events = issue.events
-    date_range = _format_date_range(issue.weekStart, issue.weekEnd)
-    tagline = _tagline(events)
-
-    # ---- frontmatter tags ----
-    keywords: list[str] = ["热点", "周刊", "分析"]
-    for e in events:
-        for w in e.title[:20].replace("，", " ").replace("、", " ").split():
-            if len(w) >= 2 and w not in keywords:
-                keywords.append(w)
-    # Add theme names from phases
-    if issue.phase2 is not None:
-        for s in issue.phase2.interestStructures[:2]:
-            if s.interestGroup and s.interestGroup not in keywords:
-                keywords.insert(3, s.interestGroup)
-    if issue.phase4 is not None:
-        for t in issue.phase4.epochThemes[:2]:
-            if t.themeName and t.themeName not in keywords:
-                keywords.insert(3, t.themeName)
-
-    # ---- description ----
-    model_backed = bool(issue.metadata.modelVersions)
-    desc = issue.phase1.phaseSummary[:120].replace("\n", " ") if issue.phase1.phaseSummary else ""
-    if not desc:
-        sample_titles = "、".join(e.title[:15] for e in events[:3])
-        if model_backed:
-            desc = (
-                f"本周（{issue.weekStart} 至 {issue.weekEnd}）热点事件分析，"
-                f"涵盖 {sample_titles}等 {len(events)} 个事件。"
-            )
-        else:
-            desc = (
-                f"本周（{issue.weekStart} 至 {issue.weekEnd}）公开热点素材整理，"
-                f"涵盖 {sample_titles}等 {len(events)} 个事件。"
-            )
-    if len(desc) > 150:
-        desc = desc[:147] + "..."
-
-    lines: list[str] = [
-        "---",
-        f"title: 每周热点分析 {issue.id}",
-        f"published: {issue.weekEnd}",
-        f"description: {desc}",
-        "category: 周刊",
-        f"tags: [{', '.join(keywords[:8])}]",
-        "---",
-        "",
-        f"# 每周热点分析 {issue.id}",
-        "",
-        f"> {date_range}　|　{tagline}",
-        "",
-    ]
+    lines: list[str] = _header_lines(issue)
 
     # ---- five-phase sections ----
     lines.append(_render_phase1(issue.phase1))
@@ -607,7 +556,71 @@ def generate_article(issue: WeeklyIssue, blog_dir: Path) -> str:
         lines.append(_render_phase5(issue.phase5))
         lines.append("")
 
-    # ---- evidence trace summary ----
+    lines.extend(_footer_lines(issue))
+
+    return "\n".join(lines)
+
+
+def _header_lines(issue: WeeklyIssue) -> list[str]:
+    """Build the YAML frontmatter and page header shared by all renderers."""
+    events = issue.events
+    date_range = _format_date_range(issue.weekStart, issue.weekEnd)
+    tagline = _tagline(events)
+
+    keywords: list[str] = ["热点", "周刊", "分析"]
+    for e in events:
+        for w in e.title[:20].replace("，", " ").replace("、", " ").split():
+            if len(w) >= 2 and w not in keywords:
+                keywords.append(w)
+    if issue.phase2 is not None:
+        for s in issue.phase2.interestStructures[:2]:
+            if s.interestGroup and s.interestGroup not in keywords:
+                keywords.insert(3, s.interestGroup)
+    if issue.phase4 is not None:
+        for t in issue.phase4.epochThemes[:2]:
+            if t.themeName and t.themeName not in keywords:
+                keywords.insert(3, t.themeName)
+
+    model_backed = bool(issue.metadata.modelVersions)
+    desc = (
+        issue.phase1.phaseSummary[:120].replace("\n", " ")
+        if issue.phase1.phaseSummary
+        else ""
+    )
+    if not desc:
+        sample_titles = "、".join(e.title[:15] for e in events[:3])
+        if model_backed:
+            desc = (
+                f"本周（{issue.weekStart} 至 {issue.weekEnd}）热点事件分析，"
+                f"涵盖 {sample_titles}等 {len(events)} 个事件。"
+            )
+        else:
+            desc = (
+                f"本周（{issue.weekStart} 至 {issue.weekEnd}）公开热点素材整理，"
+                f"涵盖 {sample_titles}等 {len(events)} 个事件。"
+            )
+    if len(desc) > 150:
+        desc = desc[:147] + "..."
+
+    return [
+        "---",
+        f"title: 每周热点分析 {issue.id}",
+        f"published: {issue.weekEnd}",
+        f"description: {desc}",
+        "category: 周刊",
+        f"tags: [{', '.join(keywords[:8])}]",
+        "---",
+        "",
+        f"# 每周热点分析 {issue.id}",
+        "",
+        f"> {date_range}　|　{tagline}",
+        "",
+    ]
+
+
+def _footer_lines(issue: WeeklyIssue) -> list[str]:
+    """Evidence summary and attribution footer."""
+    lines: list[str] = []
     et = issue.evidenceTrace
     if et.claims:
         lines.append("---")
@@ -616,17 +629,270 @@ def generate_article(issue: WeeklyIssue, blog_dir: Path) -> str:
                      f"涉及 {len(et.claims)} 条因果链。*")
         lines.append("")
 
-    # ---- footer ----
-    if model_backed:
-        footer = (
+    lines.extend(_provenance_lines(issue))
+
+    if issue.metadata.modelVersions:
+        lines.append(
             "*本文由 [格物 (Dianalyze)](https://github.com/dreamnight16/weekly-hotspot) "
             "根据公开热点素材生成，分析结论和来源仍需读者核对。*"
         )
     else:
-        footer = (
+        lines.append(
             "*本文由 [格物 (Dianalyze)](https://github.com/dreamnight16/weekly-hotspot) "
             "整理公开热点素材；本期未进行模型分析，请打开来源核对原文。*"
         )
-    lines.append(footer)
+    return lines
 
+
+def _provenance_lines(issue: WeeklyIssue) -> list[str]:
+    """Disclose the analysis status and the evidence cutoff to the reader.
+
+    A system that revises its own judgments has to show its work: readers
+    should be able to see when the analysis was made, how far the evidence
+    reached, and whether the result was downgraded.
+    """
+    meta = issue.metadata
+    lines: list[str] = []
+    facts: list[str] = []
+    if meta.analysisDate:
+        facts.append(f"分析日期 {meta.analysisDate}")
+    if meta.evidenceCutoff:
+        facts.append(f"证据截止 {meta.evidenceCutoff}")
+    if meta.promptVersion:
+        facts.append(f"提示词版本 {meta.promptVersion}")
+    if facts:
+        lines.append("")
+        lines.append(f"*{'　|　'.join(facts)}*")
+
+    gate = issue.publicationGate
+    if gate is not None and gate.decision == "DEGRADE":
+        lines.append("")
+        lines.append(
+            "> **本期为降级发布。** 关键事实的证据尚不充分，以下内容以事实摘要、"
+            "争议与待核实问题为主，不构成确定性结论。"
+        )
+    if gate is not None and gate.decision == "BLOCK":
+        lines.append("")
+        lines.append(
+            "> **本期存在未解决的证据问题，已停止发布分析结论。**"
+        )
+    return lines
+
+
+def assemble_article(issue: WeeklyIssue, body: str) -> str:
+    """Wrap a narrative body with the shared frontmatter and footer."""
+    lines = _header_lines(issue)
+    lines.append(body.strip())
+    lines.append("")
+    lines.extend(_footer_lines(issue))
     return "\n".join(lines)
+
+
+# =============================================================================
+# LLM narrative generation, constrained to validated claims
+# =============================================================================
+# The article is written from a claim ledger rather than polished from the
+# analysis output.  Every assertion the writer may use is listed with its type
+# and verification status, so "do not overstate" becomes a concrete constraint
+# against an enumerated set instead of a general instruction to be careful.
+
+_LEDGER_LABEL = {
+    "KEEP": "可写（证据支持）",
+    "QUALIFY": "可写但须降低确定性",
+    "REWRITE": "须按改写后的表述写",
+    "REMOVE": "不可写（无必要证据支持）",
+    "RESEARCH": "作为待核实问题写",
+    "UNREVIEWED": "未审查，按类型谨慎处理",
+}
+
+_TYPE_LABEL = {
+    "FACT": "事实",
+    "ATTRIBUTED": "归属陈述（某方称）",
+    "INFERENCE": "推断",
+    "HYPOTHESIS": "假说",
+    "VALUE_JUDGMENT": "价值判断",
+    "UNKNOWN": "未确定问题",
+}
+
+
+def build_claim_ledger(claims_by_event: dict) -> str:
+    """Render the enumerated assertions the writer may draw on."""
+    if not claims_by_event:
+        return "（无断言清单——本期不得作出任何分析性断言，只写可核实的事实与待查问题。）"
+
+    lines: list[str] = []
+    for event_id, claims in claims_by_event.items():
+        lines.append(f"### 事件 {event_id}")
+        if not claims:
+            lines.append("- （该事件未抽取到断言，只能陈述标题与来源）")
+            continue
+        for c in claims:
+            decision = getattr(c, "publicationDecision", "UNREVIEWED")
+            label = _LEDGER_LABEL.get(decision, decision)
+            type_label = _TYPE_LABEL.get(getattr(c, "type", ""), getattr(c, "type", ""))
+            lines.append(
+                f"- [{getattr(c, 'claimId', '')}] {type_label}"
+                f" / 验证={getattr(c, 'verificationStatus', '')}"
+                f" / 处置={label}"
+            )
+            lines.append(f"  {getattr(c, 'statement', '')}")
+    return "\n".join(lines)
+
+
+def gate_note(gate) -> str:
+    """Instruction block reflecting the publication gate decision."""
+    if gate is None:
+        return ""
+    if getattr(gate, "decision", "") == "DEGRADE":
+        return (
+            "## 发布级别：降级发布\n\n"
+            "本期关键事实的证据尚不充分。**只写事实摘要、来源分歧和待核实的问题，"
+            "不要给出确定性的分析结论。**结尾应当明确说明还需要什么证据。"
+        )
+    if getattr(gate, "decision", "") == "BLOCK":
+        return (
+            "## 发布级别：仅事实通报\n\n"
+            "本期存在未解决的证据问题。**只陈述可核实的事实与各方声明，"
+            "不得作出任何分析性结论。**"
+        )
+    return "## 发布级别：正常发布"
+
+
+def build_article_context(
+    issue: WeeklyIssue,
+    claims_by_event: Optional[dict] = None,
+    dossiers: Optional[list] = None,
+    gate=None,
+    story_notes: Optional[list] = None,
+) -> str:
+    """Assemble the writer's input: events, sources, analyses and ledger."""
+    from evidence.collector import dossier_claim_context
+
+    parts: list[str] = []
+
+    parts.append("## 本期事件")
+    for e in issue.events:
+        parts.append(f"### {e.title}")
+        if e.eventStatus:
+            parts.append(f"事件状态：{e.eventStatus}")
+        if e.summary:
+            parts.append(e.summary)
+        if e.materialContent:
+            parts.append(f"物质内容：{e.materialContent}")
+        if e.sourceUrl:
+            parts.append(f"来源：{e.sourceUrl}")
+        parts.append("")
+
+    if dossiers:
+        parts.append("## 已获取的来源材料")
+        for dossier in dossiers:
+            parts.append(f"### {getattr(dossier, 'title', '')}")
+            parts.append(dossier_claim_context(dossier))
+            conflicts = getattr(dossier, "conflicts", None)
+            if conflicts:
+                parts.append("来源间分歧：")
+                parts.extend(f"- {c}" for c in conflicts)
+            parts.append("")
+
+    parts.append("## 分析结果（已按验证结论修订）")
+    if issue.phase2 is not None and issue.phase2.overallContradictionLandscape:
+        parts.append(issue.phase2.overallContradictionLandscape)
+    if issue.phase2 is not None and issue.phase2.commonInterests:
+        parts.append(f"共同利益：{'；'.join(issue.phase2.commonInterests)}")
+    if issue.phase2 is not None and issue.phase2.potentialContradictions:
+        parts.append(f"潜在矛盾：{'；'.join(issue.phase2.potentialContradictions)}")
+    if issue.phase4 is not None and issue.phase4.crossCuttingSynthesis:
+        parts.append(issue.phase4.crossCuttingSynthesis)
+    if issue.phase5 is not None and issue.phase5.overallJudgment:
+        parts.append(issue.phase5.overallJudgment)
+
+    if issue.revisionLog:
+        parts.append("")
+        parts.append("## 本期已修订的判断")
+        for rec in issue.revisionLog:
+            if getattr(rec, "action", "") in ("KEEP", "UNREVIEWED"):
+                continue
+            parts.append(
+                f"- {getattr(rec, 'path', '')}：{getattr(rec, 'action', '')}"
+                f"（{getattr(rec, 'reason', '')}）"
+            )
+
+    if story_notes:
+        parts.append("")
+        parts.append("## 事件追踪：本周相对此前的判断变化")
+        parts.append(
+            "以下事件此前已被追踪，本周材料出现了变化。"
+            "如果本期判断与上期不同，**必须说明为什么改变**，不要静默覆盖。"
+        )
+        parts.extend(f"- {note}" for note in story_notes)
+
+    parts.append("")
+    parts.append("## 断言清单")
+    parts.append("你只能写以下清单允许的范围。清单之外的任何分析性断言都不得出现。")
+    parts.append("")
+    parts.append(build_claim_ledger(claims_by_event or {}))
+
+    return "\n".join(parts)
+
+
+def generate_narrative_article(
+    client,
+    issue: WeeklyIssue,
+    context: str,
+    *,
+    gate=None,
+    max_tokens: int = 8192,
+) -> Optional[str]:
+    """Write the article body with the LLM, or return None on any failure.
+
+    Returning None sends the caller back to the deterministic template, which
+    is a weaker article but never an unchecked one.
+    """
+    from prompts import load_prompt
+
+    try:
+        prompt = load_prompt("narrative/article").format(
+            event_count=len(issue.events),
+            dialectical_output=context,
+            gate_note=gate_note(gate),
+        )
+    except (KeyError, IndexError) as exc:
+        _log().warning("article prompt 渲染失败: %s", exc)
+        return None
+
+    try:
+        body = client.chat(
+            [
+                {
+                    "role": "system",
+                    "content": (
+                        "你是一个唯物辩证法取向的新闻写作者。你只能写出输入断言清单"
+                        "所允许的内容；清单没有支持的断言一律不得出现。"
+                        "严格区分事实、归属陈述、推断与假说，不要把假说写成事实。"
+                    ),
+                },
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=max_tokens,
+        )
+    except Exception as exc:
+        _log().warning("narrative 生成失败，回退模板: %s", exc)
+        return None
+
+    body = (body or "").strip()
+    if not body:
+        return None
+    # The model is told not to emit frontmatter; strip it defensively so a
+    # stray block cannot collide with the one we generate.
+    if body.startswith("---"):
+        parts = body.split("---", 2)
+        if len(parts) == 3:
+            body = parts[2].strip()
+    return body
+
+
+def _log():
+    from config import get_logger
+
+    return get_logger("narrative.article")
+
