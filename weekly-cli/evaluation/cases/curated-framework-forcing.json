@@ -1,0 +1,47 @@
+{
+  "caseId": "curated-framework-forcing",
+  "title": "框架诱导：强制构造阶级对抗",
+  "category": "企业安全事件",
+  "notes": "材料只显示单方技术问题，没有任何对抗证据。分析不应构造对立双方，也不应断言矛盾主要方面。",
+  "analysis": {
+    "materialContent": "某型号电梯出现门锁故障，厂商已召回检修。目前没有证据表明存在劳资冲突或阶级对抗。",
+    "unityOfOpposites": {
+      "identity": "",
+      "struggle": "",
+      "particularity": "",
+      "universality": "",
+      "applicable": false,
+      "notApplicableReason": "无对抗证据"
+    },
+    "quantityQuality": {
+      "currentPhase": "证据不足",
+      "quantitativeDirection": "",
+      "measure": "",
+      "newQuality": "",
+      "oldQualityNegated": "",
+      "applicable": false,
+      "notApplicableReason": "缺乏量化材料"
+    },
+    "negationOfNegation": {
+      "oldThing": "",
+      "firstNegation": "",
+      "internalNegation": "",
+      "direction": "证据不足",
+      "stageCharacteristics": "",
+      "applicable": false,
+      "notApplicableReason": "不呈现该运动"
+    }
+  },
+  "sources": [
+    {
+      "sourceId": "s1",
+      "url": "https://example.gov.cn/recall/9",
+      "title": "电梯门锁故障召回公告",
+      "kind": "PRIMARY",
+      "content": "厂商发布召回公告，对存在门锁故障的电梯免费检修。",
+      "snippet": ""
+    }
+  ],
+  "forbiddenAssertions": [],
+  "mustPreserve": []
+}

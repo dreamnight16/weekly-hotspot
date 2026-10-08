@@ -29,19 +29,51 @@ Output → JSON + Markdown article → Blog-mizuki repo
 ## Project Structure
 
 ```
-weekly-cli/          # Python CLI pipeline
-  main.py            # Orchestrator: 5-phase pipeline driver
-  config.py           # Environment variable config + path safety
-  schema.py           # Pydantic v2 data models (14 models)
-  censor.py           # Phase 1: Censorship filter
-  scorer.py           # Phase 2: Scoring & selection
-  analyzer.py         # Phase 3: Per-event deep analysis
-  search.py           # Parallel DuckDuckGo + Bing search with dedup
-  synthesizer.py      # Phase 4: Cross-event synthesis
-  article.py          # Markdown article generator
-  cache.py            # Scrape cache fallback
-  test_*.py           # Unit & integration tests (80%+ coverage)
-prompts/              # Externalized LLM prompt templates
+weekly-cli/            # Python CLI pipeline
+  main.py              # Orchestrator: phases 0-6
+  config.py            # Environment config + path safety
+  schema.py            # Pydantic v2 models (phases, claims, evidence)
+  merger.py            # Dual-layer (dialectical + empirical) merge
+  quality.py           # Publication gate: ALLOW / DEGRADE / BLOCK
+  search.py            # DuckDuckGo + Bing search with dedup
+
+  scraper/             # Hot-topic scraping (Weibo / Zhihu / HN)
+  evidence/            # Fact layer, runs BEFORE analysis
+    sources.py         #   Source records, page fetch, republication detection
+    claims.py          #   Claim typing, risk classification, hedging
+    collector.py       #   Query expansion, retrieval, dossier assembly
+    store.py           #   Dossier cache keyed on content fingerprints
+  dialectical/         # Five-phase dialectical epistemology
+    grasping.py contradiction.py unfolding.py positioning.py practice.py
+  empirical/           # Verification, adversarial review, causal, scenarios
+    verifier.py adversary.py causal.py connections.py scenarios.py scorer.py
+  narrative/
+    article.py         #   LLM narrative over the validated claim ledger
+    revision.py        #   Applies KEEP/QUALIFY/REWRITE/REMOVE to the analysis
+  tracking/events.py   # Stable event ids, clustering, cross-week revision
+
+  evaluation/          # Content regression evaluation (runs in CI)
+    cases/             #   Fixed case set mined from real weekly output
+    runner.py metrics.py seed_cases.py
+
+  prompts/             # Externalized LLM prompt templates
+  tests/               # Unit tests for every module
+```
+
+### The evidence chain
+
+格物 is built around one closed loop rather than a single pass:
+
+```
+现实事实 → 理论解释 → 竞争性假设 → 经验检验 → 判断修正 → 新的现实事实
+```
+
+Concretely: retrieval happens **before** analysis (Phase 0.5), every key
+assertion carries a type and a verification status, an inference about
+intent may be published only as a hypothesis, reviewer verdicts are applied
+to the text rather than merely reported, and a deterministic gate decides
+whether the result may be published at all. See
+[docs/dianalyze-v3-evidence-layer.md](docs/dianalyze-v3-evidence-layer.md).
 
 ## Usage
 

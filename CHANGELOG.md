@@ -7,7 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Added — 格物 v3 证据层与分析闭环
+
+- **证据前置**：新增 `evidence/` 模块（sources / claims / collector / store）。
+  Phase 0.5 在任何分析之前为每个候选事件建立事实档案：多维查询扩展、正文抓取、
+  来源指纹、转载识别。分析阶段改为读取证据档案，而非标题与热搜排名。
+- **断言类型化**：`FACT` / `ATTRIBUTED` / `INFERENCE` / `HYPOTHESIS` /
+  `VALUE_JUDGMENT` / `UNKNOWN`，配合 `UNVERIFIED` / `SINGLE_SOURCE` /
+  `CORROBORATED` / `CONTRADICTED` 验证状态。
+- **确定性发布门禁**：`publication_gate()` 返回 ALLOW / DEGRADE / BLOCK，
+  检查悬空证据引用、未修正的高风险断言与证据充分性。另有正文级安全网
+  `sanitize_narrative()`。
+- **验证闭环**：verifier 与 adversary 改为输出结构化处置
+  （`KEEP`/`QUALIFY`/`REWRITE`/`REMOVE`/`RESEARCH`），
+  `narrative/revision.py` 将其确定性地应用到分析文本，最多两轮。
+- **事件追踪**：`tracking/events.py` 提供稳定 `eventId`、事件聚类、
+  跨周状态（新发生/持续发展/出现反转/基本结束/待观察）与判断修订记录。
+- **内容回归评测**：`evaluation/` 含 66 个案例（62 个取自历史真实产出）
+  与五项指标，已接入 CI。
+
+### Changed
+
+- 文章生成改为由**已验证断言清单**驱动的 LLM 叙事，输入为断言账本而非原始分析输出；
+  生成后经 `scan_text_risk` 复核，异常时回退模板渲染。
+- `phase3` 不再硬编码为 `None`。此前 Phase 3 的全部成果（含对抗审查）
+  从未进入 Markdown 文章。
+- 三大规律可按 `applicable=false` 省略；`currentPhase` 与 `direction`
+  新增 `证据不足` 取值。
+- 矛盾分析新增 `principalContradictionUncertain`、`potentialContradictions`、
+  `commonInterests`，利益结构新增 `relationshipType`（现实对抗/潜在差异/共同利益）。
+- `SourceGrade` 缺省值由 `C3` 改为 `UNVERIFIED/6`：未评估不再伪装成已评估。
+- `_fuzzy_fix_enum` 改为大小写不敏感。
+- 事件聚类在抓取阶段完成，`sourcePlatform` 随抓取结果透传。
+
+### Fixed
+
+- 对抗审查结论不再被丢弃：`requiredCorrection` 类的意见现在会真正改写正文。
+- 数值分歧检测改为在剥离数字后比较句子，"30% vs 70%" 一类冲突可被识别。
+
+### Added — 格物 v2
 
 - 格物 v2 五阶段辩证认识运动 pipeline: Phase 1 现象把握 (phenomenon grasping), Phase 2 矛盾识别 (contradiction identification), Phase 3 辩证展开 (dialectical unfolding) with adversarial review, Phase 4 历史定位 (historical positioning) with cross-event synthesis, Phase 5 实践导向 (practice orientation) — judgment, scenarios, signals, calibration
 - Empirical layer: verifier, scorer, and quantitative modules, causal loop diagrams, hidden connections, and scenario planning

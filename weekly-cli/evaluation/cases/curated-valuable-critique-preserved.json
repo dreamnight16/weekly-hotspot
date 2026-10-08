@@ -1,0 +1,24 @@
+{
+  "caseId": "curated-valuable-critique-preserved",
+  "title": "过度保守检查：合理批判不能被审查掉",
+  "category": "劳动争议",
+  "notes": "有来源支持的批判性判断必须保留，门禁不能因为它是批判性的就删除它。",
+  "analysis": {
+    "materialContent": "公司通过劳务派遣降低用工成本，派遣工与正式工从事相同工作但社保缴纳基数不同。"
+  },
+  "sources": [
+    {
+      "sourceId": "s1",
+      "url": "https://example.org/labor/1",
+      "title": "劳务派遣用工调查",
+      "kind": "INDEPENDENT",
+      "content": "调查显示，公司通过劳务派遣降低用工成本，派遣工与正式工从事相同工作但社保缴纳基数不同。",
+      "snippet": ""
+    }
+  ],
+  "forbiddenAssertions": [],
+  "mustPreserve": [
+    "劳务派遣",
+    "社保缴纳基数"
+  ]
+}

@@ -24,3 +24,8 @@ jobs:
         run: uv run --with bandit bandit -r weekly-cli/ -ll
       - name: Run tests
         run: uv run pytest weekly-cli/ -v --cov=weekly-cli --cov-report=term-missing --cov-fail-under=80 -m "not integration"
+      # Unit coverage says the code does what it was written to do. This says
+      # the *output* is still grounded: no unfounded motive attribution, no
+      # assertion published without evidence, no good analysis lost to the gate.
+      - name: Content regression evaluation
+        run: uv run python weekly-cli/evaluation/runner.py

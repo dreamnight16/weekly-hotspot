@@ -50,6 +50,9 @@ def scrape_all() -> list[dict]:
             "title": t.title,
             "summary": f"{t.summary}\n来源: {t.url}",
             "sourceUrl": t.url,
+            # Carried through so event tracking can record which platform an
+            # observation came from; dropped here it is unrecoverable later.
+            "sourcePlatform": getattr(t, "source", ""),
         }
         for t in deduped
     ]
