@@ -34,7 +34,7 @@ for (const [path, mod] of Object.entries(files)) {
 weeks.sort((a, b) => b.id.localeCompare(a.id));
 
 const totalEvents = weeks.reduce((n, w) => n + (w.data.events?.length ?? 0), 0);
-const blogPostUrl = (id: string) => `https://www.dreamnight.net.cn/posts/${id.toLowerCase()}/`;
+const blogPostUrl = (id: string) => `https://blog.dreamnight.net.cn/posts/${id.toLowerCase()}/`;
 ---
 
 <BaseLayout title="格物 Dianalyze — 每周热点辩证分析">
