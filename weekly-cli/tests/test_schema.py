@@ -23,7 +23,14 @@ class TestSourceGrade:
 
     def test_invalid_reliability_defaults(self):
         sg = SourceGrade(reliability="X", credibility=3, rationale="test")
-        assert sg.reliability in ("A", "B", "C", "D", "E", "F")  # sanitized
+        # Unrecognised grades collapse to UNVERIFIED rather than to a middle
+        # grade the pipeline never actually assessed.
+        assert sg.reliability == "UNVERIFIED"
+
+    def test_absent_grade_is_unverified_not_middle(self):
+        sg = SourceGrade()
+        assert sg.reliability == "UNVERIFIED"
+        assert sg.credibility == 6  # Admiralty 6 == cannot be corroborated
 
     def test_credibility_clamped(self):
         sg = SourceGrade(reliability="B", credibility=99, rationale="test")

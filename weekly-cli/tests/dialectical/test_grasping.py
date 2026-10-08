@@ -21,12 +21,38 @@ class TestBuildEventsText:
 
     def test_truncates_long_summaries(self):
         events = [
-            {"title": "Event", "summary": "X" * 300},
+            {"title": "Event", "summary": "X" * 900},
         ]
         text = build_events_text(events)
         assert "Event" in text
-        # Summary should be truncated to 200 chars
-        assert len(text.split("\n")[1].strip()) <= 200
+        # Summary is capped at 400 chars; the evidence block, not the summary,
+        # is now where the substantive material comes from.
+        assert len(text.split("\n")[1].strip()) <= 410
+
+    def test_includes_dossier_evidence(self):
+        """A dossier, when present, is rendered into the prompt."""
+        from schema import EvidenceDossier, SourceRecord
+
+        dossier = EvidenceDossier(
+            eventId="evt-1",
+            title="事件A",
+            sources=[
+                SourceRecord(
+                    sourceId="s1", kind="PRIMARY", title="官方通报",
+                    content="监管部门发布了通报。", url="https://gov.cn/a",
+                )
+            ],
+        )
+        events = [{"title": "事件A", "summary": "概述", "eventId": "evt-1"}]
+        text = build_events_text(events, {"evt-1": dossier})
+        assert "官方通报" in text
+        assert "原始来源" in text
+
+    def test_marks_missing_evidence_explicitly(self):
+        """Without a dossier the prompt must say so rather than stay silent."""
+        events = [{"title": "事件A", "summary": "概述", "eventId": "evt-1"}]
+        text = build_events_text(events, {})
+        assert "未检索到证据材料" in text
 
     def test_handles_missing_summary(self):
         events = [
@@ -68,7 +94,9 @@ class TestGraspPhenomena:
         assert len(result["selectedEvents"]) == 2
         # First event: defaults applied
         assert result["selectedEvents"][0]["id"] == "evt-1"
-        assert result["selectedEvents"][0]["sourceGrade"]["reliability"] == "C"
+        # A source we never retrieved is ungraded, not "C, basic reliability".
+        assert result["selectedEvents"][0]["sourceGrade"]["reliability"] == "UNVERIFIED"
+        assert result["selectedEvents"][0]["sourceGrade"]["credibility"] == 6
         # Second event: original values preserved
         assert result["selectedEvents"][1]["id"] == "custom-id"
         assert result["selectedEvents"][1]["sourceGrade"]["reliability"] == "A"

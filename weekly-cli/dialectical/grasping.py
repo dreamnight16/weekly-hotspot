@@ -8,20 +8,47 @@ from prompts import load_prompt
 GRASPING_PROMPT = load_prompt("dialectical/grasping")
 
 
-def build_events_text(events: list[dict]) -> str:
-    """Format raw events for prompt injection."""
+def build_events_text(events: list[dict], dossiers: dict | None = None) -> str:
+    """Format events plus their retrieved evidence for prompt injection.
+
+    The evidence block is the point: without it this stage sees a headline and
+    a heat ranking, and any "material content" it produces is invention.
+    """
+    from evidence.collector import dossier_to_text
+
     lines = []
     for i, e in enumerate(events):
         lines.append(f"[{i+1}] {e.get('title', '(无标题)')}")
         summary = e.get("summary")
         if summary is not None:
-            lines.append(f"    {str(summary)[:200]}")
+            lines.append(f"    概述: {str(summary)[:400]}")
+        if e.get("eventStatus"):
+            lines.append(f"    事件状态: {e.get('eventStatus')}")
+        aliases = e.get("topicAliases") or []
+        if len(aliases) > 1:
+            lines.append(f"    同一事件的其他标题: {'；'.join(aliases[1:4])}")
+
+        dossier = _lookup_dossier(e, dossiers)
+        if dossier is not None:
+            lines.append("    【已检索证据材料】")
+            block = dossier_to_text(dossier)
+            lines.extend(f"    {ln}" for ln in block.splitlines() if ln.strip())
+        else:
+            lines.append("    （未检索到证据材料——只能依据标题做最小判断，必须标注证据不足）")
     return "\n".join(lines)
+
+
+def _lookup_dossier(event: dict, dossiers: dict | None):
+    if not dossiers:
+        return None
+    key = str(event.get("eventId") or event.get("id") or "")
+    return dossiers.get(key)
 
 
 def grasp_phenomena(
     client: DeepSeekClient,
     events: list[dict],
+    dossiers: dict | None = None,
 ) -> dict:
     """Execute Phase 1: Phenomenon Grasping.
 
@@ -37,7 +64,7 @@ def grasp_phenomena(
             "sourceQualityReport": "无事件可供分析",
         }
 
-    events_text = build_events_text(events)
+    events_text = build_events_text(events, dossiers)
     prompt = GRASPING_PROMPT.format(
         event_count=len(events),
         events_text=events_text,
@@ -77,10 +104,13 @@ def grasp_phenomena(
         raw_id = sanitized_e.get("id", f"evt-{i+1}")
         sanitized_e["id"] = str(raw_id) if not isinstance(raw_id, str) else raw_id
         if "sourceGrade" not in sanitized_e:
+            # Never invent a grade.  A source we did not retrieve is not "C3,
+            # basic reliability, possibly true" — it is ungraded.  Defaulting
+            # to a middle grade made an absent assessment look like a made one.
             sanitized_e["sourceGrade"] = {
-                "reliability": "C",
-                "credibility": 3,
-                "rationale": "未提供来源评估",
+                "reliability": "UNVERIFIED",
+                "credibility": 6,
+                "rationale": "未检索到来源，未作可靠性评定",
             }
         sanitized.append(sanitized_e)
     result = {**result, "selectedEvents": sanitized}

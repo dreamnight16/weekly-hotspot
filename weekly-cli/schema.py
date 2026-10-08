@@ -74,9 +74,16 @@ def _fuzzy_fix_enum(
         return v
     if v in fixups:
         return fixups[v]
+    # Case-insensitive exact match: models routinely emit "hypothesis" for
+    # HYPOTHESIS, and rejecting that on capitalisation would throw away a
+    # correct answer and substitute a wrong one.
+    upper = v.upper()
+    for valid in valid_values:
+        if valid.upper() == upper:
+            return valid
     # Substring match: if the valid value appears anywhere in the AI output
     for valid in sorted(valid_values, key=len, reverse=True):
-        if valid in v:
+        if valid.upper() in upper:
             _logger.warning(
                 "  [sanitize] enum fixup: %r -> %r (substring match)", v, valid
             )
@@ -113,7 +120,16 @@ class CensoredEvent(BaseModel):
 # Phase 1: Phenomenon Grasping (现象把握) - Empirical models
 # =============================================================================
 
-_RELIABILITY_VALUES: frozenset[str] = frozenset({"A", "B", "C", "D", "E", "F"})
+# "UNVERIFIED" is not an Admiralty grade.  It is the *absence* of one: a
+# source we never obtained cannot be graded C3 (basic reliability, possibly
+# true) because that reads as an assessment we never made.  Grade absence
+# explicitly instead of defaulting to a plausible-looking middle grade.
+UNVERIFIED_RELIABILITY = "UNVERIFIED"
+UNVERIFIED_CREDIBILITY = 6  # Admiralty 6 == "cannot be corroborated"
+
+_RELIABILITY_VALUES: frozenset[str] = frozenset(
+    {"A", "B", "C", "D", "E", "F", UNVERIFIED_RELIABILITY}
+)
 
 
 class SourceGrade(BaseModel):
@@ -124,8 +140,8 @@ class SourceGrade(BaseModel):
     rationale: Free-text explanation of the assessment.
     """
 
-    reliability: str = Field(default="C")
-    credibility: int = Field(default=3, ge=1, le=6)
+    reliability: str = Field(default=UNVERIFIED_RELIABILITY)
+    credibility: int = Field(default=UNVERIFIED_CREDIBILITY, ge=1, le=6)
     rationale: str = ""
 
     @model_validator(mode="before")
@@ -133,13 +149,14 @@ class SourceGrade(BaseModel):
     def _sanitize(cls, data: Any) -> Any:
         if not isinstance(data, dict):
             return data
-        # Fuzzy-fix reliability enum
+        # Fuzzy-fix reliability enum.  Absent or unrecognised grades collapse
+        # to UNVERIFIED rather than to a middle grade we never assessed.
         if "reliability" in data:
             data["reliability"] = _fuzzy_fix_enum(
-                str(data.get("reliability", "C")),
+                str(data.get("reliability", UNVERIFIED_RELIABILITY)),
                 _RELIABILITY_VALUES,
                 _RELIABILITY_FIXUPS,
-                "C",
+                UNVERIFIED_RELIABILITY,
             )
         # Clamp and coerce credibility to int (LLM often returns floats)
         if "credibility" in data and isinstance(data["credibility"], (int, float)):
@@ -178,6 +195,16 @@ class SelectedEvent(BaseModel):
     materialContent: str = ""
     isDirectExpression: bool = False
     sourceGrade: Optional[SourceGrade] = None
+    # ---- event identity (additive; absent on pre-v3 payloads) ----
+    # A hot topic is a headline, an event is a thing that happened.  The same
+    # event surfaces under different titles on different platforms, so it
+    # carries a title-independent stable id plus its observation window.
+    eventId: Optional[str] = None
+    topicAliases: list[str] = Field(default_factory=list)
+    sourcePlatform: Optional[str] = None
+    firstSeenAt: Optional[str] = None
+    lastSeenAt: Optional[str] = None
+    eventStatus: Optional[str] = None
 
 
 class ExcludedEvent(BaseModel):
@@ -202,6 +229,10 @@ class InterestStructure(BaseModel):
     expressionForm: str = ""
     intensity: int = Field(default=3, ge=1, le=5)
     relatedEventIds: list[str] = Field(default_factory=list)
+    # Structural interest is not the same as observed conduct.  A firm having
+    # an incentive to cut costs does not establish that it did so here.
+    relationshipType: str = "现实对抗"  # 现实对抗 | 潜在差异 | 共同利益
+    evidenced: bool = False
 
 
 class ClassPosition(BaseModel):
@@ -268,18 +299,29 @@ class CompetingHypothesis(BaseModel):
 # Phase 3: Dialectical Unfolding (辩证展开) - Dialectical models
 # =============================================================================
 
+# "证据不足" is a first-class answer, not a failure to answer.  Without it the
+# schema forces a stage judgement on events whose material cannot support one.
+INSUFFICIENT = "证据不足"
+
 _CURRENT_PHASE_VALUES: frozenset[str] = frozenset(
-    {"量变积累", "质的飞跃", "量变中的局部质变"}
+    {"量变积累", "质的飞跃", "量变中的局部质变", INSUFFICIENT}
 )
 
 
 class UnityOfOpposites(BaseModel):
-    """Unity of opposites analysis for a contradiction."""
+    """Unity of opposites analysis for a contradiction.
+
+    `applicable=False` means this law does not usefully explain the event.
+    A reliability-engineering failure is better served by engineering analysis
+    than by a forced account of identity and struggle.
+    """
 
     identity: str = ""
     struggle: str = ""
     particularity: str = ""
     universality: str = ""
+    applicable: bool = True
+    notApplicableReason: str = ""
 
 
 class QuantityQuality(BaseModel):
@@ -290,6 +332,8 @@ class QuantityQuality(BaseModel):
     measure: str = ""
     newQuality: Optional[str] = None
     oldQualityNegated: str = ""
+    applicable: bool = True
+    notApplicableReason: str = ""
 
     @model_validator(mode="before")
     @classmethod
@@ -306,7 +350,9 @@ class QuantityQuality(BaseModel):
         return data
 
 
-_DIRECTION_VALUES: frozenset[str] = frozenset({"螺旋上升", "暂时倒退", "停滞"})
+_DIRECTION_VALUES: frozenset[str] = frozenset(
+    {"螺旋上升", "暂时倒退", "停滞", INSUFFICIENT}
+)
 
 
 class NegationOfNegation(BaseModel):
@@ -317,6 +363,8 @@ class NegationOfNegation(BaseModel):
     internalNegation: str = ""
     direction: str = Field(default="螺旋上升")
     stageCharacteristics: str = ""
+    applicable: bool = True
+    notApplicableReason: str = ""
 
     @model_validator(mode="before")
     @classmethod
@@ -584,6 +632,12 @@ class ContradictionIdentification(BaseModel):
     classPositions: list[ClassPosition] = Field(default_factory=list)
     nineDimScores: Optional[NineDimScores] = None
     competingHypotheses: list[CompetingHypothesis] = Field(default_factory=list)
+    # A principal contradiction is a finding, not a required field.  When the
+    # evidence does not identify one, saying so is the correct output.
+    principalContradiction: str = ""
+    principalContradictionUncertain: bool = False
+    potentialContradictions: list[str] = Field(default_factory=list)
+    commonInterests: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _filter_empty_refs(self) -> Self:
@@ -673,6 +727,238 @@ class PracticeOrientation(BaseModel):
 
 
 # =============================================================================
+# Evidence layer: claim typing, source records, dossiers
+# =============================================================================
+# The governing rule of this layer:
+#
+#   A source proves only the proposition it actually supports.
+#
+# A page being *related to* an event does not license every downstream
+# inference drawn from that event.  So every key judgment carries an explicit
+# type and an explicit verification status rather than silently inheriting the
+# confidence of the material next to it.  In particular, an inference about
+# someone's motive never inherits the confidence of the underlying fact that
+# the incentive exists.
+
+CLAIM_TYPES: frozenset[str] = frozenset(
+    {
+        "FACT",            # verifiable occurrence ("the company published X")
+        "ATTRIBUTED",      # a statement with a named speaker ("the company says X")
+        "INFERENCE",       # derived from facts, not itself reported
+        "HYPOTHESIS",      # an explanation still awaiting test
+        "VALUE_JUDGMENT",  # a normative position
+        "UNKNOWN",         # currently undecidable
+    }
+)
+
+VERIFICATION_STATUSES: frozenset[str] = frozenset(
+    {"UNVERIFIED", "SINGLE_SOURCE", "CORROBORATED", "CONTRADICTED"}
+)
+
+PUBLICATION_DECISIONS: frozenset[str] = frozenset(
+    {"KEEP", "QUALIFY", "REWRITE", "REMOVE", "RESEARCH", "UNREVIEWED"}
+)
+
+SOURCE_KINDS: frozenset[str] = frozenset(
+    {
+        "PRIMARY",      # the origin: announcement, filing, court doc, dataset
+        "INDEPENDENT",  # original reporting by a party with no stake in the claim
+        "REPUBLISHED",  # carrying someone else's report
+        "UNKNOWN",
+    }
+)
+
+EVENT_STATUSES: frozenset[str] = frozenset(
+    {"新发生", "持续发展", "出现反转", "基本结束", "待观察"}
+)
+
+# Risk classes that demand a higher evidence bar before publication.  Claims
+# in these classes are the ones that cause real harm when wrong: they assert
+# what someone intended, what is illegal, or what caused what.
+RISK_LEVELS: frozenset[str] = frozenset({"low", "medium", "high"})
+HIGH_RISK_TYPES: frozenset[str] = frozenset({"HYPOTHESIS", "INFERENCE"})
+
+
+class SourceRecord(BaseModel):
+    """A captured source with provenance and a content fingerprint.
+
+    `kind` records whether this is where the information originated or where
+    it was merely repeated.  Five outlets carrying one announcement are five
+    `REPUBLISHED` records, not five independent witnesses.
+    """
+
+    sourceId: str = ""
+    url: str = ""
+    title: str = ""
+    publisher: str = ""
+    publishedAt: Optional[str] = None
+    retrievedAt: str = ""
+    snippet: str = ""
+    content: str = ""
+    # Fingerprint of the retrieved body, so later runs can detect that a page
+    # changed under us rather than silently re-reading it as the same source.
+    contentFingerprint: str = ""
+    kind: str = "UNKNOWN"
+    reliability: str = UNVERIFIED_RELIABILITY
+    credibility: int = UNVERIFIED_CREDIBILITY
+    fetchStatus: str = "snippet-only"
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if "kind" in data:
+            data["kind"] = _fuzzy_fix_enum(
+                str(data.get("kind", "UNKNOWN")), SOURCE_KINDS, {}, "UNKNOWN",
+            )
+        if "reliability" in data:
+            data["reliability"] = _fuzzy_fix_enum(
+                str(data.get("reliability", UNVERIFIED_RELIABILITY)),
+                _RELIABILITY_VALUES,
+                _RELIABILITY_FIXUPS,
+                UNVERIFIED_RELIABILITY,
+            )
+        return data
+
+
+class ClaimRecord(BaseModel):
+    """A single assertion with its type, evidence, and publish decision.
+
+    `path` locates the assertion inside the analysis tree (for example
+    `events[0].materialContent`) so a revision directive can rewrite or
+    delete exactly that sentence instead of vaguely criticising it.
+    """
+
+    claimId: str = ""
+    eventId: str = ""
+    statement: str = ""
+    type: str = "UNKNOWN"
+    path: str = ""
+    evidenceIds: list[str] = Field(default_factory=list)
+    assumptions: list[str] = Field(default_factory=list)
+    verificationStatus: str = "UNVERIFIED"
+    publicationDecision: str = "UNREVIEWED"
+    riskLevel: str = "low"
+    reason: str = ""
+    # Required for VALUE_JUDGMENT: the norm the judgment appeals to, so it is
+    # not smuggled in as though it were a plain factual observation.
+    valuePrinciple: str = ""
+    revisedStatement: Optional[str] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if "type" in data:
+            data["type"] = _fuzzy_fix_enum(
+                str(data.get("type", "UNKNOWN")), CLAIM_TYPES, {}, "UNKNOWN",
+            )
+        if "verificationStatus" in data:
+            data["verificationStatus"] = _fuzzy_fix_enum(
+                str(data.get("verificationStatus", "UNVERIFIED")),
+                VERIFICATION_STATUSES, {}, "UNVERIFIED",
+            )
+        if "publicationDecision" in data:
+            data["publicationDecision"] = _fuzzy_fix_enum(
+                str(data.get("publicationDecision", "UNREVIEWED")),
+                PUBLICATION_DECISIONS, {}, "UNREVIEWED",
+            )
+        if "riskLevel" in data:
+            data["riskLevel"] = _fuzzy_fix_enum(
+                str(data.get("riskLevel", "low")), RISK_LEVELS, {}, "low",
+            )
+        return data
+
+    @property
+    def publishable(self) -> bool:
+        """True when this claim may appear in the published article as-is."""
+        return self.publicationDecision in ("KEEP",)
+
+
+class TimelineEntry(BaseModel):
+    """One dated step in an event's development."""
+
+    occurredAt: str = ""
+    description: str = ""
+    sourceIds: list[str] = Field(default_factory=list)
+
+
+class EvidenceDossier(BaseModel):
+    """The fact file for one event, assembled *before* deep analysis.
+
+    This is the object the dialectical phases read from.  It exists so the
+    analysis starts from retrieved material rather than from a headline and a
+    heat ranking.
+    """
+
+    eventId: str = ""
+    title: str = ""
+    queries: list[str] = Field(default_factory=list)
+    sources: list[SourceRecord] = Field(default_factory=list)
+    claims: list[ClaimRecord] = Field(default_factory=list)
+    # Facts on which sources actively disagree.
+    conflicts: list[str] = Field(default_factory=list)
+    # Key questions the retrieved material does not answer.
+    unknowns: list[str] = Field(default_factory=list)
+    timeline: list[TimelineEntry] = Field(default_factory=list)
+    retrievedAt: str = ""
+    searchFailed: bool = False
+
+    def source_by_id(self, source_id: str) -> Optional[SourceRecord]:
+        for s in self.sources:
+            if s.sourceId == source_id:
+                return s
+        return None
+
+    @property
+    def independent_count(self) -> int:
+        """Number of distinct-origin sources (republications excluded)."""
+        return sum(1 for s in self.sources if s.kind in ("PRIMARY", "INDEPENDENT"))
+
+    @property
+    def has_primary(self) -> bool:
+        return any(s.kind == "PRIMARY" for s in self.sources)
+
+
+class RevisionRecord(BaseModel):
+    """One applied revision, kept so a judgment change is auditable."""
+
+    claimId: str = ""
+    eventId: str = ""
+    path: str = ""
+    action: str = "UNREVIEWED"
+    before: str = ""
+    after: str = ""
+    reason: str = ""
+    round: int = 1
+
+
+class PublicationGate(BaseModel):
+    """Deterministic publish/no-publish decision with its reasons."""
+
+    decision: str = "ALLOW"  # ALLOW | DEGRADE | BLOCK
+    reasons: list[str] = Field(default_factory=list)
+    blockingClaims: list[str] = Field(default_factory=list)
+    degradedClaims: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _sanitize(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if "decision" in data:
+            data["decision"] = _fuzzy_fix_enum(
+                str(data.get("decision", "ALLOW")),
+                frozenset({"ALLOW", "DEGRADE", "BLOCK"}),
+                {},
+                "ALLOW",
+            )
+        return data
+
+
+# =============================================================================
 # Evidence trace and metadata models
 # =============================================================================
 
@@ -682,8 +968,8 @@ class TracedSource(BaseModel):
 
     sourceName: str = ""
     sourceUrl: str = ""
-    reliability: str = Field(default="C")
-    credibility: int = Field(default=3, ge=1, le=6)
+    reliability: str = Field(default=UNVERIFIED_RELIABILITY)
+    credibility: int = Field(default=UNVERIFIED_CREDIBILITY, ge=1, le=6)
 
     @model_validator(mode="before")
     @classmethod
@@ -692,10 +978,10 @@ class TracedSource(BaseModel):
             return data
         if "reliability" in data:
             data["reliability"] = _fuzzy_fix_enum(
-                str(data.get("reliability", "C")),
+                str(data.get("reliability", UNVERIFIED_RELIABILITY)),
                 _RELIABILITY_VALUES,
                 _RELIABILITY_FIXUPS,
-                "C",
+                UNVERIFIED_RELIABILITY,
             )
         if "credibility" in data and isinstance(data["credibility"], (int, float)):
             val = int(data["credibility"])
@@ -750,6 +1036,11 @@ class IssueMetadata(BaseModel):
     totalApiCost: float = 0.0
     runDuration: float = 0.0
     runId: str = ""
+    # ---- reproducibility trail (additive) ----
+    analysisDate: str = ""       # when this run executed
+    evidenceCutoff: str = ""     # latest retrieval timestamp feeding the analysis
+    promptVersion: str = ""      # hash of the prompt set used
+    pipelineVersion: str = "v3"
 
 
 # =============================================================================
@@ -776,6 +1067,10 @@ class WeeklyIssue(BaseModel):
     phase5: Optional[PracticeOrientation] = None
     evidenceTrace: EvidenceTrace = Field(default_factory=EvidenceTrace)
     metadata: IssueMetadata = Field(default_factory=IssueMetadata)
+    # ---- v3 evidence layer (additive; empty on pre-v3 payloads) ----
+    evidence: list[EvidenceDossier] = Field(default_factory=list)
+    revisionLog: list[RevisionRecord] = Field(default_factory=list)
+    publicationGate: Optional[PublicationGate] = None
 
     @model_validator(mode="after")
     def _validate_cross_phase_refs(self) -> Self:
@@ -847,4 +1142,10 @@ TracedSource.model_rebuild()
 TracedClaim.model_rebuild()
 EvidenceTrace.model_rebuild()
 IssueMetadata.model_rebuild()
+SourceRecord.model_rebuild()
+ClaimRecord.model_rebuild()
+TimelineEntry.model_rebuild()
+EvidenceDossier.model_rebuild()
+RevisionRecord.model_rebuild()
+PublicationGate.model_rebuild()
 WeeklyIssue.model_rebuild()
