@@ -1012,7 +1012,7 @@ wheels = [
 
 [[package]]
 name = "weekly-hotspot"
-version = "0.3.1"
+version = "0.4.0"
 source = { editable = "." }
 dependencies = [
     { name = "chinese-scraper-utils" },
