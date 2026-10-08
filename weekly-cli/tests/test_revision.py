@@ -28,15 +28,32 @@ class TestReviseStatement:
         )
         assert revise_statement(claim) == "审查员改写后的表述"
 
-    def test_qualify_appends_marker(self):
-        claim = ClaimRecord(statement="某事实。", publicationDecision="QUALIFY")
+    def test_low_risk_qualify_leaves_text_alone(self):
+        """The ledger and the gate carry this; inline markers would bury the prose."""
+        claim = ClaimRecord(
+            statement="某事实。", publicationDecision="QUALIFY", riskLevel="low"
+        )
+        assert revise_statement(claim) == "某事实。"
+
+    def test_risky_qualify_appends_marker(self):
+        claim = ClaimRecord(
+            statement="某推断。", publicationDecision="QUALIFY", riskLevel="medium"
+        )
         assert "尚无直接证据支持" in revise_statement(claim)
 
     def test_qualify_attributed_uses_attribution_marker(self):
         claim = ClaimRecord(
-            statement="企业称产品合格。", type="ATTRIBUTED", publicationDecision="QUALIFY"
+            statement="企业称产品合格。", type="ATTRIBUTED",
+            publicationDecision="QUALIFY", riskLevel="medium",
         )
         assert "待独立来源核实" in revise_statement(claim)
+
+    def test_reviewer_text_wins_over_low_risk_default(self):
+        claim = ClaimRecord(
+            statement="某事实。", publicationDecision="QUALIFY", riskLevel="low",
+            revisedStatement="审查员指定的改写",
+        )
+        assert revise_statement(claim) == "审查员指定的改写"
 
     def test_research_leaves_text(self):
         claim = ClaimRecord(statement="原文", publicationDecision="RESEARCH")
@@ -93,6 +110,17 @@ class TestApplyRevisions:
         _, records = apply_revisions(analysis, claims)
         assert records[0].before and records[0].after
         assert records[0].round == 1
+
+    def test_unchanged_text_produces_no_record(self):
+        """A decision that changes nothing should not clutter the revision log."""
+        analysis = {"materialContent": "普通的事实陈述。"}
+        claims = [ClaimRecord(
+            claimId="c1", statement="普通的事实陈述。", path="materialContent",
+            publicationDecision="QUALIFY", riskLevel="low",
+        )]
+        revised, records = apply_revisions(analysis, claims)
+        assert records == []
+        assert revised["materialContent"] == "普通的事实陈述。"
 
     def test_keep_and_unreviewed_produce_no_records(self):
         analysis = {"materialContent": "普通陈述。"}

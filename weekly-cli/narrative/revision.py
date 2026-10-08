@@ -84,6 +84,12 @@ def revise_statement(claim) -> str | None:
         supplied = getattr(claim, "revisedStatement", None)
         if supplied and supplied.strip():
             return supplied.strip()
+        # Low-risk unsourced statements are flagged in the claim ledger, which
+        # the writer reads and the gate counts, rather than annotated inline.
+        # Marking every such sentence in place buries the article in
+        # parentheticals while adding no information the ledger does not carry.
+        if getattr(claim, "riskLevel", "") == "low":
+            return statement
         if getattr(claim, "type", "") == "ATTRIBUTED":
             return statement + ATTRIBUTED_QUALIFY_SUFFIX
         return statement + QUALIFY_SUFFIX
@@ -126,6 +132,9 @@ def apply_revisions(
         statement = getattr(claim, "statement", "") or ""
         path = getattr(claim, "path", "") or ""
         replacement = revise_statement(claim)
+        if replacement is not None and replacement.strip() == statement.strip():
+            # Decision recorded on the claim, text deliberately unchanged.
+            continue
         before_field = get_path(analysis, path)
 
         applied = False
