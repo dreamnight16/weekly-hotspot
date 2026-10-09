@@ -482,7 +482,10 @@ const phases = [
   .week-link {
     display: grid;
     gap: 0.75rem;
-    grid-template-columns: minmax(0, 1fr) auto;
+    /* 窄屏：[期次色块 6.5rem][正文]；cta 自动落入第二行。
+       首列必须定宽——若正文进入 auto 列，会吃掉整行宽度，
+       把色块挤到近 0 宽，色块文字溢出并与正文重叠。 */
+    grid-template-columns: 6.5rem minmax(0, 1fr);
     align-items: start;
     padding: 0.75rem 0.5rem 0.75rem 0;
     text-decoration: none;
@@ -549,6 +552,9 @@ const phases = [
     font-weight: var(--dn-weight-kicker);
     white-space: nowrap;
     align-self: center;
+    /* 窄屏的 cta 位于第一列（色块下方），与色块对齐居中；
+       宽屏时该列宽度由内容决定，此声明无副作用。 */
+    justify-self: center;
   }
 
   .empty {
